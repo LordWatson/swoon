@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞 - mobile
 
 **Status:** done
-**Last updated:** 2026-11-05 - fixed: sign-in and sign-out did not redirect, and the onboarding flow was unreachable.
+**Last updated:** 2026-11-05 - fixed: Home showed hardcoded names and invented content to real signed-in users.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > **Canonical doc:** [`api/app/Modules/Accounts/module.md`](../../../../api/app/Modules/Accounts/module.md)
@@ -218,6 +218,37 @@ One trap worth knowing: `'/'` cannot be matched with `startsWith`, because it
 matches every path and would disable the gate completely. There is a test for
 that too.
 
+## Home showed invented data (fixed 2026-11-05)
+
+**The bug:** signing in as Alex showed "Alex & Sam", 214 days together, a
+dinner booking at a restaurant nobody chose, and three AI date ideas nobody
+generated. None of it was real. The whole screen was hardcoded as a showcase
+for the design language, which was harmless while nobody could sign in — and
+became a real person being shown somebody else's name and fabricated content
+as if it were theirs the moment sign-in worked.
+
+Everything now comes from `/api/me`, and **nothing the product cannot answer
+is shown.** Moments arrive in Phase 4, the Daily Spark in Phase 6, date plans
+in Phase 3; until then those tabs carry their own empty states and Home does
+not pretend. An empty Home is honest, a full one that is fiction is not.
+
+The data helpers are pure functions in `home.ts` with tests, because every one
+of them was previously a literal: the greeting follows the clock, the name is
+the real one, and **days together** counts from the first date, else the
+anniversary, else the day they linked.
+
+One bug the tests caught that a screen test never would: both sides of the
+days-together subtraction are normalised to **UTC midnight**. A `YYYY-MM-DD`
+date parses as UTC midnight, and comparing it against a local clock shifts the
+answer by a day for anyone behind UTC — so late evening in New York would have
+read one day fewer than that morning did.
+
+Partner colours are mapped in one place (`partnerColourToken` in the theme):
+the API says `rose`, the theme knows it as `primary`. A screen inventing its
+own mapping is how two screens end up disagreeing about which colour somebody
+is. Null falls back rather than blanking an avatar, because "nobody has chosen
+yet" is a real state.
+
 ## Where the token lives
 
 `expo-secure-store`, never AsyncStorage: the token is the whole account, and
@@ -254,6 +285,10 @@ applies, and any reveal/privacy gate as seen from the client.
 - Not implemented yet. See the canonical doc's gaps list.
 
 ## Changelog
+- 2026-11-05 - **Fix:** Home was hardcoded to "Alex & Sam" with invented
+  stats, bookings and AI output. It now reads `/api/me`, shows nothing the
+  product cannot answer, and the data helpers are pure and tested
+  (`home.ts`). 14 new tests.
 - 2026-11-05 - **Fix:** registering and signing in did not redirect. Token
   presence was component state seeded once on mount, so nothing recomputed.
   It is a query now, invalidated with `me` by one `refreshSession()` helper.

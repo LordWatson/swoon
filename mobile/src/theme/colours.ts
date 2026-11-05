@@ -169,3 +169,39 @@ export const darkColours: ColourTokens = {
 export const partnerColourKeys = ['primary', 'ai', 'secondary', 'success'] as const;
 
 export type PartnerColourKey = (typeof partnerColourKeys)[number];
+
+/**
+ * The four partner colours by the name the API uses, mapped to theme tokens.
+ *
+ * The server stores `rose` / `lavender` / `apricot` / `sage` (docs/BRAND.md
+ * § 3.5) and the theme knows them as `primary` / `ai` / `secondary` /
+ * `success`. The translation lives here because this is the file that owns
+ * what the colours *are* — a screen inventing its own mapping is how two
+ * screens end up disagreeing about which colour someone is.
+ */
+export const partnerColourTokens = {
+  rose: 'primary',
+  lavender: 'ai',
+  apricot: 'secondary',
+  sage: 'success',
+} as const satisfies Record<string, PartnerColourKey>;
+
+export type PartnerColourName = keyof typeof partnerColourTokens;
+
+/**
+ * A partner's colour as a theme token.
+ *
+ * Falls back rather than throwing: a null colour is a real state (nobody has
+ * chosen yet) and an unrecognised one means the API moved ahead of the app,
+ * neither of which should blank out an avatar.
+ */
+export function partnerColourToken(
+  name: string | null | undefined,
+  fallback: PartnerColourKey = 'primary',
+): PartnerColourKey {
+  if (name !== null && name !== undefined && name in partnerColourTokens) {
+    return partnerColourTokens[name as PartnerColourName];
+  }
+
+  return fallback;
+}

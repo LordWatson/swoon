@@ -146,6 +146,13 @@ export type CardTone = 'paper' | 'feature';
 
 export type { ColourTokens, Shadow, ShadowToken };
 export { lightColours, darkColours };
+export {
+  partnerColourToken,
+  partnerColourTokens,
+  partnerColourKeys,
+  type PartnerColourKey,
+  type PartnerColourName,
+} from './colours';
 export { moduleSignatures, type ModuleKey, type ModuleSignature } from './modules';
 export { typography, fontFamilies, scaleType, type TypographyToken } from './typography';
 export {
