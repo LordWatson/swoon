@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P1.T08: link and unlink both work end to end. Twelve endpoints of sixteen.
+**Last updated:** 2026-11-05 - P1.T09: both exits work. Fifteen endpoints of sixteen; only PATCH /api/me is left.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -209,6 +209,66 @@ The screen must say, in plain words, all three of these before the button:
 
 Not built yet: the screen arrives with the tab shell in P1.T07.
 
+### Deletion and export (P1.T09)
+
+**Deletion is immediate from the user's point of view.** Inside the request:
+every token is revoked, so every signed-in device stops working *now* rather
+than when the queue catches up; the couple is unlinked, so no partner is left
+alone in a shared space; open invites are revoked, so a code already shared
+cannot link somebody to an account that is gone; and the row is soft-deleted,
+which is what makes sign-in fail. Typing `DELETE` is the confirmation — a
+checkbox is too easy to tap by accident for something this final (UX rule 10).
+
+**A tombstone, not a hard delete.** `PurgeDeletedUserData` empties the row —
+name becomes "Someone", and email, password, social ids, avatar, date of birth,
+dietary and accessibility needs all become null — but keeps the primary key, so
+*the other partner's shared content still resolves*. A couple's shared memories
+are the other person's memories too; hard-deleting the row would cascade them
+away or leave dangling references. The job refuses to touch an account that is
+not soft-deleted, because a stale retry scrubbing a live account would be the
+worst bug in the system, and that has its own test.
+
+> **Every module must add itself to `PurgeDeletedUserData` and
+> `BuildDataExport`.** Both are deliberately explicit lists rather than a
+> registry: a visible list that fails review beats a clever mechanism that
+> silently misses a table. A module that forgets leaves personal data behind
+> after an erasure request, or ships an export that quietly omits the user's
+> own data — the same compliance failure in either direction. Each has the
+> remaining tables as TODOs naming the phase that creates them.
+
+### The export JSON shape — settled (closes the gap below)
+
+```json
+{
+  "export":   { "version": 1, "generated_at": "...", "product": "Swoon" },
+  "you":      { "name", "email", "colour", "timezone", "locale",
+                "date_of_birth", "dietary_needs", "accessibility_needs",
+                "joined_at" },
+  "couple":   { "linked_at", "lock_in_mode", "anniversary_on",
+                "first_date_on", "partner": { "name", "colour" } } | null,
+  "invites":  [ { "code", "email", "expires_at", "accepted_at", "revoked_at" } ],
+  "authored": { },
+  "shared":   { }
+}
+```
+
+`version` is the contract; a later change bumps it rather than silently moving
+fields. `authored` and `shared` are filled in by each module as it is built.
+
+**What is never in it:** anything the partner marked private — not the gift
+vault, not their individual check-in answers, not locked love notes, not
+private moments or love-map entries. An export is an Article 20 copy of *your*
+data, and "I can download it" must not become a way around a reveal gate. The
+partner appears as **a name and a colour and nothing else**, which is the same
+shape `PartnerResource` serves, and there is a test asserting their email,
+social id and date of birth are absent from the bytes.
+
+**The link** is signed and expires after 48 hours, and the route *still* checks
+the caller owns the export: a signature proves we issued the URL, not that the
+person holding it is the right person, and these links travel by email. The
+filename is a ULID rather than the user id, and the path is checked for
+traversal even though it is signed.
+
 ### Rate limiting
 
 Two limits on the auth routes, and the second one's key is the point:
@@ -297,13 +357,19 @@ Run: `composer test -- --filter=Accounts`
   `GOOGLE_CLIENT_ID_*` values; until then both endpoints correctly refuse
   everything.
 - Universal-link association files (AASA, assetlinks.json) are not yet hosted.
-- Export format not finalised - JSON shape needs to be decided and documented before Phase 1 ends.
+- ~~Export format not finalised.~~ **Settled in P1.T09** - see "The export JSON
+  shape" above. `authored` and `shared` are empty until the modules that fill
+  them exist.
 - Re-linking with the same partner after an unlink: does old shared content come back? Currently no. Needs a product decision.
 
 ## Changelog
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
 - 2026-11-05 - P0.T10: `users` profile columns added to the base migration,
   `HasApiTokens` on `User`, first test file. Schema verified on MySQL 8.0.46.
+- 2026-11-05 - P1.T09: deletion and export. `DeleteAccount`,
+  `PurgeDeletedUserData`, `BuildDataExport`, `BuildExportForUser`,
+  `ExportReadyMail`, signed download route. Export JSON shape settled, closing
+  the long-standing gap. 22 tests.
 - 2026-11-05 - P1.T08: unlink. `UnlinkCouple`, `CoupleUnlinked`,
   `NotifyPartnerOfUnlink`, `UnlinkNoticeMail`, couple show/update/destroy.
   15 tests. Taken before P1.T05-T07 so the authorisation sweep can cover

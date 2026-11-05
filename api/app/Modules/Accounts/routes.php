@@ -6,6 +6,7 @@ use App\Modules\Accounts\Http\Controllers\AuthController;
 use App\Modules\Accounts\Http\Controllers\CoupleController;
 use App\Modules\Accounts\Http\Controllers\InviteController;
 use App\Modules\Accounts\Http\Controllers\MeController;
+use App\Modules\Accounts\Http\Controllers\PrivacyController;
 use App\Modules\Accounts\Http\Controllers\SocialAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,4 +51,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // Unlink. No couple id: a user has at most one, so taking an id would only
     // create a way to ask about somebody else's.
     Route::delete('couple', [CoupleController::class, 'destroy'])->name('couple.destroy');
+
+    Route::post('me/export', [PrivacyController::class, 'export'])->name('me.export');
+    Route::delete('me', [PrivacyController::class, 'destroy'])->name('me.destroy');
 });
+
+// The export download. `signed` proves we minted the URL and that it has not
+// expired; the controller still checks the caller owns the export, because
+// these links travel by email.
+Route::get('me/export/{user}/{path}', [PrivacyController::class, 'download'])
+    ->middleware(['auth:sanctum', 'signed'])
+    ->name('me.export.download');

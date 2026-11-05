@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T09** — account deletion and data export. *(Backend first: T05–T07 are the mobile tasks and are taken after T10, so the authorisation sweep can cover every endpoint in one pass.)*
+**Current focus:** **P1.T10** — the authorisation test sweep, now that every Accounts endpoint exists. Then the mobile tasks T05–T07.
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 5 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 6 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -686,7 +686,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T09 — Account deletion and data export · **M**
+### `[x]` P1.T09 — Account deletion and data export · **M**
 
 **Steps**
 1. `DeleteAccount`: respond fast, then `PurgeDeletedUserData` on the queue.
@@ -705,6 +705,33 @@ the gate to everything else: no couple, no product.
 **Docs to update** `Accounts/module.md` (rules, gaps closed), `docs/ARCHITECTURE.md` § 3.1.
 
 **Size** M.
+
+> **Done 2026-11-05.** Deletion revokes every token, unlinks the couple and
+> kills outstanding invites *inside the request*, then tombstones on the queue.
+> A **tombstone rather than a hard delete**, because the other partner's shared
+> content has to keep resolving — a couple's memories are two people's
+> memories. The purge job refuses to touch an account that is not soft-deleted:
+> a stale retry scrubbing a live account would be the worst bug in the system,
+> so it has its own test.
+>
+> **The export JSON shape is settled**, closing the gap the module doc had been
+> carrying since P0.T07. `version` is the contract. The partner appears as a
+> name and a colour and nothing else, asserted against the bytes rather than a
+> screen — "the export omits the partner's private data" is not something a
+> UI test can prove.
+>
+> The download link is signed and 48-hour, **and** the route checks the caller
+> owns it: a signature proves we minted the URL, not that the holder is the
+> right person, and these links travel by email. There is a test for a
+> forwarded link and one for path traversal through the signed parameter.
+>
+> Most of what rule 9 lists does not exist yet, so `PurgeDeletedUserData` and
+> `BuildDataExport` carry TODOs naming the phase that creates each table. Both
+> are deliberately explicit lists, not a registry: a visible list that fails
+> review beats a mechanism that silently misses a table.
+>
+> **Not built:** the Privacy & data screen, which arrives with the shell in
+> P1.T07. 22 tests, 137 total.
 
 ---
 

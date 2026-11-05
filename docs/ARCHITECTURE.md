@@ -188,6 +188,13 @@ Two rules follow, and they are tested per module:
 * Timestamps are UTC in the database. **Display and scheduling use the user's
   timezone**, which is why `users.timezone` and per-event `timezone` exist.
 * Money is **integer pence**. Never a float.
+* **Deletion leaves a tombstone, not a hole.** A deleted user's row survives
+  with every personal column emptied and the primary key intact, because the
+  other partner's shared content still has to resolve — a couple's memories are
+  two people's memories. `PurgeDeletedUserData` and `BuildDataExport` are the
+  two explicit lists every module must add itself to; a module that forgets
+  leaves personal data behind after an erasure request, or ships an export that
+  omits the user's own data (`Accounts/module.md` § Deletion and export).
 * Soft deletes only where undo exists (`moments`) or detachment matters
   (`couples`).
 * `enum`-like columns are strings validated by a PHP enum, not MySQL `ENUM` —
