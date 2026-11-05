@@ -1,7 +1,7 @@
 # AI Platform ✨
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P2.T01-T03 done: the driver seam with its fake, versioned prompts, and output validation with exactly one retry. SafetyGuard, cost and caps are still to come.
+**Last updated:** 2026-11-05 - P2.T01-T04 done: the driver seam with its fake, versioned prompts, output validation, and **SafetyGuard**. Cost logging and caps are still to come.
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -170,6 +170,52 @@ task's schema and silently unchecked would be a hole that never announces
 itself; the suite walks every declared schema and fails on an unsupported
 keyword, so the gap cannot wait for production.
 
+## SafetyGuard
+
+`Actions\SafetyGuard::screen($text): SafetyVerdict`, run **twice** on every
+user-facing generation: once on the free text a person wrote, before the
+expensive model is asked anything, and once on the draft that comes back.
+Screening the input first is not only cheaper - if somebody has just described
+a crisis, asking Opus for three date ideas is the wrong thing to do with that
+sentence.
+
+It is a separate step with its own prompt (`safety_screen/v1`), never a
+paragraph inside another prompt. A rule buried in a 2,000-token date-planning
+prompt competes for the model's attention with the date planning.
+
+**Three outcomes, not two** (`SafetyState`):
+
+| State | Means | What a person sees |
+|---|---|---|
+| `safe` | The screen ran and found nothing | The normal output |
+| `concerning` | Anything but `none`, **`unclear` included** | `signpost()` and nothing else |
+| `unusable` | The screen itself failed | Nothing at all |
+
+The third exists because a guard that *breaks* has told us nothing. An
+unscreened date plan is the thing this module exists to prevent, and a crisis
+helpline shown to someone who was choosing a restaurant is its own small harm.
+Everything that can go wrong - transport failure, two malformed replies, an
+unpinned prompt, a missing file - lands on `unusable`, and a test walks every
+one of those routes asserting none of them can answer `safe`.
+
+**What it keeps: nothing.** `SafetyVerdict` carries no part of the text, no
+attribution, and the classification only in memory, for the eval command to
+score against. It is never persisted and never logged - a row saying this
+couple raised an abuse concern on this date is exactly the kind of record that
+can hurt the person it is about. The cost is that we cannot report how often it
+trips or whether a prompt change improved it; ADR-025 takes that trade
+deliberately and names what replaces it.
+
+**What a person sees** is `signpost()`: `message` and `signposts`, and nothing
+else can be added to them. The copy breaks the brand voice on purpose - no
+emoji, no "you two", no cheer, and no guess at what is happening. Tested, so a
+later tidy-up cannot quietly restore the voice.
+
+**Routing.** Because the guard screens one text at a time, the caller knows
+whose words tripped it and sends the signpost to that person only. The other
+partner sees an ordinary "that didn't work". A concern is never revealed to a
+partner, in any form.
+
 ## Jobs, events & schedules
 **Jobs:** `RunAiTask` (the one queued entry point; per-task payloads), retried once on a transport error, never retried on `invalid_output` after the first retry.
 
@@ -192,6 +238,10 @@ This is the module where privacy is won or lost.
 ## Tests
 `api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
 
+Done so far (P2.T04): **77 battery cases, one test each** - 32 concerning phrasings across every category including indirect and euphemistic forms, and 45 benign ones (ordinary rows, grumbles, dark humour, fiction, grief, surprises). Each asserts the handling *and* that the words reached the screen. Plus: `unclear` treated as a concern; every failure route landing on `unusable`; a single test asserting no route can answer `safe` by accident; empty text costing nothing; the pinned version, light model and low effort used; the signpost's keys fixed at two; no emoji and no diagnosis words in the copy; the verdict carrying none of the text; nothing written to the log on either the tripped or the failed path; and the battery's own integrity (categories covered, benign set larger, no concerning case expecting `none`).
+
+Proven to bite by making `unclear` safe: four battery cases and two direct tests failed.
+
 Done so far (P2.T03): a matching reply passes, including a nested list of objects; a missing field, a wrong type, an extra field and an out-of-enum value each reported in plain words, with the path to the item inside a list; every problem reported rather than the first; one complaint per mistake; list bounds; integer accepted where a number is wanted; `null` only where the schema allows it; `[]` taken as an empty object. Exactly one retry, proven by queueing three responses and asserting the third was never asked for; a transport failure passing straight through; both attempts kept when both failed.
 
 Gates: every task with a **pinned prompt** has a declared schema, and every declared schema uses only keywords the validator checks - proven to bite by adding `format` on purpose.
@@ -211,10 +261,17 @@ Run: `composer test -- --filter=Ai`
 ## Known gaps / TODO
 - ANTHROPIC_API_KEY not yet set (by hand, by the founder).
 - Decide whether laravel/ai's own fake/record helpers replace the hand-rolled fake driver - evaluate during P2.T01.
-- SafetyGuard phrasing battery needs review by someone with relevant expertise before launch; the current list is a developer's best effort.
+- **SafetyGuard's battery needs review by someone with relevant expertise before launch** - domestic abuse and crisis support. 77 cases exist and the tests pass; neither fact makes the phrasings right. `tests/Fixtures/Ai/evals/safety_screen/README.md` says the same thing where the cases live.
+- We deliberately store nothing about a safety trip, so there is no way to measure how often it happens in the wild (ADR-025). If that becomes a problem, the answer is a count with no couple, no category and no content attached - not a relaxation of the rule.
 - Cost-per-couple model is unvalidated until real traffic exists.
 
 ## Changelog
+- 2026-11-05 - **P2.T04**: `SafetyGuard`, `SafetyVerdict`, `SafetyState`,
+  `resources/prompts/safety_screen/v1.md` (now pinned), the signpost copy in
+  `config('ai.safety.message')`, and the 77-case battery under
+  `tests/Fixtures/Ai/evals/safety_screen/`. ADR-025 records the voice
+  exception, the one-text-at-a-time screening that lets a signpost be
+  directed, and the analytics we gave up to store nothing.
 - 2026-11-05 - **P2.T03**: `TaskSchemas`, `SchemaValidator`, `GenerateValidated`
   and `Generation`. A task's schema is now resolved from its declaration rather
   than passed in, so the shape is a property of the task. `AiRequest` gained

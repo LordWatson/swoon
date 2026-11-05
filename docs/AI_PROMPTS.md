@@ -81,7 +81,7 @@ declared output schema and SafetyGuard, both after the fact and both tested.
 | [`weekly_recap`](#weekly_recap) | v1 | `weekly_recap` | strong | medium | Recap | planned |
 | [`insights`](#insights) | v1 | `insights` | strong | medium | Insights | planned |
 | [`year_in_moments`](#year_in_moments) | v1 | `year_in_moments` | strong | high | YearInMoments | planned |
-| [`safety_screen`](#safety_screen) | v1 | `safety_screen` | light | low | Ai (SafetyGuard) | planned |
+| [`safety_screen`](#safety_screen) | v1 | `safety_screen` | light | low | Ai (SafetyGuard) | **live** |
 | [`moment_tagging`](#moment_tagging) | v1 | `moment_tagging` | light | low | Moments | planned |
 | [`date_pack`](#date_pack) | v1 | `date_pack` | strong | medium | Challenges (authoring) | planned |
 | [`spark_question`](#spark_question) | v1 | `spark_question` | light | low | DailySpark (authoring) | planned |
@@ -271,7 +271,7 @@ containing grief, a year with large gaps.
 
 ## `safety_screen`
 
-**v1** · planned · Phase 2 · light / low · internal, uncapped
+**v1** · **live** · Phase 2 · light / low · internal, uncapped · `resources/prompts/safety_screen/v1.md`
 
 **This is the SafetyGuard prompt and the most important one in the product.**
 
@@ -310,9 +310,20 @@ crisis and abuse phrasings, including indirect and euphemistic forms, plus a
 large set of **benign** inputs to measure false positives (a product that
 signposts at every argument is useless).
 
+**Built in P2.T04.** The battery is 32 concerning cases across every category,
+including indirect and euphemistic phrasings, and 45 benign ones. It runs two
+ways: under the fake driver in CI, where it proves the *handling* is uniform and
+that the text reaches the screen; and against the real model via
+`artisan swoon:ai-eval safety_screen`, which is the only thing that measures the
+prompt itself. See `tests/Fixtures/Ai/evals/safety_screen/README.md`.
+
+What a person sees when it trips, and who sees it, is **ADR-025**: no emoji, no
+guess at what is happening, and screened one text at a time so the signpost
+reaches the person who needs it and not their partner.
+
 > ⚠️ The current battery is a developer's best effort. **It needs review by
 > someone with relevant expertise before launch** — recorded as a gap in the
-> `Ai` module doc.
+> `Ai` module doc. The tests passing does not close it.
 
 ---
 

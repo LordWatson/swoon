@@ -8,6 +8,62 @@ Keep each entry short: context, decision, consequence.
 
 ---
 
+## ADR-025 — What SafetyGuard says, and who hears it
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** When the safety screen trips, the app is speaking to someone who
+has just described something hard. It is the one moment in the product where
+getting the tone wrong does real damage. The brand voice — light emoji at the
+end of a sentence, "you two", celebrate never scold — would be grotesque here.
+There was also an open question nobody had answered: when one partner's words
+trip the guard, what does the *other* partner see?
+
+**Decision.** Three things, each a deliberate exception.
+
+1. **The signpost copy breaks the brand voice on purpose.** No emoji, no "you
+   two", no cheer, and it does not name what it thinks is happening — it does
+   not know, and guessing at somebody's situation out loud is worse than saying
+   nothing. The copy lives in `config('ai.safety.message')`, next to the
+   services it introduces, and the suite asserts it carries no emoji and none of
+   the words "abuse", "crisis", "harm", "suicide", "we noticed", "we detected".
+   A future session tidying this to match the rest of the app would be wrong,
+   which is why there is a test rather than a comment.
+
+2. **The guard screens one text at a time.** Not both partners' inputs
+   together, even though that would be one call instead of two. The caller
+   knows whose words it handed over, which is the only way the signpost can
+   reach the person who needs it while the other partner sees an ordinary
+   "that didn't work". A `SafetyVerdict` carries no attribution and no content,
+   so a caller cannot accidentally pass either on.
+
+3. **Three outcomes, not two.** `safe` → carry on; `concerning` → the signpost
+   and nothing else; `unusable` → nothing at all. The third exists because a
+   guard that *breaks* has told us nothing: handing over an unscreened date
+   plan is the thing this module exists to prevent, and showing a crisis
+   helpline to someone who was choosing a restaurant is its own small harm.
+   `unclear` from the model is a **concern**, not an `unusable` — a model that
+   cannot tell has told us something, and it is not that everything is fine.
+
+**Consequence.** Two `safety_screen` calls per user-facing generation — the
+input before the expensive model is asked anything, the draft after. On Haiku at
+low effort that is pennies a thousand, and screening the input first means a
+sentence about a crisis never becomes an Opus date-planning call.
+
+The real cost is analytical. The classification is held in memory for the eval
+command to score against and is **never persisted or logged**, so we cannot
+answer "how often does this trip", or "which category", or "did it get better
+after the prompt change". That is accepted: a row saying this couple raised an
+abuse concern on this date is exactly the kind of record that can hurt the
+person it is about, and holding it would create a risk that did not exist
+before. The prompt is measured against a fixture battery instead, deliberately
+and off the back of real spend.
+
+**Standing gap.** The battery is a developer's best effort. It needs review by
+someone with relevant expertise before launch, and the tests passing does not
+close that.
+
+---
+
 ## ADR-024 — Our own fake driver, alongside laravel/ai's agent fake
 **Date:** 2026-11-05 · **Status:** accepted
 

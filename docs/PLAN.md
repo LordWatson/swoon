@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P2.T04** — **SafetyGuard**, the most important task in the project. **P2.T01–T03 are done**: one interface to the model, pinned versioned prompts, and output validated against the same schema that was sent.
+**Current focus:** **P2.T05** — the privacy filter. **P2.T01–T04 are done**: one interface to the model, pinned versioned prompts, validated output, and **SafetyGuard** with a 77-case battery.
 
 ---
 
@@ -921,7 +921,7 @@ this phase; everything after it depends on this being right.
 
 ---
 
-### `[ ]` P2.T04 — SafetyGuard · **M**
+### `[x]` P2.T04 — SafetyGuard · **M**
 
 > **The most important task in the project.** Treat it accordingly.
 

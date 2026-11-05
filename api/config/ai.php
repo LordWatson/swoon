@@ -171,6 +171,16 @@ return [
         // documented non-negotiable one environment variable away from off.
         // Tests that must not reach a model use AI_DRIVER=fake.
 
+        // The whole of what a person sees when SafetyGuard trips: this line,
+        // then the list below. No date plan, no recap, nothing else.
+        //
+        // It is the one piece of copy in the product that breaks the brand
+        // voice on purpose - no emoji, no "you two", no cheer. See ADR-025.
+        // It also does not say what tripped it, because it does not know, and
+        // guessing at somebody's situation out loud would be worse than
+        // saying nothing.
+        'message' => "It sounds like something difficult might be going on. This app can't help with that, but these people can, and they will listen.",
+
         // UK support services shown when SafetyGuard trips.
         'signposts' => [
             [
@@ -221,7 +231,7 @@ return [
         // Each phase adds its own line alongside the file it writes, which is
         // also the moment to update docs/AI_PROMPTS.md.
         'active' => [
-            //
+            'safety_screen' => 'v1',
         ],
     ],
 

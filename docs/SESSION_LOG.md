@@ -95,6 +95,47 @@ with the live version in `config('ai.prompts.active')`. 209 API tests.
   utf8` writes a BOM, which makes `declare(strict_types=1)` "not the very
   first statement". Python with `newline=''` for file edits from now on.
 
+**P2.T04 — SafetyGuard.** The task the plan calls the most important in the
+project. 339 API tests, 101 of them in this one file.
+
+* **Three outcomes, not two.** `safe`, `concerning`, `unusable`. The third is
+  the one that needed thinking about: a guard that *breaks* has told us
+  nothing, so handing over an unscreened date plan is wrong and so is showing a
+  crisis helpline to somebody who was choosing a restaurant. Every failure
+  route — transport, two malformed replies, an unpinned prompt, a missing file
+  — lands on `unusable`, and one test walks all of them asserting none can
+  answer `safe`.
+* **`unclear` is a concern, not a failure.** A model that cannot tell has told
+  us something, and it is not that everything is fine. Proven to bite by making
+  `unclear` safe: four battery cases and two direct tests failed.
+* **The guard screens one text at a time**, which costs a second Haiku call and
+  buys the only thing that makes the signpost safe to show: the caller knows
+  whose words tripped it, so the signpost reaches that person and their partner
+  sees an ordinary "that didn't work". A verdict carries no attribution and no
+  content.
+* **The signpost breaks the brand voice on purpose** — no emoji, no "you two",
+  no cheer, and no guess at what is happening. There is a test rather than a
+  comment, because a later session tidying the copy to match the rest of the
+  app would be wrong (ADR-025).
+* **It stores nothing, and that costs us something real.** The classification
+  lives in memory for the eval to score against and is never persisted or
+  logged, so we cannot report how often it trips or whether a prompt change
+  helped. A row saying this couple raised an abuse concern today is exactly the
+  kind of record that can hurt the person it is about.
+* **77 battery cases, one test each** rather than one loop, so a failure names
+  the phrasing. 32 concerning, including indirect and euphemistic forms, and 45
+  benign — ordinary rows, grumbles, dark humour ("I could kill him"), film
+  plots, grief, surprises. False positives get the bigger set, because a
+  product that signposts at every argument is useless.
+* **Pest reads datasets before the application exists**, so `base_path()` in a
+  dataset helper silently produced an empty battery and "DatasetMissing" rather
+  than an error. `__DIR__` plus a loud throw on an empty file: 77 tests quietly
+  becoming none is the failure that would have mattered.
+
+**Still open:** the battery is a developer's best effort and **needs review by
+someone with relevant expertise before launch.** The tests passing does not
+close that, and it stays in the module's gaps until it is reviewed.
+
 **Left over:** the founder's real Anthropic key sits in `api/.env` (untracked,
 git-ignored) and was read aloud during this session while checking the test
 environment — worth rotating.
