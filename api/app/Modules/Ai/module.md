@@ -1,7 +1,7 @@
 # AI Platform ✨
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P2.T01 and P2.T02 done: the driver seam with its fake, and the versioned prompt registry. Validation, SafetyGuard, cost and caps are still to come.
+**Last updated:** 2026-11-05 - P2.T01-T03 done: the driver seam with its fake, versioned prompts, and output validation with exactly one retry. SafetyGuard, cost and caps are still to come.
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -125,6 +125,51 @@ Slot rules, and why each is strict, are in `docs/AI_PROMPTS.md` and
 value with no slot throws, `null` is rejected, and there is no template
 language.
 
+## Output validation
+
+Every task declares its output shape in **`Schemas/TaskSchemas`** - one file,
+so a reviewer can read every shape the product asks a model for in a single
+sitting. Each phase adds its case next to the prompt file it writes.
+
+That one declaration does two jobs. `AiRequest::jsonSchema()` turns it into
+the `output_config.format` Anthropic receives, and `SchemaValidator` checks the
+reply against **the same array**. There is nothing to keep in step.
+
+`GenerateValidated` is the only caller of the driver:
+
+```
+GenerateValidated::handle(AiRequest): Generation
+  -> driver->generate()      (attempt 1)
+  -> SchemaValidator
+  -> driver->generate()      (attempt 2, only if the shape was wrong)
+  -> SchemaValidator
+```
+
+* **Exactly one retry.** A model that returns the wrong shape twice will not
+  find it on the third go, and every attempt is billed.
+* **The retry sends the same request**, unchanged. Telling the model what it
+  got wrong would be a better repair and a worse record: the prompt that
+  produced the output would no longer be the pinned version
+  `ai_generations` points at.
+* **`Generation` holds every attempt**, because every attempt cost money and
+  `ai_usage` has to show what we paid even when the answer was useless.
+* **`Generation::$structured` is null unless the reply passed.** So "malformed
+  output never reaches a couple" is a property of the type rather than a rule
+  somebody remembers.
+* **Transport failures propagate untouched.** A connection failure is the job's
+  to retry, on a different timescale and for a different reason - spending the
+  shape retry on it would leave nothing for the shape.
+
+**Extra fields are rejected, not ignored.** Every schema we send sets
+`additionalProperties: false`, so a field we did not ask for means this is not
+the reply we asked for, and dropping it quietly would hide that.
+
+`SchemaValidator` understands a fixed list of JSON Schema keywords and
+**throws on any other**, rather than skipping it. A constraint declared in a
+task's schema and silently unchecked would be a hole that never announces
+itself; the suite walks every declared schema and fails on an unsupported
+keyword, so the gap cannot wait for production.
+
 ## Jobs, events & schedules
 **Jobs:** `RunAiTask` (the one queued entry point; per-task payloads), retried once on a transport error, never retried on `invalid_output` after the first retry.
 
@@ -147,6 +192,10 @@ This is the module where privacy is won or lost.
 ## Tests
 `api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
 
+Done so far (P2.T03): a matching reply passes, including a nested list of objects; a missing field, a wrong type, an extra field and an out-of-enum value each reported in plain words, with the path to the item inside a list; every problem reported rather than the first; one complaint per mistake; list bounds; integer accepted where a number is wanted; `null` only where the schema allows it; `[]` taken as an empty object. Exactly one retry, proven by queueing three responses and asserting the third was never asked for; a transport failure passing straight through; both attempts kept when both failed.
+
+Gates: every task with a **pinned prompt** has a declared schema, and every declared schema uses only keywords the validator checks - proven to bite by adding `format` on purpose.
+
 Done so far (P2.T02): the pinned version wins over a newer file on disk; an unpinned prompt, a pin with no file, and a version that is not a version are each refused; every value type renders, including `false` as a word rather than nothing; a missing slot, a stray value and a `null` each throw; braces typed inside a value stay text. Plus the gate: every prompt the real config pins has a file.
 
 Done so far (P2.T01): driver selection both ways and an unknown name refused; the real driver never constructed under the fake; the real driver refusing without a key, which is the *assertion* behind "no network"; the fake's recording, its fixture loading, its queued overrides and its loud failure on a missing fixture; `AiRequest` resolving model, effort and ceiling from config; `TaskAgent`'s provider options following config; `AnthropicDriver`'s mapping, via laravel/ai's own agent fake.
@@ -166,6 +215,11 @@ Run: `composer test -- --filter=Ai`
 - Cost-per-couple model is unvalidated until real traffic exists.
 
 ## Changelog
+- 2026-11-05 - **P2.T03**: `TaskSchemas`, `SchemaValidator`, `GenerateValidated`
+  and `Generation`. A task's schema is now resolved from its declaration rather
+  than passed in, so the shape is a property of the task. `AiRequest` gained
+  `jsonSchema()`, which is both what goes out and what comes back is checked
+  against. Extra fields rejected; unsupported JSON Schema keywords throw.
 - 2026-11-05 - **P2.T02**: `PromptRegistry` + `RenderedPrompt`.
   `config('ai.prompts.active')` was pinning four prompts that had no files;
   trimmed to the prompts that exist, with a test that fails on a pin without a

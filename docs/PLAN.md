@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P2.T03** — structured output validation. **P2.T01–T02 are done**: one interface to the model, a fake the suite runs on by default, and prompts as pinned, versioned files.
+**Current focus:** **P2.T04** — **SafetyGuard**, the most important task in the project. **P2.T01–T03 are done**: one interface to the model, pinned versioned prompts, and output validated against the same schema that was sent.
 
 ---
 
@@ -902,7 +902,7 @@ this phase; everything after it depends on this being right.
 
 ---
 
-### `[ ]` P2.T03 — Structured output validation · **S**
+### `[x]` P2.T03 — Structured output validation · **S**
 
 **Steps**
 1. Declare a JSON schema per task.

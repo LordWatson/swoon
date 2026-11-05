@@ -71,6 +71,30 @@ with the live version in `config('ai.prompts.active')`. 209 API tests.
   Paths are concatenated with forward slashes now. Worth remembering: lint the
   file, do not trust the reported line.
 
+**P2.T03 — output validated against the schema that was sent.** 238 API tests.
+
+* **One declaration, two jobs.** A task's shape lives in `TaskSchemas`;
+  `AiRequest::jsonSchema()` turns it into `output_config.format` and
+  `SchemaValidator` checks the reply against the same array. A second
+  description of the same shape is the thing that drifts.
+* **Exactly one retry, with the same prompt.** A repair turn naming what the
+  model got wrong would fix more replies and ruin the record — the prompt that
+  produced the output would no longer be the pinned version
+  `ai_generations` points at. Proven by queueing three responses and asserting
+  the third was never asked for.
+* **`Generation::$structured` is null unless the reply passed**, so "malformed
+  output never reaches a couple" is a property of the type rather than a rule
+  somebody remembers. Every attempt is kept, because every attempt was billed.
+* **The validator throws on a keyword it does not implement** rather than
+  skipping it, and the suite walks every declared schema to catch that at
+  build time. Proven to bite by adding `format` on purpose.
+* **`get_debug_type()` calls a list and an object both "array"**, which made a
+  type mismatch read "should be array, not array". It says "object" now.
+* **Two Windows-shaped lessons.** `end()` cannot touch a readonly property
+  (it takes the array by reference), and PowerShell's `Set-Content -Encoding
+  utf8` writes a BOM, which makes `declare(strict_types=1)` "not the very
+  first statement". Python with `newline=''` for file edits from now on.
+
 **Left over:** the founder's real Anthropic key sits in `api/.env` (untracked,
 git-ignored) and was read aloud during this session while checking the test
 environment — worth rotating.

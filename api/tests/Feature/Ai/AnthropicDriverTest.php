@@ -61,14 +61,16 @@ it('refuses a schema with no properties', function (): void {
     // Without this, laravel/ai sends no output_config, the model answers in
     // free text, and the response comes back with nothing for SchemaValidator
     // to check — a silent hole in the one rule that protects the couple.
-    $agent = new TaskAgent(new AiRequest(
+    $request = new AiRequest(
         task: 'date_plan',
         prompt: 'p',
         promptVersion: 'date_plan/v1',
         schema: fn (JsonSchema $schema): array => [],
-    ));
+    );
 
-    expect(fn (): array => $agent->schema(new JsonSchemaTypeFactory))
+    expect(fn (): array => (new TaskAgent($request))->schema(new JsonSchemaTypeFactory))
+        ->toThrow(InvalidArgumentException::class, 'is empty')
+        ->and(fn (): array => $request->jsonSchema())
         ->toThrow(InvalidArgumentException::class, 'is empty');
 });
 

@@ -22,7 +22,17 @@ here does not exist as far as review is concerned.
   Adding a file does not change behaviour; promoting it is a deliberate config
   edit.
 * Every prompt declares a **JSON output schema**, validated before the couple
-  sees anything.
+  sees anything. The schema lives in `app/Modules/Ai/Schemas/TaskSchemas.php`,
+  one case per task, and the **same declaration** becomes both the
+  `output_config.format` Anthropic receives and the array the reply is checked
+  against - so the shape we ask for and the shape we accept cannot drift.
+* **Extra fields are rejected, not ignored.** Every schema sets
+  `additionalProperties: false`, so a field we did not ask for means this is
+  not the reply we asked for.
+* A reply of the wrong shape is retried **exactly once**, with the same prompt.
+  Then the outcome is `invalid_output`, and both attempts are logged, because
+  both were billed. A repair turn would be a better fix and a worse record: the
+  prompt that produced the output would no longer be the pinned version.
 * Every user-facing generation passes **SafetyGuard** (fail-closed).
 * Inputs are built by an **allow-list per task** — never a deny-list.
 * Model and effort come from `config('ai.tasks.<task>')`, never a literal.

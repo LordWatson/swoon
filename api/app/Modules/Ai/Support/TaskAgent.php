@@ -6,7 +6,6 @@ namespace App\Modules\Ai\Support;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
-use InvalidArgumentException;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\HasProviderOptions;
 use Laravel\Ai\Contracts\HasStructuredOutput;
@@ -49,18 +48,10 @@ final class TaskAgent implements Agent, HasProviderOptions, HasStructuredOutput
      */
     public function schema(JsonSchema $schema): array
     {
-        $properties = ($this->request->schema)($schema);
-
-        if ($properties === []) {
-            // An empty schema makes laravel/ai send no output_config at all,
-            // so the model answers in free text and the response arrives
-            // unstructured — with nothing for SchemaValidator to check.
-            throw new InvalidArgumentException(
-                "The schema for AI task [{$this->request->task}] is empty. Declare at least one property."
-            );
-        }
-
-        return $properties;
+        // The factory laravel/ai passes in is the same class the request
+        // builds for itself, so the schema it validates against later is the
+        // schema that went out.
+        return $this->request->schemaProperties();
     }
 
     /**
