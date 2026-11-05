@@ -1,7 +1,7 @@
 # AI Platform ✨
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P2.T01-T05 done: the driver seam with its fake, versioned prompts, output validation, **SafetyGuard**, and the allow-list privacy filter. Cost logging and caps are still to come.
+**Last updated:** 2026-11-05 - P2.T01-T06 done: the driver seam with its fake, versioned prompts, output validation, **SafetyGuard**, the allow-list privacy filter, and cost logging. Caps, the queued pipeline and the evals are still to come.
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -18,11 +18,23 @@ The single door between Swoon and Claude. Every AI feature in the app goes throu
 - As a couple, I never get a reply that ignores a crisis I just described.
 
 ## Data model
-**ai_usage** - id, couple_id, user_id (nullable - who triggered it), module, task (matches a key in `config('ai.tasks')`), prompt_name, prompt_version, model, input_tokens, output_tokens, cost_pence, outcome (`ok`|`invalid_output`|`safety_tripped`|`capped`|`error`), duration_ms, created_at. Indexed on (couple_id, created_at) for the monthly cap query.
+**ai_usage** - id, couple_id (nullable), user_id (nullable), module, task (matches a key in `config('ai.tasks')`), prompt_name, prompt_version, model (nullable), input_tokens, output_tokens, **cost_millipence**, outcome (`ok`|`invalid_output`|`safety_tripped`|`capped`|`error`), duration_ms, timestamps. Indexed on (couple_id, created_at) for the monthly cap query and on created_at for the global daily guard.
 
-**ai_generations** - id, couple_id, module, task, prompt_version, payload_hash, output (json), safety_outcome, superseded_by (nullable - set when regenerated), created_at. Keeps what the couple was actually shown, so a prompt change never rewrites history.
+One row **per model call**, including the calls that failed - a reply in the wrong shape was billed exactly like a good one. Outcomes that never reached the model (`capped`) get a row with no model and no tokens, so "nothing happened" and "it was refused" are different facts rather than both being absence.
 
-**ai_feedback** - id, ai_generation_id, user_id, rating (`up`|`down`), note (nullable), created_at. Private to the rater.
+`cost_millipence`, not `cost_pence`, and the unit is in the name (**ADR-026**): a safety screen costs about 0.0055p, SafetyGuard runs twice on every generation, and rounded to pence every one of them would log zero.
+
+A `safety_tripped` row carries **no couple and no user** (**ADR-027**). `UsageLogger` strips them whatever the caller passes. The cost stays true; nothing links a trip to a person; and a tripped generation does not spend the couple's allowance, which is right on its own merits.
+
+The prompt reference is **split** into `prompt_name` and `prompt_version`, so "which prompt costs the most" and "did v2 get cheaper" are each one query.
+
+**ai_generations** - id, ulid (the public identifier), couple_id, module, task, prompt_name, prompt_version, payload_hash, output (json), superseded_by (nullable - set when regenerated), timestamps. Keeps what the couple was actually shown, so a prompt change never rewrites history - which is why a released prompt file is never edited in place.
+
+A regenerate **supersedes** rather than overwrites: the old row stays with `superseded_by` set, so "what did we show them in March" has an answer after they asked for something better in April.
+
+There is **no `safety_outcome` column**. A row only exists when the output was shown, which means the screen said safe, so it could only ever hold one value. The doc described one before the guard was built; the guard settled it.
+
+**ai_feedback** - id, ai_generation_id, user_id, rating (`up`|`down`), note (nullable), timestamps. Private to the rater, and unique on (ai_generation_id, user_id) so a double tap cannot read as two people disliking something. `user_id` is not fillable: `AiGeneration::rateBy(User, ...)` sets it from a `User` and never from request input.
 
 Nothing here stores a partner's private content: the payload is hashed, not kept.
 
@@ -43,7 +55,7 @@ Nothing here stores a partner's private content: the payload is hashed, not kept
 7. **Private data never enters a prompt that produces shared output.** The filter is a allow-list built per task, not a deny-list, so a new private field is excluded by default.
 8. **Caps are checked before dispatch**, per couple per calendar month, from `config('ai.caps')` by entitlement tier. A capped request returns a kind message, not a 429.
 9. A **runaway cost guard** sits above the caps (per couple, and global per day). Crossing it alerts and refuses - it should never be reached.
-10. **Every call is logged to `ai_usage`**, including failures, with tokens and computed cost. An unlogged call is a bug. `cost_pence` is computed from `config('ai.pricing_usd_cents_per_mtok')` and `config('ai.usd_to_pence')` - provider prices are quoted in US cents, every cap and budget in this app is in pence, and the two must never be compared without converting (ADR-016).
+10. **Every call is logged to `ai_usage`**, including failures, with tokens and computed cost. An unlogged call is a bug. `cost_millipence` is computed by `Support\Cost` from `config('ai.pricing_usd_cents_per_mtok')` and `config('ai.usd_to_pence')` - provider prices are quoted in US cents, every budget in this app is in pence, the column is in millipence, and no two of those are interchangeable (ADR-016, ADR-026).
 11. **Model ids come from config**, never a literal. `config('ai.tasks.<task>')` picks the model key and effort.
 12. The **fake driver** (`AI_DRIVER=fake`) returns fixtures from `tests/Fixtures/Ai`. The test suite pins it; a test that makes a real call is a failing test.
 13. AI output is **never** attributed to a partner. The API marks it `source: ai` and the app labels it (UX rule 6).
@@ -287,6 +299,8 @@ This is the module where privacy is won or lost.
 ## Tests
 `api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
 
+Done so far (P2.T06): the cost arithmetic checked against sums worked out by hand for both models, including the Haiku screen that rounding to pence would lose entirely; a price change in config moving the answer; `toPence()` rounding up; a warning and a gate for a model with no price. A row for each of the five outcomes, including the refusal that never reached the model. For a safety trip: no couple, no user, the attribution dropped even when passed, and the allowance unspent. Supersede keeping both rows with their own prompt versions and outputs; a ULID on every generation; a payload hash and no payload; one rating per person per generation.
+
 Done so far (P2.T05): **one test per private field, by name** - gift vault, individual check-in answers, private moment notes, private love-map entries, locked love notes, the partner's un-revealed answers, email addresses, full postcodes, shipping addresses, coordinates, password hashes and tokens. Each asserts the value is absent from the filtered payload, so widening the allow-list fails the test belonging to the field it exposed. Plus: the kept set equals the allow-list exactly; dietary and accessibility needs survive; both partners survive when one has nothing to say; a list stays a list; an undeclared task is refused; an allow-listed path holding an object throws; no allow-list entry anywhere names a postcode, address, coordinate, email, phone, password or token.
 
 Two tests carry the future: a column nobody has heard of yet is dropped, and **every column of the real `users` table** is dropped unless allow-listed - read from `Schema::getColumnListing()`, so it grows with the table rather than with somebody's memory of it. Proven to bite by allow-listing `partners.*.email`: three tests failed, including the one that scans the list itself.
@@ -313,12 +327,21 @@ Run: `composer test -- --filter=Ai`
 
 ## Known gaps / TODO
 - ANTHROPIC_API_KEY not yet set (by hand, by the founder).
+- **No policies on the AI models yet.** `AiGeneration` and `AiFeedback` get theirs with the endpoints in P2.T08, where the authorisation sweep can cover them; a policy with no caller would be untested either way. `AiUsage` is operational and never reaches a client.
 - Decide whether laravel/ai's own fake/record helpers replace the hand-rolled fake driver - evaluate during P2.T01.
 - **SafetyGuard's battery needs review by someone with relevant expertise before launch** - domestic abuse and crisis support. 77 cases exist and the tests pass; neither fact makes the phrasings right. `tests/Fixtures/Ai/evals/safety_screen/README.md` says the same thing where the cases live.
 - We deliberately store nothing about a safety trip, so there is no way to measure how often it happens in the wild (ADR-025). If that becomes a problem, the answer is a count with no couple, no category and no content attached - not a relaxation of the rule.
 - Cost-per-couple model is unvalidated until real traffic exists.
 
 ## Changelog
+- 2026-11-05 - **P2.T06**: migrations for `ai_usage`, `ai_generations` and
+  `ai_feedback`, their models, `Support\Cost` and `Support\UsageLogger`.
+  Two decisions came out of the arithmetic rather than going in: **ADR-026**
+  (millipence, because a safety screen rounds to zero in pence) and **ADR-027**
+  (a `safety_tripped` row carries no couple, resolving the clash between
+  "log every call" and "store nothing about a trip"). `ai_generations` lost the
+  `safety_outcome` column this doc used to describe, because a row only exists
+  when the screen said safe.
 - 2026-11-05 - **P2.T05**: `PrivacyFilter` and `TaskAllowList`. `SafetyGuard`
   now builds its one variable through the filter like everything else, so the
   rule has no exceptions. `date_plan`'s allow-list is declared ahead of its

@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P2.T06** — cost tracking and `ai_usage`. **P2.T01–T05 are done**: one interface to the model, pinned versioned prompts, validated output, **SafetyGuard**, and an allow-list filter with a test per private field.
+**Current focus:** **P2.T07** — caps and the cost guard. **P2.T01–T06 are done**: one interface to the model, pinned versioned prompts, validated output, **SafetyGuard**, an allow-list filter, and cost logged on every call.
 
 ---
 
@@ -972,7 +972,7 @@ this phase; everything after it depends on this being right.
 
 ---
 
-### `[ ]` P2.T06 — Cost tracking and `ai_usage` · **S**
+### `[x]` P2.T06 — Cost tracking and `ai_usage` · **S**
 
 **Steps**
 1. Migration `ai_usage` (indexed on `couple_id, created_at`).

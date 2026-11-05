@@ -164,6 +164,45 @@ close that, and it stays in the module's gaps until it is reviewed.
   through the filter anyway makes that a line a reviewer can read rather than an
   omission.
 
+**P2.T06 — cost logging.** `ai_usage`, `ai_generations`, `ai_feedback`, plus
+`Cost` and `UsageLogger`. 381 API tests, on SQLite **and** MySQL 8.
+
+Two decisions came out of the arithmetic rather than going into it.
+
+* **Millipence, not pence** (ADR-026). A `safety_screen` call is about 620 in
+  and 14 out on Haiku, which is **0.0055p** — and the guard runs twice on every
+  generation, so these are the most numerous calls the product makes. In whole
+  pence every one of them logs zero and the cost guard never sees the volume
+  that adds up. Rounding up instead would be wrong by 180x the other way. The
+  unit is in the column name, as it is in `pricing_usd_cents_per_mtok`.
+* **A safety trip is logged with no couple and no user** (ADR-027). Two rules
+  from this phase pointed opposite ways: log every call with its cost, and
+  store nothing about a trip. Logging the row and dropping the attribution
+  satisfies both, and the side effect is the right one on its own merits — a
+  tripped generation does not spend the couple's allowance, because charging
+  somebody's date-plan allowance for describing a crisis would be grotesque.
+  `UsageLogger` strips the ids whatever the caller passes, because there will
+  be more callers than there are people who have read ADR-025.
+
+* **`ai_generations` lost a column the module doc described.** It specified
+  `safety_outcome`; a row only exists when the output was shown, which means
+  the screen said safe, so the column could only ever hold one value. The doc
+  was written before the guard was.
+* **The prompt reference is split** into `prompt_name` and `prompt_version`, so
+  "which prompt costs the most" and "did v2 get cheaper" are each one query
+  rather than a LIKE.
+* **A model with no price warns and logs zero** rather than refusing to answer
+  a couple — with a test asserting every model in `config('ai.models')` has a
+  price, so the warning is a backstop and not the plan.
+* **`Cost::toPence()` rounds up**, because a guard that rounds a spend down
+  lets the last call through free, every time.
+* **The local MySQL run needs the CI recipe, not `--env=testing`.** Setting
+  `DB_*` plus `AI_DRIVER` as real environment variables and calling
+  `vendor/bin/pest` works, because PHPUnit's unforced `<env>` entries defer to
+  the real environment. `php artisan test --env=testing` looked for a
+  `.env.testing` that does not exist and took eleven tests down with it,
+  including the AI driver selection ones.
+
 **Left over:** the founder's real Anthropic key sits in `api/.env` (untracked,
 git-ignored) and was read aloud during this session while checking the test
 environment — worth rotating.

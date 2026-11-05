@@ -8,6 +8,70 @@ Keep each entry short: context, decision, consequence.
 
 ---
 
+## ADR-027 — A safety trip is logged without a couple
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** Two rules from this phase pointed in opposite directions. Every
+model call must be logged with its cost, including failures, because an
+unlogged call is money we cannot account for. And ADR-025 says nothing about a
+safety trip is stored, because a record that this couple raised a concern on
+this date is exactly the kind of data that can hurt the person it is about. The
+plan asked for `outcome = safety_tripped` on a table indexed by `couple_id`,
+which is both of those at once.
+
+**Decision.** Log the row, drop the attribution. An `ai_usage` row with
+`outcome = safety_tripped` carries **no `couple_id` and no `user_id`** — only
+the task, the model, the tokens, the cost and the time. `UsageLogger` strips
+them whatever the caller passes, because there will be more callers than there
+are people who have read ADR-025, and a test asserts no such row names anybody.
+
+**Consequence.** The cost is still true: the bill, the global daily guard and
+"what does safety screening cost us" all still work. Nothing in the database
+links a trip to a person.
+
+Two things follow from it. The per-couple cost guard misses the pennies a
+tripped screen spent — a Haiku screen is about 0.006p, so this is noise. And a
+tripped generation **does not spend the couple's monthly allowance**, which is
+the right behaviour on its own merits: charging somebody's date-plan allowance
+for describing a crisis would be grotesque.
+
+What we cannot do is ask "how often does this trip, and is it getting better".
+ADR-025 already took that trade; this is where it is enforced.
+
+---
+
+## ADR-026 — `ai_usage.cost_millipence`, not `cost_pence`
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** The project keeps money in integer pence (ARCHITECTURE § 3), and
+the plan specified `cost_pence`. Then the arithmetic: a `safety_screen` call is
+about 620 input and 14 output tokens on Haiku, which at $0.10/$0.50 per million
+and 80p to the dollar is **0.0055p**. SafetyGuard runs twice on every
+user-facing generation, so these are the most numerous calls the product makes.
+Rounded to whole pence every one of them logs **zero**, and the cost guard never
+sees the volume that actually adds up. Rounding up instead would log 1p for a
+call that cost 0.0055p — wrong by 180x in the other direction.
+
+**Decision.** `cost_millipence`, an integer, with the unit in the column name
+— the same discipline as `pricing_usd_cents_per_mtok` (ADR-016), and for the
+same reason: three units meet in this calculation and none of them are
+interchangeable. `Cost::millipence()` is the only thing that computes it and
+`Cost::toPence()` is the only thing that converts, rounding **up**, because a
+guard that rounds a spend down lets the last call through free every time.
+
+**Consequence.** One deviation from "money is integer pence", in one column,
+named so nobody can mistake it. Sums across a month are compared in millipence
+and converted once at the boundary. Resolution is 0.001p, which is about a
+fifth of a safety screen — fine for a budget, and the magnitudes stay far
+inside an unsigned integer.
+
+Prices stay in config rather than being fetched, so a row written today is
+still comparable with one from last year after the provider changes its
+pricing. A test asserts every model in `config('ai.models')` has a price, since
+a missing one logs zero and warns rather than refusing to answer a couple.
+
+---
+
 ## ADR-025 — What SafetyGuard says, and who hears it
 **Date:** 2026-11-05 · **Status:** accepted
 

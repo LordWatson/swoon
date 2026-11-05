@@ -114,7 +114,21 @@ Every AI feature has a **per-couple monthly cost budget** and a **fair-use cap**
 both enforced server-side before the job is dispatched.
 
 * `ai_usage` logs **every** call: couple, module, prompt name + version, model,
-  input tokens, output tokens, computed cost, outcome.
+  input tokens, output tokens, computed cost, outcome — failures included,
+  because a reply in the wrong shape was billed exactly like a good one.
+* The cost column is **`cost_millipence`** (ADR-026). A safety screen costs
+  about 0.0055p and SafetyGuard runs twice on every generation, so in whole
+  pence the most numerous calls the product makes would every one log zero.
+  `Support\Cost` is the only thing that computes it, from
+  `config('ai.pricing_usd_cents_per_mtok')` and `config('ai.usd_to_pence')`;
+  `Cost::toPence()` is the only thing that converts, and it rounds **up**,
+  because a guard that rounds a spend down lets the last call through free.
+* Prices live in config rather than being fetched, so a row written today stays
+  comparable with one from last year after the provider changes its pricing.
+  A test asserts every model the app can choose has a price.
+* A **safety trip is logged with no couple and no user** (ADR-027), so a
+  tripped generation costs the business its pennies and costs the couple
+  nothing — neither allowance nor a record.
 * Caps are **per tier**, from `config/ai.php` — never a literal in a job.
 * When a cap is hit, the response is kind and specific (UX rule 8 — no guilt):
   > That's your date plans for this month 💝 They reset on 1 December.
