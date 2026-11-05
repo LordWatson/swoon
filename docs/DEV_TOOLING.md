@@ -180,6 +180,33 @@ Nothing in this repository contains a real secret, and nothing should.
 
 Set `AI_DRIVER=fake` to work on AI-adjacent code with no key and no spend.
 
+### Email
+
+`MAIL_MAILER=log` is the default, so email works out of the box with no key —
+the rendered message lands in `storage/logs/laravel.log`. Prove the transport
+either way with:
+
+```powershell
+cd api
+php artisan swoon:mail-test you@example.com
+```
+
+With `MAIL_MAILER=resend` the command prints the Resend email id, which is what
+you look up in the Resend dashboard — "the API accepted it" and "it reached an
+inbox" are not the same thing, and only the dashboard tells you which happened.
+A send from an address whose domain is not verified in Resend may be accepted
+and then fail on delivery.
+
+Every Swoon email extends `App\Mail\SwoonMailable`, which sets the from-name
+from `config('swoon.name')` rather than `MAIL_FROM_NAME`. The env var
+interpolates `${SWOON_NAME}`, so a deploy that forgets that variable would
+otherwise send from a nameless address.
+
+`RESEND_ROUTES=false`. The package's `POST /resend/webhook` route attaches its
+signature middleware **only** when `RESEND_WEBHOOK_SECRET` is set — with no
+secret it accepts anything from anyone. Turn it back on together with a secret,
+when bounce and complaint handling is actually built.
+
 ---
 
 ## 7. Graphify

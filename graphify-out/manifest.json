@@ -687,9 +687,9 @@
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
-    "mtime": 1793876593.817898,
-    "seen": 1793881533.0892825,
-    "ast_hash": "54c0c597b332d70b9cb7a12b71dc95e8",
+    "mtime": 1793882435.7875605,
+    "seen": 1793882481.7619324,
+    "ast_hash": "00e9fd62e1665fd6fdcc969e6559a84e",
     "semantic_hash": ""
   },
   "docs/BRAND.md": {
@@ -705,9 +705,9 @@
     "semantic_hash": ""
   },
   "docs/DEV_TOOLING.md": {
-    "mtime": 1793881462.41287,
-    "seen": 1793881533.0892825,
-    "ast_hash": "281a9855326b0eb0379b8863316f3863",
+    "mtime": 1793882435.786557,
+    "seen": 1793882481.7619324,
+    "ast_hash": "2dba51ab04ae3a083c46cc7112915c9b",
     "semantic_hash": ""
   },
   "docs/MODULES.md": {
@@ -717,9 +717,9 @@
     "semantic_hash": ""
   },
   "docs/PLAN.md": {
-    "mtime": 1793881476.3305798,
-    "seen": 1793881533.0892825,
-    "ast_hash": "ec57a58f3acf54b23cb975995e8f24e2",
+    "mtime": 1793882455.7644515,
+    "seen": 1793882481.7619324,
+    "ast_hash": "5184ac54c5ad5387104b9efa632cbc4b",
     "semantic_hash": ""
   },
   "docs/PRICING.md": {
@@ -729,9 +729,9 @@
     "semantic_hash": ""
   },
   "docs/SESSION_LOG.md": {
-    "mtime": 1793881525.1991527,
-    "seen": 1793881533.0892825,
-    "ast_hash": "8031cda5e575bd2251e83cfe60aba3d6",
+    "mtime": 1793882474.5875163,
+    "seen": 1793882481.7619324,
+    "ast_hash": "dbee22e7fa6819bcc4beaaa5bfff70b8",
     "semantic_hash": ""
   },
   "docs/UX_RULES.md": {
@@ -1002,6 +1002,36 @@
     "mtime": 1793874795.4420466,
     "seen": 1793881533.0892825,
     "ast_hash": "c62d22797f3002396754d8cc55b0ae1a",
+    "semantic_hash": ""
+  },
+  "api/app/Console/Commands/MailTest.php": {
+    "mtime": 1793882399.9294786,
+    "seen": 1793882481.7619324,
+    "ast_hash": "c8fdffe45db38be39a538f277bb6b9a4",
+    "semantic_hash": ""
+  },
+  "api/app/Mail/SwoonMailable.php": {
+    "mtime": 1793881955.237326,
+    "seen": 1793882481.7619324,
+    "ast_hash": "f23dda476df6a63bd2194b2de4ddd56e",
+    "semantic_hash": ""
+  },
+  "api/app/Mail/TestPingMail.php": {
+    "mtime": 1793881955.255175,
+    "seen": 1793882481.7619324,
+    "ast_hash": "c25dd2fe61d3665ecdbed514e00ba443",
+    "semantic_hash": ""
+  },
+  "api/resources/views/mail/ping.blade.php": {
+    "mtime": 1793881955.2705662,
+    "seen": 1793882481.7619324,
+    "ast_hash": "44a6f604006e1e243f1a8533f6777fdd",
+    "semantic_hash": ""
+  },
+  "api/tests/Feature/Mail/TestPingMailTest.php": {
+    "mtime": 1793882011.2194471,
+    "seen": 1793882481.7619324,
+    "ast_hash": "fc5657764dc5146b29499e0ca53df79a",
     "semantic_hash": ""
   },
   "mobile/package-lock.json": {

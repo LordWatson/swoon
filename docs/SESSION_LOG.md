@@ -6,6 +6,65 @@ Format: date · task ID(s) · what changed · anything left over.
 
 ---
 
+## 2026-11-05 — P0.T11 · Resend transport and the first real email
+
+**Built**
+
+* `App\Mail\SwoonMailable` — the base every Swoon email extends. It exists for
+  one guarantee: the from-name comes from `config('swoon.name')`, not
+  `MAIL_FROM_NAME`, which interpolates `${SWOON_NAME}` and would quietly empty
+  on a deploy that forgot it.
+* `App\Mail\TestPingMail` + `resources/views/mail/ping.blade.php` — a markdown
+  mailable on Laravel's own mail theme. No email CSS written, no vendor views
+  published.
+* `artisan swoon:mail-test {email}` — validates the address, sends, and with
+  the `resend` mailer prints the Resend email id.
+* Four tests: the product name reaches the subject and body from config, the
+  from-name survives an empty `MAIL_FROM_NAME`, the command sends to the address
+  given, and a malformed address sends nothing.
+
+**Step 1 needed no code.** The `resend` mailer in `config/mail.php` and
+`services.resend.key` were both already there from P0.T01.
+
+**Two things changed outside the task's steps.**
+
+1. Laravel's mail theme hardcodes `config('app.name')` in the email header and
+   footer, which would have left a renamed product stale in every email. So
+   `APP_NAME="${SWOON_NAME}"` now, and the Product block moved above the Laravel
+   block in `.env` / `.env.example` — Dotenv's `${}` only reads backwards. The
+   product is named in one env var and one config file, as `CLAUDE.md` says.
+2. `RESEND_ROUTES=false`. The package registers `POST /resend/webhook`, and its
+   controller attaches the signature middleware **only** when
+   `RESEND_WEBHOOK_SECRET` is set — with no secret it fails open and accepts
+   anything from anyone. Nothing here handles Resend webhooks yet, so the route
+   is off until bounce handling is built, and then with a secret. Route count
+   is back to 6.
+
+**Verified**
+
+* `MAIL_MAILER=log`: `From: Swoon <hello@swoon.test>`, subject
+  `Swoon is plugged in`, header and footer both branded, four sentences each
+  ending in one emoji, British throughout.
+* `MAIL_MAILER=resend`: accepted, email id
+  `01a1abb8-d23b-7919-bbc8-9def8dc6797d`. The transport throws unless Resend
+  returns a non-empty id, so that is a real 2xx.
+* `composer check` clean: Pint, Larastan 6 no errors, 10 tests / 29 assertions.
+
+**Needs the founder.** The Resend key is **send-only**, so the account's
+verified domains could not be listed from here. Resend accepted a send from
+`hello@swoon.test`, which is not a verifiable domain — check the dashboard and
+the inbox to see whether it was delivered or failed after acceptance. If it
+failed, a real sending domain needs verifying and `MAIL_FROM_ADDRESS` pointing
+at it; the code does not change either way.
+
+`Mail::fake()` in tests, plus `MAIL_MAILER=array` in `phpunit.xml`, so the suite
+sends nothing.
+
+**Next:** **P0.T12** — queue, scheduler and the Maestro smoke harness. Last task
+in Phase 0.
+
+---
+
 ## 2026-11-05 — P0.T10 · MySQL connected, `users` schema live
 
 `DB_PASSWORD` had been filled in, so the one blocker on this task was gone.

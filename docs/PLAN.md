@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P0.T11** — Resend transport and the first real email (the `MAIL_MAILER=log` half can be done now; the live send needs `RESEND_API_KEY`).
+**Current focus:** **P0.T12** — queue, scheduler and the Maestro smoke harness. The last task in Phase 0.
 
 ---
 
@@ -63,7 +63,7 @@ here or linked from here.
 
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
-| **0** | [Foundations](#phase-0--foundations) | 12 | **10 / 12 done** |
+| **0** | [Foundations](#phase-0--foundations) | 12 | **11 / 12 done** |
 | **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 0 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
@@ -95,7 +95,7 @@ and component library exist and are AA-verified, and every check runs in CI.
 - [x] CI runs every check.
 - [x] All docs written; 21 module docs scaffolded.
 - [x] MySQL connected and migrated.
-- [ ] Resend transport verified end to end.
+- [x] Resend transport verified end to end.
 - [ ] Queue worker and scheduler verified.
 
 **Dependencies.** None.
@@ -304,7 +304,7 @@ a block); `.githooks/pre-commit` running Pint + ESLint on staged files only;
 
 ---
 
-### `[ ]` P0.T11 — Resend transport and the first real email · **S**
+### `[x]` P0.T11 — Resend transport and the first real email · **S**
 
 **Steps**
 1. Confirm `resend/resend-laravel` registers the `resend` mailer; add it to `config/mail.php` if the package does not.
@@ -321,8 +321,26 @@ a block); `.githooks/pre-commit` running Pint + ESLint on staged files only;
 
 **Docs to update** `docs/DEV_TOOLING.md` § 6, `docs/ARCHITECTURE.md` § 10.
 
-**Size** S. *(Needs `RESEND_API_KEY` and a verified domain for the live half; the
-log half can be done now.)*
+**Size** S.
+
+> **Done 2026-11-05.** The `resend` mailer and `services.resend.key` were
+> already in place from P0.T01, so step 1 was verification only. `SwoonMailable`
+> sets the from-name from `config('swoon.name')`; `TestPingMail` is a markdown
+> mailable on Laravel's own mail theme, so no email CSS was written and no
+> vendor views were published.
+>
+> **Two things changed outside the steps.** Laravel's mail theme hardcodes
+> `config('app.name')` in the header and footer, so `APP_NAME` now interpolates
+> `${SWOON_NAME}` and the product is named in one env var (the Product block
+> moved above the Laravel block, because `${}` only reads backwards). And
+> `RESEND_ROUTES=false`: the package's `POST /resend/webhook` attaches its
+> signature middleware only when `RESEND_WEBHOOK_SECRET` is set, so it was an
+> unauthenticated public endpoint — off until webhooks are actually handled.
+>
+> Live send **accepted by Resend** from `hello@swoon.test`, email id
+> `01a1abb8-d23b-7919-bbc8-9def8dc6797d`. The key is send-only, so the verified
+> domains could not be listed from here — delivery needs confirming in the
+> Resend dashboard.
 
 ---
 

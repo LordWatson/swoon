@@ -384,9 +384,18 @@ Standing requirements:
 | API | Herd, `https://swoon-api.test` | TBD |
 | DB | MySQL 8 on 3306 | MySQL 8 |
 | Queue | `database` + `composer dev` | `database` or Redis + supervised worker |
-| Mail | `log`, then Resend once the domain is verified | Resend |
+| Mail | `log` by default; Resend verified live (P0.T11) | Resend |
 | Storage | `local` disk | S3 private bucket |
 | AI | `AI_DRIVER=anthropic`, or `fake` | `anthropic` |
 | Errors | DSN empty (SDK inert) | Sentry, `send_default_pii=false` |
 
 Phones and emulators cannot resolve `.test` — see `docs/DEV_TOOLING.md`.
+
+**Email.** One class owns the shell: `App\Mail\SwoonMailable` sets the
+from-name from `config('swoon.name')`, and every email extends it. Bodies are
+markdown mailables on Laravel's own mail theme, whose header and footer read
+`config('app.name')` — which is why `APP_NAME` interpolates `${SWOON_NAME}` in
+the env, leaving exactly one place to rename the product. `swoon:mail-test`
+proves the transport without involving a feature. Feature emails live in their
+module (`app/Modules/<Module>/Mail/`); only the base and the test ping are
+shared.
