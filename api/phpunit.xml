@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="CACHE_STORE" value="array"/>
+        <!--
+            SQLite in-memory is the DEFAULT so `composer test` works on a fresh
+            clone with no credentials and no MySQL running. Production and dev
+            are MySQL 8, so CI ALSO runs this suite against MySQL 8 (see
+            .github/workflows/ci.yml, job "test-mysql") to catch engine-specific
+            breakage: JSON columns, fulltext, collation, strict mode.
+            See docs/DECISIONS.md ADR-008.
+        -->
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_URL" value=""/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+
+        <!-- No test may make a real AI call: fake driver returns fixtures. -->
+        <env name="AI_DRIVER" value="fake"/>
+        <env name="ANTHROPIC_API_KEY" value="test-key-not-real"/>
+        <env name="AI_SAFETY_ENABLED" value="true"/>
+
+        <!-- No test may send mail, charge a card, or write to S3. -->
+        <env name="RESEND_API_KEY" value="test-key-not-real"/>
+        <env name="STRIPE_SECRET" value="test-key-not-real"/>
+        <env name="REVENUECAT_WEBHOOK_SECRET" value="test-secret-not-real"/>
+        <env name="FILESYSTEM_DISK" value="local"/>
+        <env name="SENTRY_LARAVEL_DSN" value=""/>
+    </php>
+</phpunit>

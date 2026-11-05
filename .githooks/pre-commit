@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# Pre-commit: Pint and ESLint on STAGED FILES ONLY.
+#
+# Enable once per clone:
+#   git config core.hooksPath .githooks
+#
+# Kept fast deliberately: it lints only what you are committing, and does not
+# run the test suites or static analysis. `composer check` and `npm run check`
+# are for that, and CI runs them regardless.
+#
+# Fixes are re-staged automatically, so a formatting-only change does not fail
+# the commit — it just gets fixed.
+
+set -uo pipefail
+
+fail=0
+
+staged() {
+  git diff --cached --name-only --diff-filter=ACMR | grep -E "$1" || true
+}
+
+# Locate a PHP binary.
+#
+# Git hooks run in Git Bash on Windows, where Herd's `php` shim is a .bat that
+# is not on Bash's PATH — so `vendor/bin/pint` dies with
+# "/usr/bin/env: 'php': No such file or directory". Resolve the real binary
+# instead of assuming the shell can find it.
+find_php() {
+  if command -v php >/dev/null 2>&1; then
+    echo "php"
+    return 0
+  fi
+
+  local candidate
+  for candidate in \
+    "$HOME/.config/herd/bin/php85/php.exe" \
+    "$HOME/.config/herd/bin/php86/php.exe" \
+    "$HOME/.config/herd/bin/php83/php.exe"; do
+    if [ -x "$candidate" ]; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+# ─── PHP: Pint ──────────────────────────────────────────────────────────────
+php_files=$(staged '^api/.*\.php$')
+
+if [ -n "$php_files" ]; then
+  if [ ! -f api/vendor/bin/pint ]; then
+    echo "  ! api/vendor/bin/pint not found - run composer install (skipping)"
+  elif ! php_bin=$(find_php); then
+    echo "  ! no php binary found (checked PATH and Herd) - skipping Pint."
+    echo "    CI still enforces it; see docs/DEV_TOOLING.md § 1."
+  else
+    echo "→ Pint (changed PHP)"
+    # `--dirty` is Pint's own "only what git says changed" mode. Passing an
+    # explicit path list instead breaks on a large commit (hundreds of args).
+    if (cd api && "$php_bin" vendor/bin/pint --dirty >/dev/null 2>&1); then
+      # Re-stage anything Pint reformatted, so a formatting-only fix does not
+      # fail the commit.
+      printf '%s\n' "$php_files" | xargs -r git add
+    else
+      echo "  ✗ Pint failed. Run: cd api && composer lint"
+      fail=1
+    fi
+  fi
+fi
+
+# ─── TS/JS: ESLint ──────────────────────────────────────────────────────────
+js_files=$(staged '^mobile/.*\.(ts|tsx|js|jsx)$')
+
+if [ -n "$js_files" ]; then
+  if [ -d mobile/node_modules ]; then
+    echo "→ ESLint (staged TS/JS)"
+    rel=$(printf '%s\n' "$js_files" | sed 's#^mobile/##')
+    # shellcheck disable=SC2086
+    if (cd mobile && npx eslint --fix $rel); then
+      printf '%s\n' "$js_files" | xargs -r git add
+    else
+      echo "  ✗ ESLint failed. Fix the errors above, or run: cd mobile && npm run lint:fix"
+      fail=1
+    fi
+  else
+    echo "  ! mobile/node_modules not found - run npm install (skipping)"
+  fi
+fi
+
+# ─── Secret guard ───────────────────────────────────────────────────────────
+# A staged .env (other than .env.example) is almost certainly a mistake, and
+# the one mistake in this repo that cannot be undone by a later commit.
+if staged '(^|/)\.env$' | grep -q .; then
+  echo "  ✗ Refusing to commit a .env file. Use .env.example for the template."
+  fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo
+  echo "Pre-commit checks failed. Fix the above, or commit with --no-verify if"
+  echo "you know what you are doing."
+  exit 1
+fi
+
+exit 0

@@ -1,0 +1,33 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+
+    paths:
+        - app
+        - config
+        - database
+        - routes
+        - tests
+
+    # Modules are plain folders under app/, so they are covered by "app" above.
+
+    # Level 6 already requires iterable value types and generic type args in
+    # PHPStan 2.x, so the old checkMissingIterableValueType /
+    # checkGenericClassInNonGenericObjectType flags are gone.
+
+    ignoreErrors:
+        # Laravel's facade/magic surface produces a handful of unavoidable
+        # false positives. Add entries here with a comment saying why - never
+        # lower the level to silence something.
+
+        # Pest rebinds $this inside it()/test() closures to the TestCase, which
+        # PHPStan cannot follow. These two patterns are the whole of that gap;
+        # scoped to tests/ so they can never hide a problem in app code.
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::#'
+            path: tests/*
+        -
+            message: '#undefined property Pest\\Mixins\\Expectation#'
+            path: tests/*

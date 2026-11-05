@@ -1,0 +1,75 @@
+# ─── Secrets ────────────────────────────────────────────────────────────────
+# Never commit a real key. .env.example is the committed template.
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.p12
+*.keystore
+auth.json
+
+# ─── Laravel (api/) ─────────────────────────────────────────────────────────
+/api/vendor/
+/api/storage/*.key
+/api/storage/pail/
+/api/storage/framework/cache/*
+/api/storage/framework/sessions/*
+/api/storage/framework/testing/*
+/api/storage/framework/views/*
+/api/storage/logs/*
+!/api/storage/**/.gitignore
+/api/bootstrap/cache/*.php
+/api/public/storage
+/api/public/hot
+/api/.phpunit.result.cache
+/api/.phpunit.cache/
+/api/.php-cs-fixer.cache
+/api/.pint.cache
+/api/clockwork/
+Homestead.yaml
+Homestead.json
+
+# ─── Expo / React Native (mobile/) ──────────────────────────────────────────
+node_modules/
+/mobile/.expo/
+/mobile/dist/
+/mobile/web-build/
+/mobile/ios/
+/mobile/android/
+*.jks
+*.mobileprovision
+*.orig.*
+/mobile/expo-env.d.ts
+
+# ─── Graphify ───────────────────────────────────────────────────────────────
+# The generated cache is ignored; the graph REPORT is committed so a new
+# session can orient without rebuilding it first (docs/DECISIONS.md ADR-014).
+graphify-out/cache/
+
+# ─── Build / test output ────────────────────────────────────────────────────
+coverage/
+*.lcov
+.nyc_output/
+/maestro/.maestro/
+
+# ─── Editors & OS ───────────────────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+*~
+
+# ─── Claude Code ────────────────────────────────────────────────────────────
+# Project settings and hooks ARE committed (team-wide).
+# Personal overrides are not.
+.claude/settings.local.json
+
+# ─── Logs ───────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-error.log*

@@ -1,0 +1,102 @@
+# AI Platform ✨
+
+**Status:** planned
+**Last updated:** 2026-11-05 - created during project setup; scaffolding only, no implementation yet.
+**Owner phase:** Phase 2 (see docs/PLAN.md)
+
+> This is the **canonical** doc for this module and covers the full stack.
+> Mobile-only detail lives in `n/a - backend only`.
+> Signature: ✨ Lavender
+
+## Purpose
+The single door between Swoon and Claude. Every AI feature in the app goes through this module: it resolves a versioned prompt, builds the input from a privacy-filtered payload, calls the model in a queued job, validates the structured output, runs SafetyGuard, logs the cost, and enforces the fair-use cap. No other module talks to the model directly.
+
+## User stories
+- As a developer, I can add an AI feature without touching HTTP, retries, cost logging or safety.
+- As a developer, I can run the whole test suite with no network and no spend.
+- As the business, I can see exactly what every couple's AI use costs.
+- As a couple, I never get a reply that ignores a crisis I just described.
+
+## Data model
+**ai_usage** - id, couple_id, user_id (nullable - who triggered it), module, task (matches a key in `config('ai.tasks')`), prompt_name, prompt_version, model, input_tokens, output_tokens, cost_pence, outcome (`ok`|`invalid_output`|`safety_tripped`|`capped`|`error`), duration_ms, created_at. Indexed on (couple_id, created_at) for the monthly cap query.
+
+**ai_generations** - id, couple_id, module, task, prompt_version, payload_hash, output (json), safety_outcome, superseded_by (nullable - set when regenerated), created_at. Keeps what the couple was actually shown, so a prompt change never rewrites history.
+
+**ai_feedback** - id, ai_generation_id, user_id, rating (`up`|`down`), note (nullable), created_at. Private to the rater.
+
+Nothing here stores a partner's private content: the payload is hashed, not kept.
+
+## API endpoints
+| Method | Path | Auth | Purpose | Request | Response resource |
+|---|---|---|---|---|---|
+| POST | /api/ai/generations/{id}/feedback | sanctum | Rate an AI output | AiFeedbackRequest | 204 |
+| POST | /api/ai/generations/{id}/regenerate | sanctum | Regenerate, counting against the cap | - | 202 |
+| GET | /api/ai/allowance | sanctum | What the couple has left this month | - | AllowanceResource |
+
+## Business rules
+1. **Server-side only.** The Anthropic key lives in `api/.env` and never ships in the app. There is no proxy endpoint that forwards arbitrary prompts.
+2. **Every AI call runs in a queued job.** No AI call happens in an HTTP request, so a slow model never becomes a slow API.
+3. **Prompts are versioned files**, not strings in code, under `resources/prompts/<name>/<version>.md`. The active version per prompt is pinned in `config('ai.prompts.active')`, so adding a file does not change behaviour.
+4. **Structured output is validated** against a JSON schema before the couple ever sees it. A malformed response is retried once, then recorded as `invalid_output` and surfaced as a friendly 'that didn't work, try again'.
+5. **SafetyGuard runs on every user-facing generation** - as a distinct, separately tested step, never a line in a prompt. If the input suggests abuse, crisis or harm, the normal output is discarded and replaced with a short, kind signpost to UK services (`config('ai.safety.signposts')`) and nothing else.
+6. SafetyGuard is **fail-closed**: if the safety step itself errors, the generation is abandoned, not shipped unchecked.
+7. **Private data never enters a prompt that produces shared output.** The filter is a allow-list built per task, not a deny-list, so a new private field is excluded by default.
+8. **Caps are checked before dispatch**, per couple per calendar month, from `config('ai.caps')` by entitlement tier. A capped request returns a kind message, not a 429.
+9. A **runaway cost guard** sits above the caps (per couple, and global per day). Crossing it alerts and refuses - it should never be reached.
+10. **Every call is logged to `ai_usage`**, including failures, with tokens and computed cost. An unlogged call is a bug.
+11. **Model ids come from config**, never a literal. `config('ai.tasks.<task>')` picks the model key and effort.
+12. The **fake driver** (`AI_DRIVER=fake`) returns fixtures from `tests/Fixtures/Ai`. The test suite pins it; a test that makes a real call is a failing test.
+13. AI output is **never** attributed to a partner. The API marks it `source: ai` and the app labels it (UX rule 6).
+
+## AI usage (if any)
+This module *is* the AI surface. See `docs/AI_PROMPTS.md` for the prompt index. Shape:
+
+```
+AiService::run(task, payload, couple)
+  -> CapGuard        (entitlement + monthly cap + cost guard)
+  -> PrivacyFilter   (allow-list per task)
+  -> PromptRegistry  (name + pinned version -> rendered prompt)
+  -> dispatch job    (queued, always)
+       -> Driver     (anthropic | fake)
+       -> SchemaValidator
+       -> SafetyGuard (fail-closed)
+       -> UsageLogger (ai_usage)
+       -> persist ai_generations
+```
+
+## Jobs, events & schedules
+**Jobs:** `RunAiTask` (the one queued entry point; per-task payloads), retried once on a transport error, never retried on `invalid_output` after the first retry.
+
+**Events:** `AiGenerationCompleted`, `AiGenerationFailed`, `AiSafetyTripped` (logged and alerted - we want to know, without storing what triggered it).
+
+**Scheduled:** `ai:report-costs` daily, writing a per-couple and global cost summary to the log and alerting if the trend crosses the guard.
+
+## Mobile
+No mobile feature folder. The shared `AITag` component and the `useAiAllowance()` hook live in `mobile/src/components/` and `mobile/src/api/`.
+
+## Permissions & privacy
+This is the module where privacy is won or lost.
+
+**Excluded from every prompt, always:** gift vault entries, individual check-in answers, unsent love notes, private moment notes, the other partner's un-revealed answers, auth credentials, email addresses, exact addresses or coordinates.
+
+**The filter is an allow-list per task.** A task declares the fields it may see; anything else is dropped. A newly added private column is therefore excluded without anyone remembering to exclude it.
+
+`ai_feedback` is private to the rater - a partner never sees that the other thumbs-downed a plan.
+
+## Tests
+`api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
+
+Must cover: cap enforced before dispatch; cost guard refuses; fake driver used throughout; malformed output retried then recorded; **SafetyGuard trips on a battery of crisis and abuse phrasings and returns only the signpost**; SafetyGuard failing closed; privacy filter dropping each private field (one test per private field, so the list cannot rot); prompt version pinning; `ai_usage` written on success AND on every failure path.
+
+**Prompt evaluation fixtures** live in `tests/Fixtures/Ai/evals/` - input payloads with expected-shape assertions, so a prompt edit shows its effect without a live call.
+
+Run: `composer test -- --filter=Ai`
+
+## Known gaps / TODO
+- ANTHROPIC_API_KEY not yet set (by hand, by the founder).
+- Decide whether laravel/ai's own fake/record helpers replace the hand-rolled fake driver - evaluate during P2.T01.
+- SafetyGuard phrasing battery needs review by someone with relevant expertise before launch; the current list is a developer's best effort.
+- Cost-per-couple model is unvalidated until real traffic exists.
+
+## Changelog
+- 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.

@@ -1,0 +1,134 @@
+/**
+ * Swoon colour tokens — the ONLY place hex values may appear in this app.
+ *
+ * Every pair that can carry text meets WCAG AA (4.5:1 body text, 3:1 for
+ * interactive boundaries and focus rings). This is verified by
+ * `src/theme/__tests__/contrast.test.ts`, which fails CI on any regression.
+ *
+ * Three families, documented in docs/BRAND.md § 3.1:
+ *
+ *   brand    — fills, surfaces and ink            (`primary` on a button)
+ *   `*Text`  — the same hue when it must be READ  (`primaryText` for a link)
+ *   `on*`    — the label that sits ON a fill      (`onPrimary` inside a pill)
+ *
+ * Rule of thumb: filling a shape → brand token. Words on a coloured shape →
+ * `on*`. Coloured words on the page → `*Text`.
+ *
+ * Adding a token means adding a row to docs/BRAND.md AND a case to the
+ * contrast test. A token with no contrast assertion is not a token.
+ */
+
+export type ColourTokens = {
+  // Brand — fills and surfaces
+  primary: string;
+  primarySoft: string;
+  secondary: string;
+  highlight: string;
+  ai: string;
+  success: string;
+  danger: string;
+  ink: string;
+  inkMuted: string;
+  background: string;
+  surface: string;
+  border: string;
+
+  // Interactive boundaries (3:1)
+  borderStrong: string;
+  focus: string;
+
+  /** Modal/sheet backdrop. 8-digit hex: the alpha is part of the token. */
+  backdrop: string;
+
+  // Accents used AS TEXT (4.5:1 on background and surface)
+  primaryText: string;
+  secondaryText: string;
+  successText: string;
+  dangerText: string;
+  aiText: string;
+
+  // Labels that sit ON a brand fill (4.5:1 against that fill)
+  onPrimary: string;
+  onSecondary: string;
+  onHighlight: string;
+  onAi: string;
+  onSuccess: string;
+  onDanger: string;
+};
+
+export const lightColours: ColourTokens = {
+  primary: '#FF5A7A', // Rosé
+  primarySoft: '#FFE3E8', // Blush
+  secondary: '#FFB37A', // Apricot
+  highlight: '#FFE59E', // Butter
+  ai: '#B9A7FF', // Lavender
+  success: '#7FCBA8', // Sage
+  // Cherry, darkened from the original #E5384F: at that value neither a white
+  // nor an ink label reached AA (both 4.19:1) — a fill with no accessible
+  // label. See docs/DECISIONS.md ADR-004.
+  danger: '#E2243D',
+  ink: '#2B1B3D', // Midnight Plum
+  inkMuted: '#6E5F7E', // Dusk
+  background: '#FFF8F2', // Cream
+  surface: '#FFFFFF', // Paper
+  border: '#F1E1E6', // Petal — DECORATIVE dividers only (1.26:1)
+
+  borderStrong: '#C17990', // Petal Deep — inputs, toggles, controls
+  focus: '#E4002C', // Rosé Deep — focus rings
+  backdrop: '#2B1B3D73', // Midnight Plum at 45%
+
+  primaryText: '#E4002C',
+  secondaryText: '#BC5100',
+  successText: '#347F5C',
+  dangerText: '#DE1D37',
+  aiText: '#7450FF',
+
+  onPrimary: '#2B1B3D',
+  onSecondary: '#2B1B3D',
+  onHighlight: '#2B1B3D',
+  onAi: '#2B1B3D',
+  onSuccess: '#2B1B3D',
+  onDanger: '#FFFFFF',
+};
+
+export const darkColours: ColourTokens = {
+  primary: '#FF6F8C',
+  primarySoft: '#3A2236',
+  secondary: '#FFBE8C',
+  highlight: '#E8C96A',
+  ai: '#C4B5FF',
+  success: '#8FD3B6',
+  danger: '#FF5C70',
+  ink: '#F6EEF7',
+  inkMuted: '#B8A9C6',
+  background: '#1A1024',
+  surface: '#2B1B3D',
+  border: '#3D2A4F',
+
+  borderStrong: '#845DA9',
+  focus: '#FF6F8C',
+  backdrop: '#0D0612A6', // near-black plum at 65% - a dark sheet needs more
+
+  // Every dark accent already clears 4.5:1 on the dark surfaces, so the
+  // readable form of each hue is the accent itself.
+  primaryText: '#FF6F8C',
+  secondaryText: '#FFBE8C',
+  successText: '#8FD3B6',
+  dangerText: '#FF5C70',
+  aiText: '#C4B5FF',
+
+  // The fills are light in dark mode, so EVERY knockout label is plum —
+  // including onDanger, which is white in light mode. That asymmetry is the
+  // whole reason these tokens exist.
+  onPrimary: '#2B1B3D',
+  onSecondary: '#2B1B3D',
+  onHighlight: '#2B1B3D',
+  onAi: '#2B1B3D',
+  onSuccess: '#2B1B3D',
+  onDanger: '#2B1B3D',
+};
+
+/** Partner identity colours. Never used alone — always with an avatar. */
+export const partnerColourKeys = ['primary', 'ai', 'secondary', 'success'] as const;
+
+export type PartnerColourKey = (typeof partnerColourKeys)[number];

@@ -1,0 +1,872 @@
+{
+  "communities": {
+    "0": [
+      "github_workflows_ci_api_name",
+      "github_workflows_ci_api_runs_on",
+      "github_workflows_ci_api_steps",
+      "github_workflows_ci_docs_if",
+      "github_workflows_ci_docs_name",
+      "github_workflows_ci_docs_runs_on",
+      "github_workflows_ci_docs_steps",
+      "github_workflows_ci_env_ai_driver",
+      "github_workflows_ci_env_db_connection",
+      "github_workflows_ci_env_db_database",
+      "github_workflows_ci_env_db_host",
+      "github_workflows_ci_env_db_password",
+      "github_workflows_ci_env_db_port",
+      "github_workflows_ci_env_db_username",
+      "github_workflows_ci_env_mysql_database",
+      "github_workflows_ci_env_mysql_root_password",
+      "github_workflows_ci_jobs",
+      "github_workflows_ci_jobs_api",
+      "github_workflows_ci_jobs_docs",
+      "github_workflows_ci_jobs_mobile",
+      "github_workflows_ci_jobs_test_mysql",
+      "github_workflows_ci_mobile_name",
+      "github_workflows_ci_mobile_runs_on",
+      "github_workflows_ci_mobile_steps",
+      "github_workflows_ci_mysql_env",
+      "github_workflows_ci_mysql_image",
+      "github_workflows_ci_mysql_options",
+      "github_workflows_ci_mysql_ports",
+      "github_workflows_ci_services_mysql",
+      "github_workflows_ci_steps_env",
+      "github_workflows_ci_steps_name",
+      "github_workflows_ci_steps_run",
+      "github_workflows_ci_steps_uses",
+      "github_workflows_ci_steps_with",
+      "github_workflows_ci_steps_working_directory",
+      "github_workflows_ci_test_mysql_name",
+      "github_workflows_ci_test_mysql_runs_on",
+      "github_workflows_ci_test_mysql_services",
+      "github_workflows_ci_test_mysql_steps",
+      "github_workflows_ci_with_cache",
+      "github_workflows_ci_with_cache_dependency_path",
+      "github_workflows_ci_with_coverage",
+      "github_workflows_ci_with_extensions",
+      "github_workflows_ci_with_fetch_depth",
+      "github_workflows_ci_with_key",
+      "github_workflows_ci_with_node_version",
+      "github_workflows_ci_with_path",
+      "github_workflows_ci_with_php_version",
+      "github_workflows_ci_with_restore_keys",
+      "github_workflows_ci_with_tools"
+    ],
+    "1": [
+      "mobile_src_app_layout",
+      "mobile_src_app_layout_queryclient",
+      "mobile_src_app_layout_rootlayout",
+      "mobile_src_theme_index",
+      "mobile_src_theme_index_buildtheme",
+      "mobile_src_theme_index_darkshadows",
+      "mobile_src_theme_index_darktheme",
+      "mobile_src_theme_index_lighttheme",
+      "mobile_src_theme_index_theme",
+      "mobile_src_theme_index_themecontext",
+      "mobile_src_theme_index_themeprovider",
+      "mobile_src_theme_index_usemotion",
+      "mobile_src_theme_index_usesystemtheme",
+      "mobile_src_theme_modules",
+      "mobile_src_theme_modules_modulekey",
+      "mobile_src_theme_modules_modulesignature",
+      "mobile_src_theme_modules_modulesignatures",
+      "mobile_src_theme_motion",
+      "mobile_src_theme_motion_celebration",
+      "mobile_src_theme_motion_celebrations",
+      "mobile_src_theme_motion_durations",
+      "mobile_src_theme_motion_durationtoken",
+      "mobile_src_theme_motion_springs",
+      "mobile_src_theme_motion_springtoken",
+      "mobile_src_theme_shape",
+      "mobile_src_theme_shape_mintouchtarget",
+      "mobile_src_theme_shape_radii",
+      "mobile_src_theme_shape_screengutter",
+      "mobile_src_theme_shape_shadow",
+      "mobile_src_theme_shape_shadows",
+      "mobile_src_theme_shape_shadowtoken",
+      "mobile_src_theme_shape_spacing",
+      "mobile_src_theme_typography",
+      "mobile_src_theme_typography_fontfamilies",
+      "mobile_src_theme_typography_scaletype",
+      "mobile_src_theme_typography_typetoken",
+      "mobile_src_theme_typography_typography",
+      "mobile_src_theme_typography_typographytoken"
+    ],
+    "2": [
+      "mobile_src_api_client_fetchhealth",
+      "mobile_src_app_index",
+      "mobile_src_app_index_homescreen",
+      "mobile_src_components_aitag",
+      "mobile_src_components_aitag_aitag",
+      "mobile_src_components_aitag_aitagprops",
+      "mobile_src_components_avatarpair",
+      "mobile_src_components_avatarpair_avatarpair",
+      "mobile_src_components_avatarpair_avatarpairprops",
+      "mobile_src_components_avatarpair_partner",
+      "mobile_src_components_button",
+      "mobile_src_components_button_button",
+      "mobile_src_components_button_buttonprops",
+      "mobile_src_components_button_buttonvariant",
+      "mobile_src_components_button_styles",
+      "mobile_src_components_card",
+      "mobile_src_components_card_card",
+      "mobile_src_components_card_cardprops",
+      "mobile_src_components_chip",
+      "mobile_src_components_chip_chip",
+      "mobile_src_components_chip_chipprops",
+      "mobile_src_components_emptystate",
+      "mobile_src_components_emptystate_emptystate",
+      "mobile_src_components_emptystate_emptystateprops",
+      "mobile_src_components_index",
+      "mobile_src_components_progressbar",
+      "mobile_src_components_progressbar_progressbar",
+      "mobile_src_components_progressbar_progressbarprops",
+      "mobile_src_components_sheet",
+      "mobile_src_components_sheet_sheet",
+      "mobile_src_components_sheet_sheetprops",
+      "mobile_src_theme_colours_colourtokens",
+      "mobile_src_theme_index_usetheme",
+      "ref_react",
+      "ref_react_native",
+      "ref_react_native_safe_area_context"
+    ],
+    "3": [
+      "api_app_models_user",
+      "api_app_models_user_user",
+      "api_app_models_user_user_casts",
+      "api_config_auth",
+      "api_config_cache",
+      "api_config_database",
+      "api_config_session",
+      "api_database_factories_userfactory",
+      "api_database_factories_userfactory_closure_1",
+      "api_database_factories_userfactory_userfactory",
+      "api_database_factories_userfactory_userfactory_definition",
+      "api_database_factories_userfactory_userfactory_unverified",
+      "api_database_seeders_databaseseeder",
+      "api_database_seeders_databaseseeder_databaseseeder",
+      "api_database_seeders_databaseseeder_databaseseeder_run",
+      "illuminate_database_console_seeds_withoutmodelevents",
+      "illuminate_database_eloquent_attributes_fillable",
+      "illuminate_database_eloquent_attributes_hidden",
+      "illuminate_database_eloquent_factories_factory",
+      "illuminate_database_eloquent_factories_hasfactory",
+      "illuminate_database_seeder",
+      "illuminate_foundation_auth_user",
+      "illuminate_notifications_notifiable",
+      "illuminate_support_facades_hash",
+      "illuminate_support_str",
+      "pdo_mysql",
+      "static"
+    ],
+    "4": [
+      "api_database_migrations_0001_01_01_000000_create_users_table",
+      "api_database_migrations_0001_01_01_000000_create_users_table_closure_1",
+      "api_database_migrations_0001_01_01_000000_create_users_table_closure_2",
+      "api_database_migrations_0001_01_01_000000_create_users_table_closure_3",
+      "api_database_migrations_0001_01_01_000000_create_users_table_down",
+      "api_database_migrations_0001_01_01_000000_create_users_table_up",
+      "api_database_migrations_0001_01_01_000001_create_cache_table",
+      "api_database_migrations_0001_01_01_000001_create_cache_table_closure_1",
+      "api_database_migrations_0001_01_01_000001_create_cache_table_closure_2",
+      "api_database_migrations_0001_01_01_000001_create_cache_table_down",
+      "api_database_migrations_0001_01_01_000001_create_cache_table_up",
+      "api_database_migrations_0001_01_01_000002_create_jobs_table",
+      "api_database_migrations_0001_01_01_000002_create_jobs_table_closure_1",
+      "api_database_migrations_0001_01_01_000002_create_jobs_table_closure_2",
+      "api_database_migrations_0001_01_01_000002_create_jobs_table_closure_3",
+      "api_database_migrations_0001_01_01_000002_create_jobs_table_down",
+      "api_database_migrations_0001_01_01_000002_create_jobs_table_up",
+      "api_database_migrations_2026_11_05_103521_create_personal_access_tokens_table",
+      "api_database_migrations_2026_11_05_103521_create_personal_access_tokens_table_closure_1",
+      "api_database_migrations_2026_11_05_103521_create_personal_access_tokens_table_down",
+      "api_database_migrations_2026_11_05_103521_create_personal_access_tokens_table_up",
+      "illuminate_database_migrations_migration",
+      "illuminate_database_schema_blueprint",
+      "illuminate_support_facades_schema"
+    ],
+    "5": [
+      "mobile_package_dependencies",
+      "mobile_package_dependencies_expo_constants",
+      "mobile_package_dependencies_expo_google_fonts_fraunces",
+      "mobile_package_dependencies_expo_google_fonts_nunito",
+      "mobile_package_dependencies_expo_router",
+      "mobile_package_dependencies_expo_symbols",
+      "mobile_package_dependencies_expo_system_ui",
+      "mobile_package_dependencies_react",
+      "mobile_package_dependencies_react_dom",
+      "mobile_package_dependencies_react_native",
+      "mobile_package_dependencies_react_native_reanimated",
+      "mobile_package_dependencies_react_native_safe_area_context",
+      "ref_expo_constants",
+      "ref_expo_google_fonts_fraunces",
+      "ref_expo_google_fonts_nunito",
+      "ref_expo_router",
+      "ref_expo_symbols",
+      "ref_expo_system_ui",
+      "ref_react_dom",
+      "ref_react_native_reanimated"
+    ],
+    "6": [
+      "mobile_src_api_client",
+      "mobile_src_api_client_apierror",
+      "mobile_src_api_client_apierror_constructor",
+      "mobile_src_api_client_apierror_isretryable",
+      "mobile_src_api_client_apierror_isunauthenticated",
+      "mobile_src_api_client_apierror_isvalidation",
+      "mobile_src_api_client_apirequest",
+      "mobile_src_api_client_healthresponse",
+      "mobile_src_api_client_isrecord",
+      "mobile_src_api_client_readtoken",
+      "mobile_src_api_client_requestoptions",
+      "mobile_src_api_client_safeparse",
+      "mobile_src_api_client_settokenreader",
+      "mobile_src_api_client_tokenreader",
+      "mobile_src_config_app",
+      "mobile_src_config_app_api_base_url",
+      "mobile_src_config_app_app_name",
+      "mobile_src_config_app_deep_link_scheme"
+    ],
+    "7": [
+      "api_app_providers_appserviceprovider",
+      "api_app_providers_appserviceprovider_appserviceprovider",
+      "api_app_providers_appserviceprovider_appserviceprovider_boot",
+      "api_app_providers_appserviceprovider_appserviceprovider_register",
+      "api_app_providers_moduleserviceprovider",
+      "api_app_providers_moduleserviceprovider_moduleserviceprovider",
+      "api_app_providers_moduleserviceprovider_moduleserviceprovider_boot",
+      "api_app_providers_moduleserviceprovider_moduleserviceprovider_moduleroutefiles",
+      "api_bootstrap_providers",
+      "api_routes_api",
+      "api_routes_api_get_health",
+      "api_routes_web",
+      "api_routes_web_get",
+      "illuminate_http_jsonresponse",
+      "illuminate_support_facades_route",
+      "illuminate_support_serviceprovider"
+    ],
+    "8": [
+      "mobile_package",
+      "mobile_package_dependencies_expo_font",
+      "mobile_package_dependencies_expo_glass_effect",
+      "mobile_package_dependencies_expo_ui",
+      "mobile_package_dependencies_expo_web_browser",
+      "mobile_package_dependencies_react_native_screens",
+      "mobile_package_main",
+      "mobile_package_name",
+      "mobile_package_private",
+      "mobile_package_version",
+      "ref_expo_font",
+      "ref_expo_glass_effect",
+      "ref_expo_ui",
+      "ref_expo_web_browser",
+      "ref_react_native_screens"
+    ],
+    "9": [
+      "mobile_package_devdependencies",
+      "mobile_package_devdependencies_jest",
+      "mobile_package_devdependencies_jest_expo",
+      "mobile_package_devdependencies_prettier",
+      "mobile_package_devdependencies_testing_library_react_native",
+      "mobile_package_devdependencies_types_jest",
+      "mobile_package_devdependencies_types_react",
+      "mobile_package_devdependencies_typescript",
+      "ref_jest",
+      "ref_jest_expo",
+      "ref_prettier",
+      "ref_testing_library_react_native",
+      "ref_types_jest",
+      "ref_types_react",
+      "ref_typescript"
+    ],
+    "10": [
+      "mobile_src_theme_colours",
+      "mobile_src_theme_colours_darkcolours",
+      "mobile_src_theme_colours_lightcolours",
+      "mobile_src_theme_colours_partnercolourkey",
+      "mobile_src_theme_colours_partnercolourkeys",
+      "mobile_src_theme_colours_ts_docref_adr_0004",
+      "mobile_src_theme_tests_contrast_test",
+      "mobile_src_theme_tests_contrast_test_contrast",
+      "mobile_src_theme_tests_contrast_test_luminance",
+      "mobile_src_theme_tests_contrast_test_non_text_pairs",
+      "mobile_src_theme_tests_contrast_test_on_fill_pairs",
+      "mobile_src_theme_tests_contrast_test_pair",
+      "mobile_src_theme_tests_contrast_test_text_pairs",
+      "mobile_src_theme_tests_contrast_test_themes",
+      "mobile_src_theme_tests_contrast_test_ts_docref_adr_0004"
+    ],
+    "11": [
+      "api_composer_scripts",
+      "api_composer_scripts_analyse",
+      "api_composer_scripts_check",
+      "api_composer_scripts_dev",
+      "api_composer_scripts_lint",
+      "api_composer_scripts_lint_check",
+      "api_composer_scripts_post_autoload_dump",
+      "api_composer_scripts_post_create_project_cmd",
+      "api_composer_scripts_post_root_package_install",
+      "api_composer_scripts_post_update_cmd",
+      "api_composer_scripts_pre_package_uninstall",
+      "api_composer_scripts_setup",
+      "api_composer_scripts_test"
+    ],
+    "12": [
+      "mobile_package_scripts",
+      "mobile_package_scripts_android",
+      "mobile_package_scripts_check",
+      "mobile_package_scripts_format",
+      "mobile_package_scripts_format_check",
+      "mobile_package_scripts_ios",
+      "mobile_package_scripts_lint",
+      "mobile_package_scripts_lint_fix",
+      "mobile_package_scripts_start",
+      "mobile_package_scripts_test",
+      "mobile_package_scripts_test_watch",
+      "mobile_package_scripts_typecheck",
+      "mobile_package_scripts_web"
+    ],
+    "13": [
+      "github_workflows_ci",
+      "github_workflows_ci_concurrency",
+      "github_workflows_ci_concurrency_cancel_in_progress",
+      "github_workflows_ci_concurrency_group",
+      "github_workflows_ci_name",
+      "github_workflows_ci_on",
+      "github_workflows_ci_on_pull_request",
+      "github_workflows_ci_on_push",
+      "github_workflows_ci_permissions",
+      "github_workflows_ci_permissions_contents",
+      "github_workflows_ci_push_branches"
+    ],
+    "14": [
+      "mobile_eslint_config",
+      "mobile_eslint_config_defineconfig",
+      "mobile_eslint_config_expoconfig",
+      "mobile_eslint_config_norawdesignvalues",
+      "mobile_eslint_config_prettierconfig",
+      "mobile_package_devdependencies_eslint",
+      "mobile_package_devdependencies_eslint_config_expo",
+      "mobile_package_devdependencies_eslint_config_prettier",
+      "ref_eslint",
+      "ref_eslint_config_expo",
+      "ref_eslint_config_prettier"
+    ],
+    "15": [
+      "api_composer_require_dev",
+      "api_composer_require_dev_fakerphp_faker",
+      "api_composer_require_dev_larastan_larastan",
+      "api_composer_require_dev_laravel_pail",
+      "api_composer_require_dev_laravel_pint",
+      "api_composer_require_dev_mockery_mockery",
+      "api_composer_require_dev_nunomaduro_collision",
+      "api_composer_require_dev_pestphp_pest",
+      "api_composer_require_dev_pestphp_pest_plugin_laravel",
+      "api_composer_require_dev_phpunit_phpunit"
+    ],
+    "16": [
+      "api_composer",
+      "api_composer_description",
+      "api_composer_keywords",
+      "api_composer_license",
+      "api_composer_minimum_stability",
+      "api_composer_name",
+      "api_composer_prefer_stable",
+      "api_composer_schema",
+      "api_composer_type"
+    ],
+    "17": [
+      "api_composer_require",
+      "api_composer_require_laravel_ai",
+      "api_composer_require_laravel_framework",
+      "api_composer_require_laravel_sanctum",
+      "api_composer_require_laravel_tinker",
+      "api_composer_require_league_flysystem_aws_s3_v3",
+      "api_composer_require_php",
+      "api_composer_require_resend_resend_laravel",
+      "api_composer_require_sentry_sentry_laravel"
+    ],
+    "18": [
+      "mobile_tsconfig",
+      "mobile_tsconfig_compileroptions",
+      "mobile_tsconfig_compileroptions_paths",
+      "mobile_tsconfig_compileroptions_strict",
+      "mobile_tsconfig_compileroptions_types",
+      "mobile_tsconfig_extends",
+      "mobile_tsconfig_include",
+      "mobile_tsconfig_paths_assets",
+      "ref_expo_tsconfig_base"
+    ],
+    "19": [
+      "api_bootstrap_app",
+      "api_bootstrap_app_closure_1",
+      "api_bootstrap_app_closure_2",
+      "api_public_index",
+      "illuminate_foundation_application",
+      "illuminate_foundation_configuration_exceptions",
+      "illuminate_foundation_configuration_middleware",
+      "illuminate_http_request"
+    ],
+    "20": [
+      "api_composer_scripts_descriptions",
+      "api_composer_scripts_descriptions_analyse",
+      "api_composer_scripts_descriptions_check",
+      "api_composer_scripts_descriptions_dev",
+      "api_composer_scripts_descriptions_lint",
+      "api_composer_scripts_descriptions_lint_check",
+      "api_composer_scripts_descriptions_setup",
+      "api_composer_scripts_descriptions_test"
+    ],
+    "21": [
+      "api_composer_allow_plugins_pestphp_pest_plugin",
+      "api_composer_allow_plugins_php_http_discovery",
+      "api_composer_config",
+      "api_composer_config_allow_plugins",
+      "api_composer_config_optimize_autoloader",
+      "api_composer_config_preferred_install",
+      "api_composer_config_sort_packages"
+    ],
+    "22": [
+      "api_tests_pest",
+      "api_tests_pest_usingdatabase",
+      "api_tests_testcase",
+      "api_tests_testcase_testcase",
+      "illuminate_foundation_testing_refreshdatabase",
+      "illuminate_foundation_testing_testcase"
+    ],
+    "23": [
+      "api_composer_autoload",
+      "api_composer_autoload_psr_4",
+      "api_composer_psr_4_app",
+      "api_composer_psr_4_database_factories",
+      "api_composer_psr_4_database_seeders"
+    ],
+    "24": [
+      "api_config_logging",
+      "monolog_handler_nullhandler",
+      "monolog_handler_streamhandler",
+      "monolog_handler_syslogudphandler",
+      "monolog_processor_psrlogmessageprocessor"
+    ],
+    "25": [
+      "api_config_sanctum",
+      "illuminate_cookie_middleware_encryptcookies",
+      "illuminate_foundation_http_middleware_validatecsrftoken",
+      "laravel_sanctum_http_middleware_authenticatesession",
+      "laravel_sanctum_sanctum"
+    ],
+    "26": [
+      "mobile_package_jest",
+      "mobile_package_jest_collectcoveragefrom",
+      "mobile_package_jest_preset",
+      "mobile_package_jest_setupfilesafterenv",
+      "mobile_package_jest_transformignorepatterns"
+    ],
+    "27": [
+      "api_routes_console",
+      "api_routes_console_closure_1",
+      "illuminate_foundation_inspiring",
+      "illuminate_support_facades_artisan"
+    ],
+    "28": [
+      "api_tests_feature_healthtest",
+      "api_tests_feature_healthtest_closure_1",
+      "api_tests_feature_healthtest_closure_2",
+      "api_tests_feature_healthtest_closure_3"
+    ],
+    "29": [
+      "mobile_app_config",
+      "mobile_app_config_config",
+      "mobile_package_dependencies_expo",
+      "ref_expo"
+    ],
+    "30": [
+      "api_artisan",
+      "application",
+      "argvinput"
+    ],
+    "31": [
+      "api_composer_autoload_dev",
+      "api_composer_autoload_dev_psr_4",
+      "api_composer_psr_4_tests"
+    ],
+    "32": [
+      "api_composer_extra",
+      "api_composer_extra_laravel",
+      "api_composer_laravel_dont_discover"
+    ],
+    "33": [
+      "claude_hooks_check_module_docs",
+      "claude_hooks_check_module_docs_check_area",
+      "claude_hooks_check_module_docs_sh__entry"
+    ],
+    "34": [
+      "githooks_pre_commit",
+      "githooks_pre_commit__entry",
+      "githooks_pre_commit_staged"
+    ],
+    "35": [
+      "api_app_http_controllers_controller",
+      "api_app_http_controllers_controller_controller"
+    ],
+    "36": [
+      "mobile_package_dependencies_expo_device",
+      "ref_expo_device"
+    ],
+    "37": [
+      "mobile_package_dependencies_expo_image",
+      "ref_expo_image"
+    ],
+    "38": [
+      "mobile_package_dependencies_expo_linking",
+      "ref_expo_linking"
+    ],
+    "39": [
+      "mobile_package_dependencies_expo_splash_screen",
+      "ref_expo_splash_screen"
+    ],
+    "40": [
+      "mobile_package_dependencies_expo_status_bar",
+      "ref_expo_status_bar"
+    ],
+    "41": [
+      "mobile_package_dependencies_phosphor_react_native",
+      "ref_phosphor_react_native"
+    ],
+    "42": [
+      "mobile_package_dependencies_react_native_gesture_handler",
+      "ref_react_native_gesture_handler"
+    ],
+    "43": [
+      "mobile_package_dependencies_react_native_svg",
+      "ref_react_native_svg"
+    ],
+    "44": [
+      "mobile_package_dependencies_react_native_web",
+      "ref_react_native_web"
+    ],
+    "45": [
+      "mobile_package_dependencies_react_native_worklets",
+      "ref_react_native_worklets"
+    ],
+    "46": [
+      "mobile_package_dependencies_tanstack_react_query",
+      "ref_tanstack_react_query"
+    ],
+    "47": [
+      "api_app_modules_accounts_routes"
+    ],
+    "48": [
+      "api_app_modules_ai_routes"
+    ],
+    "49": [
+      "api_app_modules_billing_routes"
+    ],
+    "50": [
+      "api_app_modules_bucketlist_routes"
+    ],
+    "51": [
+      "api_app_modules_challenges_routes"
+    ],
+    "52": [
+      "api_app_modules_checkin_routes"
+    ],
+    "53": [
+      "api_app_modules_dailyspark_routes"
+    ],
+    "54": [
+      "api_app_modules_datedebrief_routes"
+    ],
+    "55": [
+      "api_app_modules_dateplanner_routes"
+    ],
+    "56": [
+      "api_app_modules_dateroulette_routes"
+    ],
+    "57": [
+      "api_app_modules_insights_routes"
+    ],
+    "58": [
+      "api_app_modules_lovemap_routes"
+    ],
+    "59": [
+      "api_app_modules_lovenotes_routes"
+    ],
+    "60": [
+      "api_app_modules_milestones_routes"
+    ],
+    "61": [
+      "api_app_modules_moments_routes"
+    ],
+    "62": [
+      "api_app_modules_onthisday_routes"
+    ],
+    "63": [
+      "api_app_modules_planner_routes"
+    ],
+    "64": [
+      "api_app_modules_recap_routes"
+    ],
+    "65": [
+      "api_app_modules_reminders_routes"
+    ],
+    "66": [
+      "api_app_modules_wishlist_routes"
+    ],
+    "67": [
+      "api_app_modules_yearinmoments_routes"
+    ],
+    "68": [
+      "api_config_ai"
+    ],
+    "69": [
+      "api_config_app"
+    ],
+    "70": [
+      "api_config_filesystems"
+    ],
+    "71": [
+      "api_config_mail"
+    ],
+    "72": [
+      "api_config_pricing"
+    ],
+    "73": [
+      "api_config_queue"
+    ],
+    "74": [
+      "api_config_services"
+    ],
+    "75": [
+      "api_config_swoon"
+    ],
+    "76": [
+      "mobile_jest_setup"
+    ]
+  },
+  "cohesion": {
+    "0": 0.05142857142857143,
+    "1": 0.08534850640113797,
+    "2": 0.15555555555555556,
+    "3": 0.09686609686609686,
+    "4": 0.13768115942028986,
+    "5": 0.1,
+    "6": 0.1437908496732026,
+    "7": 0.18333333333333332,
+    "8": 0.13333333333333333,
+    "9": 0.13333333333333333,
+    "10": 0.1619047619047619,
+    "11": 0.15384615384615385,
+    "12": 0.15384615384615385,
+    "13": 0.18181818181818182,
+    "14": 0.18181818181818182,
+    "15": 0.2,
+    "16": 0.2222222222222222,
+    "17": 0.2222222222222222,
+    "18": 0.2222222222222222,
+    "19": 0.32142857142857145,
+    "20": 0.25,
+    "21": 0.2857142857142857,
+    "22": 0.4,
+    "23": 0.4,
+    "24": 0.4,
+    "25": 0.4,
+    "26": 0.4,
+    "27": 0.5,
+    "28": 0.5,
+    "29": 0.5,
+    "30": 0.6666666666666666,
+    "31": 0.6666666666666666,
+    "32": 0.6666666666666666,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0
+  },
+  "gods": [
+    {
+      "id": "mobile_src_theme_index_usetheme",
+      "label": "useTheme()",
+      "degree": 20
+    },
+    {
+      "id": "github_workflows_ci_steps_with",
+      "label": "with",
+      "degree": 15
+    },
+    {
+      "id": "ref_react_native",
+      "label": "react-native",
+      "degree": 14
+    },
+    {
+      "id": "api_composer_scripts",
+      "label": "scripts",
+      "degree": 13
+    },
+    {
+      "id": "mobile_package_scripts",
+      "label": "scripts",
+      "degree": 13
+    },
+    {
+      "id": "mobile_src_app_index_homescreen",
+      "label": "HomeScreen()",
+      "degree": 10
+    },
+    {
+      "id": "api_composer_require_dev",
+      "label": "require-dev",
+      "degree": 10
+    },
+    {
+      "id": "api_composer_require",
+      "label": "require",
+      "degree": 9
+    },
+    {
+      "id": "api_app_models_user_user",
+      "label": "User",
+      "degree": 8
+    },
+    {
+      "id": "github_workflows_ci_steps_env",
+      "label": "env",
+      "degree": 8
+    }
+  ],
+  "surprises": [
+    {
+      "source": "buildTheme()",
+      "target": "scaleType()",
+      "source_files": [
+        "mobile/src/theme/index.ts",
+        "mobile/src/theme/typography.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "indirect_call",
+      "why": "inferred connection - not explicitly stated in source"
+    },
+    {
+      "source": "RootLayout()",
+      "target": "ThemeProvider",
+      "source_files": [
+        "mobile/src/app/_layout.tsx",
+        "mobile/src/theme/index.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "RootLayout()",
+      "target": "useSystemTheme()",
+      "source_files": [
+        "mobile/src/app/_layout.tsx",
+        "mobile/src/theme/index.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "HomeScreen()",
+      "target": "fetchHealth()",
+      "source_files": [
+        "mobile/src/app/index.tsx",
+        "mobile/src/api/client.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "HomeScreen()",
+      "target": "AITag()",
+      "source_files": [
+        "mobile/src/app/index.tsx",
+        "mobile/src/components/AITag.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `react-native` connect `Home Screen & UI Components` to `Expo Package Manifest`, `App Root & Theme Provider`, `Expo Runtime Dependencies`?",
+      "why": "High betweenness centrality (0.046) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `ADR-0004`, `ADR-0004`, `expo/tsconfig.base` to the rest of the system?",
+      "why": "3 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `CI Environment Variables` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.05142857142857143 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `dependencies` connect `Expo Runtime Dependencies` to `Expo Device Module`, `Expo Image Module`, `Expo Linking Module`, `Expo Splash Screen`, `Expo Package Manifest`, `Expo Status Bar`, `Phosphor Icons`, `Gesture Handler`, `React Native SVG`, `React Native Web`, `React Native Worklets`, `TanStack Query`, `Expo App Config`?",
+      "why": "High betweenness centrality (0.026) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `App Root & Theme Provider` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.08534850640113797 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `react` connect `Home Screen & UI Components` to `Expo Package Manifest`, `App Root & Theme Provider`, `Expo Runtime Dependencies`?",
+      "why": "High betweenness centrality (0.021) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `User Model & Core Config` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.09686609686609686 - nodes in this community are weakly interconnected."
+    }
+  ]
+}
