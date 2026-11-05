@@ -10,8 +10,10 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { AccessibilityInfo, useColorScheme } from 'react-native';
 
 import { darkColours, lightColours, type ColourTokens } from './colours';
-import { durations, springs } from './motion';
+import { durations, pressScale, springs } from './motion';
 import {
+  cardPadding,
+  featurePadding,
   radii,
   screenGutter,
   shadows,
@@ -31,11 +33,14 @@ export type Theme = {
   radii: typeof radii;
   spacing: typeof spacing;
   screenGutter: number;
+  cardPadding: number;
+  featurePadding: number;
   minTouchTarget: number;
   /** Shadow TOKENS, not the light-mode literals — dark mode substitutes flats. */
   shadows: Record<ShadowToken, Shadow>;
   durations: typeof durations;
   springs: typeof springs;
+  pressScale: typeof pressScale;
   /** True when the OS "reduce motion" setting is on. */
   reduceMotion: boolean;
 };
@@ -43,7 +48,13 @@ export type Theme = {
 /** Dark mode keeps the same token names, with the shadows flattened. */
 const darkShadows: Record<ShadowToken, Shadow> = {
   none: shadows.none,
+  subtle: shadows.none,
   card: shadows.none,
+  feature: shadows.none,
+  // The one exception: a coloured glow under the primary CTA reads on a dark
+  // background where a plum shadow would not, and it is what keeps the one
+  // saturated thing on the screen looking lit rather than pasted on.
+  button: shadows.button,
   sheet: shadows.none,
 };
 
@@ -57,12 +68,15 @@ function buildTheme(scheme: 'light' | 'dark', reduceMotion: boolean): Theme {
     radii,
     spacing,
     screenGutter,
+    cardPadding,
+    featurePadding,
     minTouchTarget,
     // A shadow is invisible on a dark background, so dark mode drops it and
     // relies on the surface/background lift instead (docs/BRAND.md § 5).
     shadows: scheme === 'dark' ? darkShadows : shadows,
     durations,
     springs,
+    pressScale,
     reduceMotion,
   };
 }
@@ -123,9 +137,31 @@ export function useMotion(): { duration: number; useSpring: boolean; confetti: b
     : { duration: d.base, useSpring: true, confetti: true };
 }
 
+/**
+ * Which of the app's two card planes something sits on. Lives in the theme
+ * rather than in Card, because components that are not cards (AvatarPair,
+ * Stat) still have to know which plane they are drawn on.
+ */
+export type CardTone = 'paper' | 'feature';
+
 export type { ColourTokens, Shadow, ShadowToken };
 export { lightColours, darkColours };
 export { moduleSignatures, type ModuleKey, type ModuleSignature } from './modules';
 export { typography, fontFamilies, scaleType, type TypographyToken } from './typography';
-export { radii, spacing, shadows, screenGutter, minTouchTarget } from './shape';
-export { durations, springs, type Celebration } from './motion';
+export {
+  radii,
+  spacing,
+  shadows,
+  screenGutter,
+  cardPadding,
+  featurePadding,
+  minTouchTarget,
+} from './shape';
+export { durations, springs, pressScale, type Celebration } from './motion';
+export {
+  usePressFeedback,
+  haptic,
+  type HapticWeight,
+  type PressWeight,
+  type PressFeedback,
+} from './feedback';

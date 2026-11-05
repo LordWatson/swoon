@@ -1,6 +1,7 @@
 # Brand — Swoon 💞
 
-**Last updated:** 2026-11-05
+**Last updated:** 2026-11-05 — design-language uplift: three planes, the
+editorial type pair, five-step elevation, and press feedback with haptics.
 **Implemented as:** `mobile/src/theme/` (single typed theme, light + dark variants)
 **Enforced by:** custom ESLint rule `swoon/no-raw-design-values` — no raw hex, rgb(), or font names outside `mobile/src/theme/`.
 
@@ -76,6 +77,43 @@ Two utility tokens complete the set: `borderStrong` (interactive control outline
 **Rule of thumb:** filling a shape → brand token. Writing words on a coloured
 shape → `on*`. Writing coloured words on the page → `*Text`.
 
+### 3.1.1 The three planes
+
+Depth is what stops a warm palette reading as flat. The app has exactly three
+planes, and nothing is allowed a fourth:
+
+| Plane | Token | What it is |
+|---|---|---|
+| **Page** | `background` | Cream. The paper the app is printed on. |
+| **Card** | `surface` | Paper white, radius 20, hairline `border`, soft lift. |
+| **Feature** | `feature` | Deep plum, radius 28, gradient, deep lift. |
+
+**At most one feature plane per screen.** It is the hero, or the one signature
+moment — a reveal, a locked-in date. A second one on the same screen means
+neither is a feature, and the screen just looks loud.
+
+`feature` is Midnight Plum, the same value as `ink`, which is why it needed no
+new accessibility work: a Cream label on it is the 15.04:1 pair the palette
+already shipped, read the other way round. Its own ink family is `onFeature`
+(body), `featureMuted` (secondary) and `featureAccent` (Butter — the one accent
+the plane allows).
+
+In dark mode the page is already plum, so the feature plane cannot go darker.
+It **lifts** instead, which is the same substitution dark mode makes for a
+shadow (§ 5).
+
+### 3.1.2 Gradients
+
+Two fills are gradients rather than flat colour, because a flat fill has no
+sense of light falling on it: the primary CTA (`primaryGradientFrom` → `primary`)
+and the feature plane (`featureGradientFrom` → `feature`). Both are one subtle
+step, top-lighter.
+
+**A gradient has no single background colour, so text on it must clear AA at
+both ends.** The contrast test checks both, and the lighter end is always the
+binding one. This is the single way a gradient can quietly break AA, so it is
+gated rather than trusted.
+
 ### 3.2 Light theme
 
 | Token | Name | Hex | Use |
@@ -105,6 +143,12 @@ shape → `on*`. Writing coloured words on the page → `*Text`.
 | `onAi` | — | `#2B1B3D` | Label on a Lavender fill |
 | `onSuccess` | — | `#2B1B3D` | Label on a Sage fill |
 | `onDanger` | — | `#FFFFFF` | Label on a Cherry fill |
+| `feature` | Midnight Plum | `#2B1B3D` | The feature plane (§ 3.1.1) |
+| `featureGradientFrom` | Plum Lift | `#412A5A` | Top of the feature gradient |
+| `onFeature` | Cream | `#FFF8F2` | Body text on the feature plane |
+| `featureMuted` | Plum Mist | `#C3B4CF` | Secondary text on the feature plane |
+| `featureAccent` | Butter | `#FFE59E` | The one accent on the feature plane |
+| `primaryGradientFrom` | Rosé Light | `#FF7E96` | Top of the primary CTA gradient |
 
 ### 3.3 Dark theme
 
@@ -122,6 +166,9 @@ shape → `on*`. Writing coloured words on the page → `*Text`.
 | `background` | `#1A1024` | | |
 | `surface` | `#2B1B3D` | | |
 | `border` | `#3D2A4F` | | |
+| `feature` | `#412952` | `onFeature` | `#F6EEF7` |
+| `featureGradientFrom` | `#4A2F5E` | `featureMuted` | `#B8A9C6` |
+| `primaryGradientFrom` | `#FF8CA4` | `featureAccent` | `#E8C96A` |
 
 In dark mode every brand accent is light enough to read directly on the dark
 surfaces, so `*Text` equals the accent itself. Because the fills are light, **every**
@@ -146,6 +193,10 @@ Worst-case ratios in the shipped palette:
 | `onDanger` on `danger` | 4.61 | 5.29 |
 | `aiText` on `surface` | 4.85 | 8.59 |
 | `borderStrong` on `surface` | 3.28 | 3.10 |
+| `onFeature` on `feature` | 15.04 | 12.86 |
+| `featureMuted` on the feature gradient | 6.31 | 5.12 |
+| `featureAccent` on the feature gradient | 9.95 | 6.99 |
+| `onPrimary` across the primary gradient | 5.27 | 5.96 |
 | `focus` on `background` | 4.60 | 6.91 |
 
 **Two changes were made to the founder's spec**, both recorded in `docs/DECISIONS.md`:
@@ -186,16 +237,39 @@ distinguishable to many people with colour vision deficiency.
 | Display / headings | **Fraunces** | Soft, characterful serif. Headings and big moments **only** — never body copy, never UI labels. |
 | Body / UI | **Nunito** | Rounded, friendly, highly legible. Everything else. |
 
-**Scale:** 32 · 24 · 20 · 17 (body) · 15 · 13
+**Scale:** 44 · 32 · 24 · 20 · 17 (body) · 15 · 13 · 12
 
-| Token | Size | Family | Use |
-|---|---|---|---|
-| `display` | 32 | Fraunces | Screen hero, celebration moments |
-| `title` | 24 | Fraunces | Section and sheet titles |
-| `heading` | 20 | Nunito | Card titles, list headers |
-| `body` | 17 | Nunito | Default body text |
-| `label` | 15 | Nunito | Buttons, chips, form labels |
-| `caption` | 13 | Nunito | Timestamps, helper text, "Only you can see this" |
+| Token | Size | Tracking | Family | Use |
+|---|---|---|---|---|
+| `hero` | 44 | −1.1 | Fraunces | **One per screen.** The hero on the feature plane |
+| `display` | 32 | −0.6 | Fraunces | Celebration moments, year-in-review |
+| `title` | 24 | −0.3 | Fraunces | Section titles, sheet titles, feature card titles |
+| `heading` | 20 | −0.2 | Nunito | Card titles, list headers |
+| `body` | 17 | 0 | Nunito | Default body text |
+| `label` | 15 | +0.1 | Nunito | Buttons, chips, form labels |
+| `caption` | 13 | +0.1 | Nunito | Timestamps, helper text, "Only you can see this" |
+| `overline` | 12 | **+1.6** | Nunito | The tracked micro-label above a title |
+
+### 4.1 Tracking is not optional
+
+Every token carries a `letterSpacing`, and it does more for how expensive the
+app looks than any other single value. Large display type set at default
+tracking reads loose and cheap; small labels set at default tracking read
+cramped. So display sizes go negative and the small ones go positive.
+
+Tracking is in points, so it **scales with the size** — a large accessibility
+setting would otherwise leave the hero looking spaced out.
+
+### 4.2 The editorial pair
+
+`overline` + `hero` are what make a screen read like a cover rather than a
+header: a small wide-tracked label — "Good evening,", "This Friday",
+"Cooked up for you two" — above one large Fraunces moment.
+
+**The overline is tracked, never uppercased.** Uppercase is the obvious move and
+§ 2 forbids it; tracking alone carries the editorial weight, which is how most
+boutique print does it anyway. `textTransform` appears nowhere in the app, and
+a test asserts the overline has none.
 
 **Dynamic type.** Every size scales with the OS text-size setting. Sizes above are
 the values at the OS default; the theme exposes them through a scaling helper, and
@@ -209,22 +283,56 @@ disable font scaling, and never set `allowFontScaling={false}`.
 | Element | Radius |
 |---|---|
 | Cards | 20 |
+| Feature plane | 28 |
 | Buttons | 999 (pill) |
 | Inputs | 14 |
 | Sheets | 28 (top corners only) |
 
-**Shadows:** soft only — low opacity, plum-tinted (`#2B1B3D` at 6–10%), generous
-blur, minimal offset. No hard drop shadows, no black shadows, no borders doubling
-as shadows. In dark mode, shadows are replaced by a one-step surface lift, because
-shadows are invisible on dark backgrounds.
+### 5.1 Elevation
 
-**Spacing scale:** 4 · 8 · 12 · 16 · 20 · 24 · 32 · 48. Screen gutter is 16.
+Five steps, not one. A single shadow reused everywhere is what makes an
+interface look like a wireframe that shipped.
+
+| Token | Use | Note |
+|---|---|---|
+| `none` | Flat | Also every light-mode shadow's dark-mode substitute |
+| `subtle` | Chips, badges, inline pills | 4% — barely there, which is the point |
+| `card` | The paper plane | 7%, 20 blur |
+| `feature` | The plum plane | 22% — a deep surface needs a deeper shadow than a white one, or it looks pasted on rather than raised |
+| `button` | The primary CTA only | Tinted **Rosé**, not plum: a coloured button casting a grey shadow is the giveaway that a design system was never looked at on a real screen |
+
+Soft only — low opacity, plum-tinted, generous blur, minimal offset. No hard
+drop shadows, no black shadows, no borders doubling as shadows. In dark mode
+every shadow flattens and the surface lift does the work instead — **except**
+`button`, whose coloured glow still reads on a dark background.
+
+### 5.2 Spacing
+
+**Scale:** 4 · 8 · 12 · 16 · 20 · 24 · 32 · 48.
+
+| Token | Value | Use |
+|---|---|---|
+| `screenGutter` | 20 | Page edges |
+| `cardPadding` | 20 | Inside a card |
+| `featurePadding` | 24 | Inside the feature plane, which carries the biggest type |
+
+Space is most of what separates an expensive-looking layout from a cheap one,
+and the gutter is where it shows first — which is why it is 20 and not 16.
 
 ---
 
 ## 6. Motion
 
 * **Springy and short: 150–300 ms.** Nothing in the app should feel heavy.
+* **Every press is felt.** A control spring-scales (0.96 for a button, 0.99 for
+  a card) and fires a light haptic on the way down. There is **no opacity-fade
+  press state anywhere** — that was the single clearest tell that this app
+  looked cheaper than it is. One hook owns all of it:
+  `mobile/src/theme/feedback.ts`.
+* **Haptics are part of the design, not a garnish.** Light on a press, success
+  on a real win. A phone that cannot buzz — simulator, some Android hardware,
+  Low Power Mode — must never break a button, so every call fails silently
+  (ADR-019).
 * **Heart "pop"** on likes — a quick overshoot scale.
 * **Confetti only for real wins:** date locked in, challenge completed,
   anniversary reached, reveal unlocked. Never for routine saves.
@@ -232,7 +340,12 @@ shadows are invisible on dark backgrounds.
   unveil. This is the app's signature moment; it is worth the polish.
 * **Respect "reduce motion".** When the OS flag is set, every animation becomes a
   cross-fade of ≤100 ms and confetti is replaced by a static celebratory emoji.
-  This is checked once in a theme hook, not per component.
+  This is checked once in a theme hook, not per component. A press still
+  *responds* under reduce motion — it just stops bouncing. Removing the
+  feedback entirely would be the worse outcome.
+* **One animation API: React Native's own `Animated`.** Reanimated is installed
+  and stays for the set pieces that need worklets (the reveal, confetti), but
+  press feedback and progress use core `Animated` — see ADR-020 for why.
 
 ---
 
@@ -292,12 +405,15 @@ See `docs/UX_RULES.md` rule 6 and `docs/AI_PROMPTS.md`.
 ```
 mobile/src/theme/
 ├── colours.ts      # light + dark token maps (the ONLY hex values in the app)
-├── typography.ts   # families, scale, dynamic-type helper
-├── shape.ts        # radii, spacing, shadows
-├── motion.ts       # durations, springs, reduce-motion helper
+├── typography.ts   # families, scale, tracking, dynamic-type helper
+├── shape.ts        # radii, spacing, padding, elevation
+├── motion.ts       # durations, springs, press scale, reduce-motion helper
+├── feedback.ts     # usePressFeedback() — the spring, the scale, the haptic
 ├── modules.ts      # per-module emoji + colour signature
 ├── index.ts        # Theme type, ThemeProvider, useTheme()
-└── __tests__/contrast.test.ts   # WCAG gate — fails CI on any regression
+└── __tests__/
+    ├── contrast.test.ts   # WCAG gate — fails CI on any regression
+    └── feedback.test.tsx  # what a press does, including reduce motion
 ```
 
 Rules, enforced by lint:
@@ -307,3 +423,8 @@ Rules, enforced by lint:
 3. **No magic radii or spacing** — use the shape tokens.
 4. Components read tokens via `useTheme()`; they never import `colours.ts` directly.
 5. A new colour token requires a row in this file **and** a case in the contrast test.
+6. A **gradient** token requires a case asserting its text clears AA at *both*
+   ends, not just the base colour.
+7. **No `opacity` press states.** Pressables use `usePressFeedback()`.
+8. **No `textTransform`.** Sentence case is a brand rule (§ 2); tracking is how
+   a label gets emphasis.

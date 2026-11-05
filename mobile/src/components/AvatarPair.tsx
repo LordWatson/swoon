@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import { useTheme, type ColourTokens } from '../theme';
+import { useTheme, type CardTone, type ColourTokens } from '../theme';
 
 export type Partner = {
   name: string;
@@ -15,6 +15,8 @@ export type AvatarPairProps = {
   size?: number;
   /** Dims whoever has not acted yet, for waiting states (UX rule 4). */
   showPending?: boolean;
+  /** Which plane it sits on — the ring has to match, or it reads as a sticker. */
+  tone?: CardTone;
 };
 
 /**
@@ -25,7 +27,12 @@ export type AvatarPairProps = {
  * distinguishable to many people with colour vision deficiency
  * (docs/BRAND.md § 3.5).
  */
-export function AvatarPair({ partners, size = 36, showPending = false }: AvatarPairProps) {
+export function AvatarPair({
+  partners,
+  size = 36,
+  showPending = false,
+  tone = 'paper',
+}: AvatarPairProps) {
   const { colours, scaleType } = useTheme();
   const type = scaleType('label');
 
@@ -49,7 +56,7 @@ export function AvatarPair({ partners, size = 36, showPending = false }: AvatarP
             borderRadius: size / 2,
             backgroundColor: colours[partner.colour],
             borderWidth: 2,
-            borderColor: colours.surface,
+            borderColor: tone === 'feature' ? colours.feature : colours.surface,
             alignItems: 'center',
             justifyContent: 'center',
             marginLeft: index === 0 ? 0 : -size / 3,
@@ -63,6 +70,7 @@ export function AvatarPair({ partners, size = 36, showPending = false }: AvatarP
               color: colours.onPrimary,
               fontSize: type.size,
               fontFamily: type.family,
+              letterSpacing: type.letterSpacing,
             }}
           >
             {partner.name.charAt(0).toUpperCase()}

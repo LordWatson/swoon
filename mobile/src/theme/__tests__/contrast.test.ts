@@ -54,6 +54,12 @@ const TEXT_PAIRS: Pair[] = [
   ['dangerText', 'surface', 'error text on card'],
   ['aiText', 'background', 'AI text on background'],
   ['aiText', 'surface', 'AI text on card'],
+  // The feature plane. Checked against the FLAT token here; the gradient it is
+  // actually drawn with is checked separately below, because text has to clear
+  // AA at both ends of a gradient, not just the darker one.
+  ['onFeature', 'feature', 'body text on the feature plane'],
+  ['featureMuted', 'feature', 'secondary text on the feature plane'],
+  ['featureAccent', 'feature', 'Butter accent on the feature plane'],
 ];
 
 /** Knockout labels sitting ON a brand fill — 4.5:1. */
@@ -64,6 +70,25 @@ const ON_FILL_PAIRS: Pair[] = [
   ['onAi', 'ai', 'label on AI tag'],
   ['onSuccess', 'success', 'label on success pill'],
   ['onDanger', 'danger', 'label on danger button'],
+];
+
+/**
+ * Gradient fills — text must clear AA at BOTH ends.
+ *
+ * A gradient has no single background colour, so the end with the least
+ * contrast sets the floor. Checking only the base token would let a too-light
+ * top edge through, which is the one way a gradient can quietly break AA.
+ */
+const GRADIENT_PAIRS: [
+  fg: keyof ColourTokens,
+  from: keyof ColourTokens,
+  to: keyof ColourTokens,
+  label: string,
+][] = [
+  ['onFeature', 'featureGradientFrom', 'feature', 'body text across the feature gradient'],
+  ['featureMuted', 'featureGradientFrom', 'feature', 'secondary text across the feature gradient'],
+  ['featureAccent', 'featureGradientFrom', 'feature', 'Butter accent across the feature gradient'],
+  ['onPrimary', 'primaryGradientFrom', 'primary', 'button label across the primary gradient'],
 ];
 
 /** Interactive boundaries and focus rings — 3:1. */
@@ -90,6 +115,22 @@ describe.each(THEMES)('%s theme', (_name, tokens) => {
 
   it.each(NON_TEXT_PAIRS)('non-text: %s on %s (%s) meets AA 3:1', (fg, bg) => {
     expect(contrast(tokens[fg], tokens[bg])).toBeGreaterThanOrEqual(3);
+  });
+
+  it.each(GRADIENT_PAIRS)(
+    'gradient: %s over %s→%s (%s) meets AA 4.5:1 at both ends',
+    (fg, from, to) => {
+      expect(contrast(tokens[fg], tokens[from])).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(tokens[fg], tokens[to])).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it('keeps the feature plane distinct from the card plane', () => {
+    // Three planes only work if they are actually distinguishable. This is not
+    // a WCAG threshold — it is the design promise that a feature card never
+    // looks like a paper one.
+    expect(tokens.feature).not.toBe(tokens.surface);
+    expect(contrast(tokens.feature, tokens.surface)).toBeGreaterThan(1.1);
   });
 
   it('defines every token in both themes', () => {

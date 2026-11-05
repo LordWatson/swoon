@@ -47,6 +47,17 @@ export type ColourTokens = {
   dangerText: string;
   aiText: string;
 
+  /**
+   * The feature plane — a deep plum surface used inside the cream app for the
+   * hero and for signature moments. This is the second plane: cream page,
+   * paper card, plum feature. Nothing else gets to be plum.
+   */
+  feature: string;
+  /** Top of the feature gradient. The bottom is `feature` itself. */
+  featureGradientFrom: string;
+  /** Top of the primary CTA gradient. The bottom is `primary` itself. */
+  primaryGradientFrom: string;
+
   // Labels that sit ON a brand fill (4.5:1 against that fill)
   onPrimary: string;
   onSecondary: string;
@@ -54,6 +65,12 @@ export type ColourTokens = {
   onAi: string;
   onSuccess: string;
   onDanger: string;
+  /** Body text on the feature plane. Must clear AA across its whole gradient. */
+  onFeature: string;
+  /** Secondary text on the feature plane. */
+  featureMuted: string;
+  /** The one accent allowed on the feature plane — Butter, for the warm detail. */
+  featureAccent: string;
 };
 
 export const lightColours: ColourTokens = {
@@ -83,12 +100,22 @@ export const lightColours: ColourTokens = {
   dangerText: '#DE1D37',
   aiText: '#7450FF',
 
+  // The feature plane. `feature` is Midnight Plum itself — the same value as
+  // `ink`, which is why it needed no new verification: a cream label on it is
+  // the 15:1 pair the palette already shipped, read the other way round.
+  feature: '#2B1B3D', // Midnight Plum
+  featureGradientFrom: '#412A5A', // Plum Lift — the light falling on the top edge
+  primaryGradientFrom: '#FF7E96', // Rosé Light
+
   onPrimary: '#2B1B3D',
   onSecondary: '#2B1B3D',
   onHighlight: '#2B1B3D',
   onAi: '#2B1B3D',
   onSuccess: '#2B1B3D',
   onDanger: '#FFFFFF',
+  onFeature: '#FFF8F2', // Cream
+  featureMuted: '#C3B4CF', // Plum Mist
+  featureAccent: '#FFE59E', // Butter
 };
 
 export const darkColours: ColourTokens = {
@@ -120,12 +147,22 @@ export const darkColours: ColourTokens = {
   // The fills are light in dark mode, so EVERY knockout label is plum —
   // including onDanger, which is white in light mode. That asymmetry is the
   // whole reason these tokens exist.
+  // In dark mode the page is already plum, so the feature plane cannot be
+  // darker — it lifts instead, which is the same trick dark mode uses in place
+  // of a shadow (docs/BRAND.md § 5).
+  feature: '#412952',
+  featureGradientFrom: '#4A2F5E',
+  primaryGradientFrom: '#FF8CA4',
+
   onPrimary: '#2B1B3D',
   onSecondary: '#2B1B3D',
   onHighlight: '#2B1B3D',
   onAi: '#2B1B3D',
   onSuccess: '#2B1B3D',
   onDanger: '#2B1B3D',
+  onFeature: '#F6EEF7',
+  featureMuted: '#B8A9C6',
+  featureAccent: '#E8C96A',
 };
 
 /** Partner identity colours. Never used alone — always with an avatar. */

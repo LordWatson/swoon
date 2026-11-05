@@ -1,51 +1,102 @@
 import type { ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Animated, Pressable, Text, View } from 'react-native';
 
-import { useTheme } from '../theme';
+import { useTheme, usePressFeedback, type CardTone } from '../theme';
+import { GradientFill } from './internal/GradientFill';
 
 export type CardProps = {
   children: ReactNode;
   title?: string;
+  /** Small tracked label above the title: "This Friday", "Tonight". */
+  overline?: string;
   /** Module emoji, shown beside the title. */
   emoji?: string;
+  tone?: CardTone;
   onPress?: () => void;
   /** Marks a card whose contents are private to the viewer (UX rule 9). */
   isPrivate?: boolean;
   testID?: string;
 };
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 /**
- * The standard surface. Radius 20, soft plum shadow in light mode, flat in
- * dark (a shadow is invisible there, so the surface lift does the work).
+ * The standard surface, on either of the app's two card planes.
+ *
+ * `paper`: white, radius 20, hairline edge, soft plum shadow.
+ * `feature`: plum gradient, radius 28, a deeper shadow because a dark surface
+ * needs more lift than a white one to read as raised rather than pasted on.
+ *
+ * In dark mode the shadows flatten and the surface lift does the work instead,
+ * which is handled in the theme, not here.
  */
-export function Card({ children, title, emoji, onPress, isPrivate = false, testID }: CardProps) {
-  const { colours, radii, spacing, shadows, scaleType } = useTheme();
-  const heading = scaleType('heading');
+export function Card({
+  children,
+  title,
+  overline,
+  emoji,
+  tone = 'paper',
+  onPress,
+  isPrivate = false,
+  testID,
+}: CardProps) {
+  const { colours, radii, spacing, shadows, cardPadding, featurePadding, scaleType } = useTheme();
+  const { animatedStyle, onPressIn, onPressOut } = usePressFeedback('card', 'light');
+
+  const feature = tone === 'feature';
+  const headingToken = scaleType(feature ? 'title' : 'heading');
+  const overlineToken = scaleType('overline');
   const caption = scaleType('caption');
+
+  const ink = feature ? colours.onFeature : colours.ink;
+  const muted = feature ? colours.featureMuted : colours.inkMuted;
+  const radius = feature ? radii.feature : radii.card;
 
   const body = (
     <View
       style={[
         {
-          backgroundColor: colours.surface,
-          borderRadius: radii.card,
-          padding: spacing.base,
-          borderWidth: 1,
+          backgroundColor: feature ? colours.feature : colours.surface,
+          borderRadius: radius,
+          padding: feature ? featurePadding : cardPadding,
+          // The feature plane carries its own gradient, so an edge on top of
+          // it would only muddy it.
+          borderWidth: feature ? 0 : 1,
           borderColor: colours.border,
           gap: spacing.sm,
+          overflow: 'hidden',
         },
-        shadows.card,
+        feature ? shadows.feature : shadows.card,
       ]}
     >
+      {feature ? (
+        <GradientFill from={colours.featureGradientFrom} to={colours.feature} radius={radius} />
+      ) : null}
+
+      {overline ? (
+        <Text
+          style={{
+            color: muted,
+            fontSize: overlineToken.size,
+            lineHeight: overlineToken.lineHeight,
+            fontFamily: overlineToken.family,
+            letterSpacing: overlineToken.letterSpacing,
+          }}
+        >
+          {overline}
+        </Text>
+      ) : null}
+
       {title ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-          {emoji ? <Text style={{ fontSize: heading.size }}>{emoji}</Text> : null}
+          {emoji ? <Text style={{ fontSize: headingToken.size }}>{emoji}</Text> : null}
           <Text
             style={{
-              color: colours.ink,
-              fontSize: heading.size,
-              lineHeight: heading.lineHeight,
-              fontFamily: heading.family,
+              color: ink,
+              fontSize: headingToken.size,
+              lineHeight: headingToken.lineHeight,
+              fontFamily: headingToken.family,
+              letterSpacing: headingToken.letterSpacing,
               flex: 1,
             }}
           >
@@ -59,10 +110,11 @@ export function Card({ children, title, emoji, onPress, isPrivate = false, testI
       {isPrivate ? (
         <Text
           style={{
-            color: colours.inkMuted,
+            color: muted,
             fontSize: caption.size,
             lineHeight: caption.lineHeight,
             fontFamily: caption.family,
+            letterSpacing: caption.letterSpacing,
           }}
         >
           🔒 Only you can see this
@@ -74,14 +126,16 @@ export function Card({ children, title, emoji, onPress, isPrivate = false, testI
   if (!onPress) return <View testID={testID}>{body}</View>;
 
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={title}
-      style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+      style={animatedStyle}
     >
       {body}
-    </Pressable>
+    </AnimatedPressable>
   );
 }

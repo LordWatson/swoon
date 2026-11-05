@@ -6,6 +6,93 @@ Format: date · task ID(s) · what changed · anything left over.
 
 ---
 
+## 2026-11-05 — Design-language uplift (founder-directed, no task ID)
+
+The founder asked for a major UI/UX and branding lift: "currently it's very
+plain and minimal — I want it to feel high ticket, and exciting and engaging."
+
+**The diagnosis.** The brand spec in `BRAND.md` was already good. The
+*implementation* was not delivering it. Everything sat on one plane — one
+surface colour, one 1px decorative border, one shadow — so nothing could lead.
+The largest type was 32pt with no tracking anywhere. Press states were
+`opacity: 0.85`, which is the single clearest tell of a cheap-feeling app.
+Padding was 16 everywhere. And despite a full set of motion tokens, **nothing
+in the app animated at all**.
+
+**Direction chosen** (from three offered): warm editorial, with a deep plum
+feature plane inside the cream app. Rejected: dark-first "jewel box", which
+fights the "warm and a bit silly" personality and would need every text pair
+re-derived; and gradient-glass, which degrades to flat wherever
+`expo-glass-effect` is unavailable and so means maintaining two designs
+(ADR-021).
+
+**Built**
+
+* **Three planes** — cream page, paper card, plum feature; at most one feature
+  per screen. Six new tokens, solved against WCAG *before* being written down:
+  `feature`, `featureGradientFrom`, `onFeature`, `featureMuted`,
+  `featureAccent`, `primaryGradientFrom`. `feature` is Midnight Plum, the same
+  value as `ink`, so the plane inherited a 15.04:1 pair the palette already had.
+* **The editorial type pair** — `hero` at 44pt and a `overline` at 12pt, and
+  `letterSpacing` on *every* token: negative for display, positive for small
+  labels. Tracking scales with size, or a large accessibility setting leaves the
+  hero looking spaced out. The overline is **tracked, never uppercased** —
+  uppercase is the obvious move and § 2 forbids it.
+* **Five elevation steps** instead of one, including a Rosé-tinted glow under
+  the primary CTA. A coloured button casting a grey shadow is the giveaway that
+  a design system was never looked at on a real screen.
+* **Gradients** on the CTA and the feature plane, via `react-native-svg` (already
+  installed for Phosphor) rather than adding `expo-linear-gradient`.
+* **Press feedback that is felt** — `usePressFeedback()` owns the spring, the
+  scale (0.96 button / 0.99 card) and the haptic, so it is one decision rather
+  than eight, and reduce-motion is honoured once. `expo-haptics` added, the
+  first new dependency since P0.T02 (ADR-019).
+* **Two new components**, `Hero` and `Stat`, plus `tone` on `Card` and
+  `AvatarPair`, bigger padding on everything, a Fraunces `EmptyState`, and a
+  `ProgressBar` whose fill now glides. Home rebuilt around the new layout.
+* **`mobile/src/components/README.md`** — rule 15 has required a component
+  library README since P0.T04 and there was never one. Ten components documented.
+
+**Two decisions worth knowing**
+
+1. **Reanimated is not used for interaction.** Mutating a shared value in an
+   event handler is its documented API, but the React Compiler's
+   `react-hooks/immutability` rule cannot tell a `SharedValue` from state, so it
+   errors. The choice was a lint suppression in the one hook every control
+   depends on, or a different API — so press and progress use React Native's own
+   `Animated` (native-driven for the transform), and Reanimated stays for the
+   set pieces that need worklets: the reveal, confetti (ADR-020).
+2. **`AbortSignal.timeout`-style APIs and Reanimated jest mocks were both
+   avoided for the same reason** — things that pass in Node and fail on a
+   device, or that need test scaffolding to prove nothing.
+
+**Gate** The contrast test grew to cover the new tokens *and* a new class of
+check: **text on a gradient must clear AA at both ends**, since a gradient has
+no single background colour and the lighter end is always the binding one. 98
+mobile tests pass (73 contrast, 12 design-language, 9 API client, 4 press
+feedback); tsc, ESLint and Prettier clean.
+
+**Three tests worth their keep.** The hero is asserted to be the *only*
+hero-sized type, so the one-moment-per-screen rule cannot rot. The overline is
+asserted to have no `textTransform`. And a press is asserted still to respond
+under reduce motion — removing the feedback entirely would be worse than the
+animation.
+
+**Preview** The founder cannot run the app (no JVM, no Android SDK, no
+emulator — see P0.T12), so the work would have been unreviewable. A canvas with
+before / after / the design language is at
+<https://claude.ai/artifact/Ae3tAXkjE3BU2qhEKyizqh> — private until shared.
+
+**Not done** Dark mode has not been looked at on a device, only computed: every
+dark pair passes the gate, but the feature plane's lift against the plum page is
+a 1.25:1 difference that wants a real screen to judge. `Sheet` was left alone.
+The `reveal` and confetti set pieces are Phase 6–7 work and are still only
+tokens.
+
+**Next:** **P1.T01** — users, couples and the one-couple invariant.
+
+---
+
 ## 2026-11-05 — P0.T12 · Queue, scheduler, Maestro harness — **Phase 0 complete**
 
 **Built**

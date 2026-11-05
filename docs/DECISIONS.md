@@ -8,6 +8,80 @@ Keep each entry short: context, decision, consequence.
 
 ---
 
+## ADR-021 — Three planes, and only one feature plane per screen
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** The palette and type scale were good and the app still looked
+plain. The reason was depth: one surface colour, one 1px decorative border and
+one shadow meant everything sat on the same plane, so no element could lead.
+The founder asked for something that feels high-ticket and exciting. Three
+directions were weighed — a dark-first "jewel box", gradient-and-glass, and a
+warm editorial base with a deep feature plane.
+
+**Decision.** Keep the cream/Rosé palette and add a second card plane: a deep
+plum `feature` surface used for the hero and for signature moments, inside the
+cream editorial app. Three planes, no fourth, and **at most one feature plane
+per screen**.
+
+Rejected: dark-first, which fights the "warm and a bit silly" personality in
+§ 1 and would have required re-deriving every text pair against a new base.
+Rejected: glass, which degrades to flat wherever `expo-glass-effect` is
+unavailable and so means maintaining two designs, and which dates faster.
+
+**Consequence.** `feature` is Midnight Plum — the same value as `ink` — so the
+whole plane inherited accessibility the palette already had. In dark mode the
+page is already plum, so the plane lifts rather than deepens. The "one per
+screen" rule is a judgement call a reviewer has to make; `Card tone="feature"`
+makes it cheap to break, which is why it is written down here and in BRAND.md
+§ 3.1.1 rather than left to taste.
+
+---
+
+## ADR-020 — React Native's `Animated` for interaction, Reanimated for set pieces
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** Reanimated 4 is installed. The obvious choice for press feedback,
+it turned out to trip the React Compiler's `react-hooks/immutability` lint rule:
+mutating a shared value inside an event handler is Reanimated's documented API,
+but the rule cannot tell a `SharedValue` from ordinary state. The only ways
+forward were a lint suppression in the one hook every control in the app
+depends on, or a different API.
+
+**Decision.** Interaction animation — press scale, progress fill — uses React
+Native's own `Animated`. Reanimated stays installed and is the right tool for
+the set pieces that genuinely need worklets: the reveal when both partners have
+answered, and confetti.
+
+**Consequence.** No suppression, and no Jest native-mock scaffolding, since core
+`Animated` needs none. The press transform still runs off the JS thread via
+`useNativeDriver`. `ProgressBar` animates a width, which the native driver does
+not support, so that one animation is on the JS thread — imperceptible for a
+single 200 ms move on step change. Do not "upgrade" these to Reanimated to be
+consistent with the set pieces; the lint problem comes straight back.
+
+---
+
+## ADR-019 — Haptics are part of the design
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** Press feedback that is only visual looks correct in a screenshot
+and feels dead in the hand. On a real device a soft tap under the thumb is most
+of the difference between an app that feels expensive and one that feels like a
+web page. `expo-haptics` was not installed, and the minimalism rule requires a
+decision record for any new dependency.
+
+**Decision.** Add `expo-haptics` (first-party Expo module, no native config).
+Light on a press, `Success` on a real win. Routed through one hook,
+`usePressFeedback` in `src/theme/feedback.ts`, so the weight and the
+reduce-motion behaviour are decided once rather than per component.
+
+**Consequence.** One more dependency, and the first one added since P0.T02.
+Haptics reject rather than no-op where unavailable — a simulator, some Android
+hardware, iOS Low Power Mode — so every call is fired and swallowed: a button
+must never throw because a phone cannot buzz. There is a test for exactly that.
+
+---
+
 ## ADR-018 — The log tail is its own script, not part of `composer dev`
 **Date:** 2026-11-05 · **Status:** accepted
 

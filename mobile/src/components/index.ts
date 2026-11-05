@@ -7,9 +7,11 @@
  */
 export { AITag, type AITagProps } from './AITag';
 export { AvatarPair, type AvatarPairProps, type Partner } from './AvatarPair';
-export { Button, type ButtonProps, type ButtonVariant } from './Button';
+export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
 export { Card, type CardProps } from './Card';
 export { Chip, type ChipProps } from './Chip';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
+export { Hero, type HeroProps } from './Hero';
+export { Stat, type StatProps } from './Stat';
 export { ProgressBar, type ProgressBarProps } from './ProgressBar';
 export { Sheet, type SheetProps } from './Sheet';

@@ -21,6 +21,23 @@ export const springs = {
   pop: { damping: 10, stiffness: 320, mass: 0.7 },
   /** The reveal when both partners have answered. The app's signature moment. */
   reveal: { damping: 14, stiffness: 220, mass: 0.9 },
+  /**
+   * Press-down on a control. Fast and well damped: a control should feel like
+   * it takes your finger, not like it wobbles. This replaced an `opacity: 0.85`
+   * press state, which is the single clearest tell of a cheap-feeling app.
+   */
+  press: { damping: 24, stiffness: 450, mass: 0.6 },
+} as const;
+
+/**
+ * How far a control scales when pressed.
+ *
+ * Small on purpose. A big surface travelling as far as a small one looks
+ * rubbery, so a card moves roughly a quarter of what a button does.
+ */
+export const pressScale = {
+  button: 0.96,
+  card: 0.99,
 } as const;
 
 export type SpringToken = keyof typeof springs;

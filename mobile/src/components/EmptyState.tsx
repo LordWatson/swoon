@@ -22,31 +22,41 @@ export type EmptyStateProps = {
  */
 export function EmptyState({ emoji, message, actionLabel, onAction, testID }: EmptyStateProps) {
   const { colours, spacing, scaleType } = useTheme();
-  const body = scaleType('body');
+  // Fraunces, not muted body copy: an empty state is the first thing a couple
+  // sees in a module, so it should look composed rather than apologetic.
+  const message_ = scaleType('title');
+  const hero = scaleType('hero');
 
   return (
     <View
       testID={testID}
-      style={{ alignItems: 'center', gap: spacing.base, paddingVertical: spacing.xxl }}
+      style={{ alignItems: 'center', gap: spacing.base, paddingVertical: spacing.xxxl }}
     >
-      <Text style={{ fontSize: 40 }} accessibilityElementsHidden importantForAccessibility="no">
+      <Text
+        style={{ fontSize: hero.size }}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      >
         {emoji}
       </Text>
 
       <Text
         style={{
-          color: colours.inkMuted,
-          fontSize: body.size,
-          lineHeight: body.lineHeight,
-          fontFamily: body.family,
+          color: colours.ink,
+          fontSize: message_.size,
+          lineHeight: message_.lineHeight,
+          fontFamily: message_.family,
+          letterSpacing: message_.letterSpacing,
           textAlign: 'center',
-          paddingHorizontal: spacing.xl,
+          paddingHorizontal: spacing.base,
         }}
       >
         {message}
       </Text>
 
-      <Button label={actionLabel} onPress={onAction} />
+      <View style={{ marginTop: spacing.sm }}>
+        <Button label={actionLabel} onPress={onAction} />
+      </View>
     </View>
   );
 }

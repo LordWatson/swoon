@@ -23,16 +23,79 @@ export type TypeToken = {
   family: string;
   /** Headings use Fraunces; everything else Nunito. */
   isDisplay: boolean;
+  /**
+   * Tracking, in points. Large display type needs negative tracking or it
+   * reads loose and cheap; small labels need positive tracking or they read
+   * cramped. This is the single highest-leverage detail in the whole scale.
+   */
+  letterSpacing: number;
 };
 
-/** Scale: 32 / 24 / 20 / 17 (body) / 15 / 13 */
+/**
+ * Scale: 44 / 32 / 24 / 20 / 17 (body) / 15 / 13 / 12
+ *
+ * `hero` and `overline` are the editorial pair: one very large Fraunces moment
+ * per screen, and a small tracked label above it. Everything between them is
+ * the original scale, unchanged.
+ */
 export const typography = {
-  display: { size: 32, lineHeight: 38, family: fontFamilies.displayBold, isDisplay: true },
-  title: { size: 24, lineHeight: 30, family: fontFamilies.display, isDisplay: true },
-  heading: { size: 20, lineHeight: 26, family: fontFamilies.bodyBold, isDisplay: false },
-  body: { size: 17, lineHeight: 24, family: fontFamilies.body, isDisplay: false },
-  label: { size: 15, lineHeight: 20, family: fontFamilies.bodyMedium, isDisplay: false },
-  caption: { size: 13, lineHeight: 18, family: fontFamilies.body, isDisplay: false },
+  hero: {
+    size: 44,
+    lineHeight: 46,
+    family: fontFamilies.displayBold,
+    isDisplay: true,
+    letterSpacing: -1.1,
+  },
+  display: {
+    size: 32,
+    lineHeight: 37,
+    family: fontFamilies.displayBold,
+    isDisplay: true,
+    letterSpacing: -0.6,
+  },
+  title: {
+    size: 24,
+    lineHeight: 29,
+    family: fontFamilies.display,
+    isDisplay: true,
+    letterSpacing: -0.3,
+  },
+  heading: {
+    size: 20,
+    lineHeight: 26,
+    family: fontFamilies.bodyBold,
+    isDisplay: false,
+    letterSpacing: -0.2,
+  },
+  body: { size: 17, lineHeight: 25, family: fontFamilies.body, isDisplay: false, letterSpacing: 0 },
+  label: {
+    size: 15,
+    lineHeight: 20,
+    family: fontFamilies.bodyMedium,
+    isDisplay: false,
+    letterSpacing: 0.1,
+  },
+  caption: {
+    size: 13,
+    lineHeight: 18,
+    family: fontFamilies.body,
+    isDisplay: false,
+    letterSpacing: 0.1,
+  },
+  /**
+   * The editorial micro-label: "This Friday", "Tonight", "Your week".
+   *
+   * Tracked wide and kept SENTENCE CASE. Uppercase would be the obvious move
+   * and the brand forbids it (docs/BRAND.md § 2) — tracking alone carries the
+   * editorial weight, which is how Aesop and most boutique print do it.
+   */
+  overline: {
+    size: 12,
+    lineHeight: 16,
+    family: fontFamilies.bodyBold,
+    isDisplay: false,
+    letterSpacing: 1.6,
+  },
 } as const satisfies Record<string, TypeToken>;
 
 export type TypographyToken = keyof typeof typography;
@@ -53,5 +116,8 @@ export function scaleType(token: TypographyToken, maxScale = 1.6): TypeToken {
     ...t,
     size: Math.round(t.size * scale),
     lineHeight: Math.round(t.lineHeight * scale),
+    // Tracking is in points, so it has to scale with the size or a large
+    // accessibility setting leaves display type looking loose.
+    letterSpacing: Math.round(t.letterSpacing * scale * 100) / 100,
   };
 }

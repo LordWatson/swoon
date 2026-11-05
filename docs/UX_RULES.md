@@ -195,7 +195,7 @@ component **only** when no existing one fits — and when you do:
 
 1. put it in `mobile/src/components/`,
 2. give it the same prop conventions as its neighbours,
-3. document it in the component library README,
+3. document it in `mobile/src/components/README.md`,
 4. cover it with a test.
 
 A one-off styled `View` inside a feature folder is a bug, not a shortcut.

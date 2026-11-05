@@ -15,8 +15,8 @@ export type AITagProps = {
  * point is that a couple can always tell which words are theirs.
  */
 export function AITag({ label = 'AI' }: AITagProps) {
-  const { colours, radii, spacing, scaleType } = useTheme();
-  const type = scaleType('caption');
+  const { colours, radii, spacing, shadows, scaleType } = useTheme();
+  const type = scaleType('overline');
 
   return (
     <View
@@ -31,7 +31,8 @@ export function AITag({ label = 'AI' }: AITagProps) {
         backgroundColor: colours.ai,
         borderRadius: radii.chip,
         paddingHorizontal: spacing.md,
-        paddingVertical: spacing.xs,
+        paddingVertical: spacing.xs + 2,
+        ...shadows.subtle,
       }}
     >
       <Text style={{ fontSize: type.size }}>✨</Text>
@@ -43,6 +44,7 @@ export function AITag({ label = 'AI' }: AITagProps) {
           fontSize: type.size,
           lineHeight: type.lineHeight,
           fontFamily: type.family,
+          letterSpacing: type.letterSpacing,
         }}
       >
         {label}
