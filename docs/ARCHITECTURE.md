@@ -278,7 +278,9 @@ free and instant for everyone (see its `module.md`).
 ## 5. Background work
 
 Herd serves HTTP but runs neither the queue nor the scheduler. `composer dev`
-supplies both, plus a log tail.
+supplies both. The log tail is `composer logs` separately, because Pail needs
+the `pcntl` extension and so cannot run on Windows — inside `composer dev` with
+`--kill-others` it took the worker and the scheduler down with it.
 
 | Schedule | Frequency | Purpose |
 |---|---|---|
@@ -362,7 +364,7 @@ never blocks the text.
 | API | Pest 4 | `api/tests/{Unit,Feature}` |
 | Mobile | Jest + React Native Testing Library | `mobile/src/**/__tests__` |
 | Contrast gate | Jest | `mobile/src/theme/__tests__/contrast.test.ts` |
-| Critical path | Maestro | `maestro/` — sign up → invite → accept → plan a date |
+| Critical path | Maestro | `maestro/smoke.yaml` — sign up → invite → accept → plan a date |
 
 Standing requirements:
 
@@ -374,6 +376,15 @@ Standing requirements:
   from the screen.
 * The palette cannot regress: the contrast test includes a case asserting the
   **pre-fix** Cherry still fails, so the gate cannot rot into a no-op.
+* **Maestro is not in CI.** It needs a JVM, a booted device and a dev build, so
+  it is a before-you-ship check run by hand (`docs/DEV_TOOLING.md` § 5). Today
+  `smoke.yaml` asserts only Phase 0: the app launches, the theme renders, and
+  the device can reach the API. The four steps of the real critical path are
+  TODOs in the file naming the task that fills each in — they must stay in
+  dependency order, because each one needs the state the previous one leaves.
+* **The queue and the scheduler are provable by hand**: `swoon:queue-test`
+  dispatches a ping job and reports whether a worker collected it. There are no
+  scheduled tasks yet; § 5 lists the ones that arrive with their features.
 
 ---
 

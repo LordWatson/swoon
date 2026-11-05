@@ -8,6 +8,29 @@ Keep each entry short: context, decision, consequence.
 
 ---
 
+## ADR-018 — The log tail is its own script, not part of `composer dev`
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** Laravel's default `composer dev` runs the queue worker, the
+scheduler and `php artisan pail` under `concurrently --kill-others`. Pail
+requires the `pcntl` extension, which Windows PHP does not provide — so on the
+machine this project is built on, Pail exited 1 immediately and `--kill-others`
+then killed the worker and the scheduler with it. `composer dev` had never once
+worked here, and P0.T01's acceptance criterion claiming it did was never
+actually run to completion.
+
+**Decision.** `composer dev` is the queue worker and the scheduler, both of
+which work everywhere. The log tail is `composer logs`, documented alongside
+the Windows equivalent (`Get-Content … -Wait`). `--kill-others` stays: with
+only two processes that must both be up, one dying should stop the other.
+
+**Consequence.** Two terminals instead of one if you want a live log on
+mac/linux. In exchange the dev loop works on the platform it is used on. Do not
+put Pail back into `composer dev` — it is not a missing feature, it is a
+platform incompatibility that takes the whole loop down with it.
+
+---
+
 ## ADR-017 — SafetyGuard has no off switch
 **Date:** 2026-11-05 · **Status:** accepted
 

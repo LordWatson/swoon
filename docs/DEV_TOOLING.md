@@ -80,7 +80,7 @@ Then, in a second terminal, run what Herd does not:
 
 ```powershell
 cd api
-composer dev                 # queue:work + schedule:work + pail (log tail)
+composer dev                 # queue:work + schedule:work
 ```
 
 Or individually:
@@ -88,11 +88,40 @@ Or individually:
 ```powershell
 php artisan queue:work --tries=3
 php artisan schedule:work
-php artisan pail
 ```
 
 **All AI calls run in queued jobs**, so without a queue worker nothing AI-shaped
 will ever finish. Reminders, recaps and On This Day need the scheduler.
+
+**The log tail is a separate script, and Pail does not run on Windows.** It
+needs the `pcntl` extension, which Windows PHP does not have. It used to be the
+third process inside `composer dev` with `--kill-others`, which meant it took
+the worker and the scheduler down with it on every single run — `composer dev`
+did not work on this machine at all until P0.T12. Now:
+
+```powershell
+composer logs                          # mac/linux: php artisan pail
+Get-Content api/storage/logs/laravel.log -Wait -Tail 20   # windows
+```
+
+#### Proving the queue and the scheduler actually run
+
+```powershell
+cd api
+php artisan swoon:queue-test
+```
+
+It dispatches one ping job and then says whether anything collected it — with no
+worker running a dispatch succeeds silently and the job simply waits, which is
+exactly what a broken setup looks like from the outside. It waits up to three
+seconds before concluding, because a worker polls rather than being pushed to.
+The handled job logs `swoon:ping handled [TOKEN]` with the token it printed.
+
+For the scheduler, `php artisan schedule:list` shows what is registered and when
+each task is next due. There are deliberately **no scheduled tasks yet** — the
+real ones arrive with the features in `docs/ARCHITECTURE.md` § 5. To check the
+wiring, add a one-minute `Schedule::call()` to `routes/console.php`, watch it
+fire under `schedule:work`, and take it out again.
 
 ### Mobile
 
@@ -158,8 +187,39 @@ npm run format
 npm test
 ```
 
-**Current state:** API 3 tests passing, Larastan level 6 clean, Pint clean.
-Mobile 57 tests passing (the contrast gate), typecheck clean, lint clean.
+**Current state:** API 14 tests passing, Larastan level 6 clean, Pint clean.
+Mobile 66 tests passing (57 of them the contrast gate, 9 the API client),
+typecheck clean, lint clean.
+
+### Maestro — the critical-path smoke test
+
+`maestro/smoke.yaml` walks the app the way a couple does. It is **not** part of
+`npm run check` or CI: it needs a real device, so it is a before-you-ship check,
+not a per-commit one.
+
+```powershell
+maestro test maestro/smoke.yaml
+```
+
+Needs, in this order, or it fails for reasons that have nothing to do with the
+app:
+
+1. **A JVM.** Maestro is a JVM tool. `java -version` must work.
+2. **Maestro itself** — `winget install mobile-dev-inc.maestro`, or the
+   installer at <https://maestro.mobile.dev>. Not currently installed on the
+   founder's machine, along with no JDK and no Android SDK, so the flow has
+   **never been run** (P0.T12).
+3. **A booted emulator or a connected device** — `adb devices` must list one.
+4. **A dev build installed on it**, not Expo Go: the flow launches
+   `test.swoon.app` by its app id. `cd mobile && npx expo run:android`.
+5. **An API the device can reach.** This is the usual failure: a phone or
+   emulator cannot resolve `.test`, so set `EXPO_PUBLIC_API_URL` first (§ 4).
+   The flow asserts the health card reads `Connected to …`, which is exactly
+   this going wrong.
+
+The flow asserts only what Phase 0 built. The rest of the critical path — sign
+up, invite, accept, plan a date — is written in as TODOs naming the task that
+fills each one in, in dependency order.
 
 ---
 

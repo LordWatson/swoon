@@ -192,10 +192,10 @@
     "semantic_hash": "04094de0aa94f6ca7e088921d9f2ac37"
   },
   "api/composer.json": {
-    "mtime": 1793875203.5998278,
-    "seen": 1793877483.298256,
-    "ast_hash": "8b5974998d07ff36747a0efbc6e3c34f",
-    "semantic_hash": "8b5974998d07ff36747a0efbc6e3c34f"
+    "mtime": 1793884454.208179,
+    "seen": 1793884819.8200982,
+    "ast_hash": "19d6b69bfc0d150c2aeef81dbb4b1e26",
+    "semantic_hash": ""
   },
   "api/config/ai.php": {
     "mtime": 1793883729.4664536,
@@ -337,8 +337,8 @@
     "semantic_hash": "1ac66e22c26b3c8bccb2ce1f5a226114"
   },
   "api/routes/console.php": {
-    "mtime": 1793875365.552462,
-    "seen": 1793877483.300256,
+    "mtime": 1793884585.2003965,
+    "seen": 1793884819.8200982,
     "ast_hash": "a6a30afd03a6c4fdc5f47283ffc5c460",
     "semantic_hash": "a6a30afd03a6c4fdc5f47283ffc5c460"
   },
@@ -410,10 +410,10 @@
     "semantic_hash": "123c62b25dbea1c79d0da15d79d81e6b"
   },
   "mobile/src/app/index.tsx": {
-    "mtime": 1793876339.169344,
-    "seen": 1793877483.300256,
-    "ast_hash": "04868e864f33b0a200b41ed069642940",
-    "semantic_hash": "04868e864f33b0a200b41ed069642940"
+    "mtime": 1793884619.6406033,
+    "seen": 1793884819.8215451,
+    "ast_hash": "58df6604d419c0f169f01b87031b7470",
+    "semantic_hash": ""
   },
   "mobile/src/components/AITag.tsx": {
     "mtime": 1793876258.1669602,
@@ -686,9 +686,9 @@
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
-    "mtime": 1793883729.4664536,
-    "seen": 1793883815.110215,
-    "ast_hash": "5c1c493e43138d842606f870c0e72536",
+    "mtime": 1793884669.383975,
+    "seen": 1793884819.8215451,
+    "ast_hash": "7c3fe047cfdbb672c8a6a332e7a1545c",
     "semantic_hash": ""
   },
   "docs/BRAND.md": {
@@ -698,15 +698,15 @@
     "semantic_hash": ""
   },
   "docs/DECISIONS.md": {
-    "mtime": 1793883752.390689,
-    "seen": 1793883815.110215,
-    "ast_hash": "8dc888b2ab3582d6f1541681d5ac7569",
+    "mtime": 1793884712.8723764,
+    "seen": 1793884819.8215451,
+    "ast_hash": "baca2b90c62ab04b3cf779333ee7832e",
     "semantic_hash": ""
   },
   "docs/DEV_TOOLING.md": {
-    "mtime": 1793883729.4664536,
-    "seen": 1793883815.110215,
-    "ast_hash": "fc1ebf33949cb8d8365d30d822d9cb71",
+    "mtime": 1793884789.1940908,
+    "seen": 1793884819.8215451,
+    "ast_hash": "8cbf33276147d12800a9b92d38cdc20c",
     "semantic_hash": ""
   },
   "docs/MODULES.md": {
@@ -716,9 +716,9 @@
     "semantic_hash": ""
   },
   "docs/PLAN.md": {
-    "mtime": 1793883551.485062,
-    "seen": 1793883815.110215,
-    "ast_hash": "1e7d0a70479dc3d16baf463af9251234",
+    "mtime": 1793884712.8036318,
+    "seen": 1793884819.8215451,
+    "ast_hash": "f355371a1c6307081ee0ea5144d5fc7d",
     "semantic_hash": ""
   },
   "docs/PRICING.md": {
@@ -728,9 +728,9 @@
     "semantic_hash": ""
   },
   "docs/SESSION_LOG.md": {
-    "mtime": 1793883806.420583,
-    "seen": 1793883815.110215,
-    "ast_hash": "5de7c712c1f207a8ee5cbfc98610677e",
+    "mtime": 1793884810.302098,
+    "seen": 1793884819.8215451,
+    "ast_hash": "b646a63888cd2362668b01cc02d12e6a",
     "semantic_hash": ""
   },
   "docs/UX_RULES.md": {
@@ -1037,6 +1037,30 @@
     "mtime": 1793883528.3460338,
     "seen": 1793883815.110215,
     "ast_hash": "f38d94cebf3b05f15d771fa64005b761",
+    "semantic_hash": ""
+  },
+  "api/app/Console/Commands/QueueTest.php": {
+    "mtime": 1793884512.0627935,
+    "seen": 1793884819.8200982,
+    "ast_hash": "ba29cc5249aad10239ffb2f265724757",
+    "semantic_hash": ""
+  },
+  "api/app/Jobs/PingJob.php": {
+    "mtime": 1793884297.6732376,
+    "seen": 1793884819.8200982,
+    "ast_hash": "25ec1c0cf4073cf2e91b730c648f99dd",
+    "semantic_hash": ""
+  },
+  "api/tests/Feature/QueueTest.php": {
+    "mtime": 1793884749.229842,
+    "seen": 1793884819.8215451,
+    "ast_hash": "ceb2d66ba2df4ec5b5d66a196397f0e2",
+    "semantic_hash": ""
+  },
+  "maestro/smoke.yaml": {
+    "mtime": 1793884564.0615163,
+    "seen": 1793884819.8215451,
+    "ast_hash": "00a10b7fee860ca8795f886167132045",
     "semantic_hash": ""
   },
   "mobile/package-lock.json": {

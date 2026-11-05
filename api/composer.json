@@ -50,7 +50,11 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#c4b5fd,#fb7185,#fdba74\" \"php artisan queue:work --tries=3\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" --names=queue,schedule,logs --kill-others"
+            "npx concurrently -c \"#c4b5fd,#fb7185\" \"php artisan queue:work --tries=3\" \"php artisan schedule:work\" --names=queue,schedule --kill-others"
+        ],
+        "logs": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan pail --timeout=0"
         ],
         "test": [
             "@php artisan config:clear --ansi",
@@ -107,7 +111,8 @@
     "prefer-stable": true,
     "scripts-descriptions": {
         "setup": "Install deps, create .env, generate key, migrate.",
-        "dev": "Run queue worker + scheduler + log tail (Herd serves HTTP itself).",
+        "dev": "Run queue worker + scheduler (Herd serves HTTP itself).",
+        "logs": "Tail the log with Pail. Needs the pcntl extension, so not on Windows.",
         "test": "Run the Pest suite.",
         "lint": "Fix code style with Pint.",
         "lint:check": "Check code style without changing files.",

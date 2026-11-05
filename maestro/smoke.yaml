@@ -1,0 +1,46 @@
+# Swoon smoke test — the critical path, as far as it exists.
+#
+# Run:   maestro test maestro/smoke.yaml
+# Needs: a dev build installed on a booted emulator or device, plus an API the
+#        device can actually reach — a phone cannot resolve a .test domain
+#        (docs/DEV_TOOLING.md § 4). Maestro needs a JVM.
+#
+# Today this asserts only what Phase 0 built: the app launches, the theme
+# renders, and the device can reach the API. The TODOs below are the real
+# critical path from docs/ARCHITECTURE.md § 9 — sign up, invite, accept, plan a
+# date — each filled in by the phase named against it. Keep them in this order:
+# every step depends on the one above it.
+appId: test.swoon.app
+---
+- launchApp:
+    clearState: true
+
+# Phase 0 — the app boots and is themed.
+- assertVisible: 'Swoon'
+- assertVisible:
+    id: 'health-card'
+
+# Phase 0 — the device can reach the API. This is the step that catches a
+# misconfigured EXPO_PUBLIC_API_URL, which is the usual reason a fresh clone
+# looks broken on a phone.
+- assertVisible: 'Connected to .*'
+
+# TODO P1.T02 (email registration) — sign up:
+#   - tapOn: 'Get started'
+#   - inputText in name / email / password, then tapOn 'Create account'
+#   - assertVisible the invite-your-partner screen
+#
+# TODO P1.T04 (partner invite) — invite:
+#   - tapOn 'Invite your partner', copy the code, assertVisible 'Waiting for'
+#
+# TODO P1.T05 (accept) — accept, as the second partner:
+#   - clearState, sign up as partner B, open swoon://invite/<code>
+#   - assertVisible the five-tab shell, which only a linked couple sees
+#
+# TODO P3.T07 (date planner) — plan a date:
+#   - from Home, tapOn the planner, answer the questions, submit
+#   - assertVisible the three generated options, with the ✨ AI label
+#
+# Each of those needs a seeded API and a way to read the invite code out of it.
+# Decide that when P1.T05 lands rather than guessing now: the likely answer is a
+# dedicated test-only endpoint behind an env flag, not screen-scraping an email.

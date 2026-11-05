@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P0.T12** — queue, scheduler and the Maestro smoke harness. The last task in Phase 0.
+**Current focus:** **P1.T01** — users, couples and the one-couple invariant. Phase 0 is done; this is the first task of Phase 1, and the gate to every feature.
 
 ---
 
@@ -63,7 +63,7 @@ here or linked from here.
 
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
-| **0** | [Foundations](#phase-0--foundations) | 12 | **11 / 12 done** |
+| **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
 | **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 0 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
@@ -96,7 +96,7 @@ and component library exist and are AA-verified, and every check runs in CI.
 - [x] All docs written; 21 module docs scaffolded.
 - [x] MySQL connected and migrated.
 - [x] Resend transport verified end to end.
-- [ ] Queue worker and scheduler verified.
+- [x] Queue worker and scheduler verified.
 
 **Dependencies.** None.
 
@@ -117,7 +117,9 @@ and component library exist and are AA-verified, and every check runs in CI.
 **Acceptance criteria**
 - `php artisan --version` reports Laravel 13.
 - `App\Modules\*` autoloads with no extra Composer config.
-- `composer dev` runs queue + scheduler + log tail (not `serve`, not Vite).
+- `composer dev` runs queue + scheduler (not `serve`, not Vite). *Amended in
+  P0.T12: the log tail moved to `composer logs`, because Pail needs `pcntl` and
+  so cannot run on Windows — see ADR-018.*
 
 **Docs to update** `docs/ARCHITECTURE.md`, `docs/DECISIONS.md` (ADR-002, ADR-007, ADR-009).
 
@@ -344,7 +346,7 @@ a block); `.githooks/pre-commit` running Pint + ESLint on staged files only;
 
 ---
 
-### `[ ]` P0.T12 — Queue, scheduler and Maestro harness · **S**
+### `[x]` P0.T12 — Queue, scheduler and Maestro harness · **S**
 
 **Steps**
 1. Add a `swoon:ping` queued job and an `artisan swoon:queue-test` that dispatches it.
@@ -362,6 +364,29 @@ a block); `.githooks/pre-commit` running Pint + ESLint on staged files only;
 **Docs to update** `docs/DEV_TOOLING.md`, `docs/ARCHITECTURE.md` § 9.
 
 **Size** S.
+
+> **Done 2026-11-05.** `PingJob` + `swoon:queue-test`, which dispatches and then
+> reports whether a worker collected it — with no worker, a dispatch succeeds
+> silently, which is what a broken setup looks like from outside. Job seen
+> handled under `composer dev`; a one-minute `Schedule::call()` heartbeat seen
+> firing at 13:16:00 under `schedule:work`, then removed as the task requires.
+> `maestro/smoke.yaml` written, parses, asserts Phase 0 and carries the four
+> critical-path steps as TODOs in dependency order.
+>
+> **The plan was wrong about `composer dev`, and it had never worked on this
+> machine.** Pail needs the `pcntl` extension, which Windows PHP does not have,
+> and it was the third process under `--kill-others` — so it killed the worker
+> and the scheduler on every run. The log tail is now `composer logs`, and
+> `composer dev` is queue + scheduler only. This is why P0.T01's "composer dev
+> runs queue + scheduler + log tail" acceptance criterion passed on paper and
+> not in reality: it was never run to completion.
+>
+> **One criterion is not met:** `maestro test maestro/smoke.yaml` has never
+> been run. The machine has no JVM, no Android SDK, no emulator and no Maestro,
+> and installing that stack is a multi-gigabyte change that is the founder's
+> call, not a side effect of this task. The flow is a skeleton, as the task
+> asks; what is unproven is that it passes. See `docs/DEV_TOOLING.md` § 5 for
+> the five things it needs, in order.
 
 ---
 

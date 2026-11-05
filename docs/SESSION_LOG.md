@@ -6,6 +6,61 @@ Format: date · task ID(s) · what changed · anything left over.
 
 ---
 
+## 2026-11-05 — P0.T12 · Queue, scheduler, Maestro harness — **Phase 0 complete**
+
+**Built**
+
+* `App\Jobs\PingJob` and `artisan swoon:queue-test`. The command dispatches one
+  ping and then says whether anything collected it, which is the point: with no
+  worker running a dispatch succeeds silently and the job just waits, and that
+  is indistinguishable from a working setup from the outside. It waits up to
+  three seconds before concluding — a worker polls rather than being pushed to,
+  and the first version reported "no worker" while a worker was demonstrably
+  running.
+* `maestro/smoke.yaml`. Asserts what Phase 0 built — the app launches, the theme
+  renders, the device can reach the API — and carries the four real
+  critical-path steps as TODOs naming the task that fills each one in, in
+  dependency order. Added `testID="health-card"` to the Home health card so the
+  flow does not depend on copy.
+* Two tests on the command's contract: one ping dispatched, and the log line
+  carries the token the command printed. The docs tell you to grep for that
+  token, so it is asserted rather than trusted.
+
+**`composer dev` had never worked on this machine.** Pail needs the `pcntl`
+extension, which Windows PHP does not have, and it was the third process under
+`concurrently --kill-others` — so Pail exited 1 immediately and took the queue
+worker and the scheduler down with it, every single run. P0.T01's acceptance
+criterion saying otherwise was never run to completion. `composer dev` is now
+queue + scheduler; the log tail is `composer logs`, with the Windows equivalent
+documented beside it (ADR-018). The plan's P0.T01 criterion is amended in place.
+
+**Verified** With the fixed loop: `PingJob` picked up and logged under
+`composer dev` (`RUNNING` → `DONE` in 21.97ms, `swoon:ping handled [IP7VJI]` in
+the log). A one-minute `Schedule::call()` heartbeat fired on its own at
+13:16:00 under `schedule:work`, then removed as the task requires — there are
+deliberately no scheduled tasks until the features in ARCHITECTURE § 5 arrive.
+`composer check` clean (14 tests / 35 assertions), green on MySQL 8 too,
+`npm run check` clean (66 tests).
+
+**The one criterion not met.** `maestro test maestro/smoke.yaml` has never been
+run. This machine has no JVM, no Maestro, no Android SDK and no emulator;
+installing that stack is a multi-gigabyte decision for the founder, not a side
+effect of this task. The flow is the skeleton the task asked for and it parses
+as valid YAML, but "it passes" is unproven. `docs/DEV_TOOLING.md` § 5 lists the
+five prerequisites in order, with the API-reachability one called out because it
+is the one that will actually bite.
+
+**Phase 0 is complete — 12/12.** Both halves boot, the app talks to the API, the
+theme and component library are AA-gated, MySQL is migrated, email works through
+Resend, and the queue and scheduler are proven. CI now actually runs (it did
+not until earlier today).
+
+**Next:** **P1.T01** — users, couples and the one-couple invariant, enforced in
+MySQL with a generated column and a unique index, not just in PHP. The gate to
+every feature in the app.
+
+---
+
 ## 2026-11-05 — Review and audit fixes (no task ID)
 
 A code review of P0.T11 and a whole-repo audit, then every finding fixed. No

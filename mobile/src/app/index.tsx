@@ -60,7 +60,7 @@ export default function HomeScreen() {
         Phase 0 scaffold. You two are not in here yet 💞
       </Text>
 
-      <Card title="API health" emoji="🩺">
+      <Card title="API health" emoji="🩺" testID="health-card">
         {health.isPending ? (
           <Text style={{ color: colours.inkMuted, fontSize: body.size, fontFamily: body.family }}>
             Checking…
