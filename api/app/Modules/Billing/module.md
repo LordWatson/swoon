@@ -58,6 +58,17 @@ None. Billing never involves the model.
 
 **Events:** `EntitlementChanged` (re-evaluates caps), `TrialStarted`, `TrialEnded`, `OrderPaid`; listens for `CoupleLinked` (start trial) and `CoupleUnlinked` (reassign entitlement to payer).
 
+> **Ready to wire (P1.T08).** `CoupleLinked` and `CoupleUnlinked` both exist and
+> fire now, so the listeners above can be written the moment Phase 8 starts.
+> `CoupleUnlinked` carries `couple`, `unlinkedBy` and `otherPartner`, which is
+> everything the payer rule needs.
+>
+> **The unlink confirm copy must state the billing consequence** before the
+> person taps it (rule 8 above, and `Accounts/module.md`). Unlink itself is
+> already live and deliberately does **not** block on billing: the entitlement
+> reassignment happens on the event, after the fact, because making someone
+> wait on a payment system to leave a relationship would be indefensible.
+
 **Scheduled:** `billing:reconcile` daily; `trials:expire` hourly.
 
 **Emails (Resend):** trial started, trial ending tomorrow (once, honest), payment problem, order confirmation, order shipped.

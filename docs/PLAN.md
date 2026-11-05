@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T05** — deep links and universal links.
+**Current focus:** **P1.T09** — account deletion and data export. *(Backend first: T05–T07 are the mobile tasks and are taken after T10, so the authorisation sweep can cover every endpoint in one pass.)*
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 4 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 5 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -642,7 +642,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T08 — Unlink · **S**
+### `[x]` P1.T08 — Unlink · **S**
 
 **Steps**
 1. `UnlinkCouple` Action: set `couple_user.left_at` and `couples.unlinked_at`, **immediately**, no consent from the other partner.
@@ -659,6 +659,30 @@ the gate to everything else: no couple, no product.
 **Docs to update** `Accounts/module.md` (rules), `api/app/Modules/Billing/module.md` (the entitlement-follows-payer rule).
 
 **Size** S.
+
+> **Done 2026-11-05.** Taken out of order, before T05–T07: those three are
+> mobile, and doing the backend first lets T10's sweep cover every endpoint in
+> one pass.
+>
+> `DELETE /api/couple` with **no couple id in the route** — a user has at most
+> one and the database guarantees it, so an id would only create a way to ask
+> about somebody else's. Ending both memberships also releases the one-couple
+> invariant, so either partner can link again immediately; leaving must not be
+> a one-way door out of the product, and there is a test for that.
+>
+> The notice email has a test asserting that "why", "undo", "contact", "will
+> be" and friends are **absent**: any of them turns a safety feature into a
+> negotiation. It carries strings rather than a `User`, because "unlink, then
+> delete my account" is exactly the sequence someone leaving performs.
+>
+> One more piece of module wiring, and a trap avoided: module **listeners** are
+> not auto-discovered either. Scanning `app/Modules` wholesale registered every
+> **Action** as a listener for its own first parameter's type, so discovery is
+> scoped to `app/Modules/*/Listeners` by glob.
+>
+> **Not built:** the mobile confirm screen, which arrives with the tab shell in
+> P1.T07. Its required copy — including the billing consequence — is written
+> into `Accounts/module.md` so it cannot be forgotten. 15 tests, 115 total.
 
 ---
 

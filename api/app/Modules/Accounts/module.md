@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P1.T04: a couple can now be created end to end. Nine endpoints of sixteen.
+**Last updated:** 2026-11-05 - P1.T08: link and unlink both work end to end. Twelve endpoints of sixteen.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -167,6 +167,48 @@ expired, used, revoked, and *the inviter has since linked with somebody else*
 The reminder is one email, three days in, and `reminded_at` is nullable and set
 once, which is what makes "a single reminder" true rather than a promise.
 
+### Unlink (P1.T08)
+
+`DELETE /api/couple` ends it **on the same request**, from either side, with no
+consent from the other partner, no pending state and no grace period. That is
+rule 3, and it is a safety requirement rather than a convenience: requiring
+consent — or even a heads-up first — would let a controlling partner trap
+someone in a shared space they cannot leave.
+
+There is **no couple id in the route**. A user has at most one and the database
+guarantees it, so taking an id would only create a way to ask about somebody
+else's.
+
+It closes rather than deletes (rule 4): the couple row stays with
+`unlinked_at` set, both memberships are kept but ended, and neither ex-partner
+can read the shared content afterwards — which falls out of `CouplePolicy`
+asking for a *live* membership. Ending the memberships also releases both
+partners from the one-couple invariant, so either can link again immediately:
+leaving must not be a one-way door out of the product.
+
+**The notice email** (rule 5) is the hardest copy in the app. Past tense only,
+no reason, no blame, no "get in touch", no undo — there is a test asserting
+those words are absent, because any of them turns a safety feature into a
+negotiation. It carries the recipient's address and first name as strings
+rather than a `User`, since "unlink, then delete my account" is exactly what
+someone leaving does and the worker may run after the account is gone. A
+partner with no email at all (a social-only account) is a quiet no-op: the
+unlink must never fail because the notice could not be sent.
+
+### The unlink confirm copy (mobile)
+
+The screen must say, in plain words, all three of these before the button:
+
+1. **What happens now** — "This ends your shared space. It happens straight
+   away, and Sam will be told it has happened."
+2. **What happens to the data** — "Everything you added yourself stays yours.
+   Neither of you will be able to open the things you shared."
+3. **What happens to the subscription** — whoever is paying keeps the tier; the
+   other partner drops to Spark at the end of the period
+   (`Billing/module.md` rule 8).
+
+Not built yet: the screen arrives with the tab shell in P1.T07.
+
 ### Rate limiting
 
 Two limits on the auth routes, and the second one's key is the point:
@@ -262,6 +304,10 @@ Run: `composer test -- --filter=Accounts`
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
 - 2026-11-05 - P0.T10: `users` profile columns added to the base migration,
   `HasApiTokens` on `User`, first test file. Schema verified on MySQL 8.0.46.
+- 2026-11-05 - P1.T08: unlink. `UnlinkCouple`, `CoupleUnlinked`,
+  `NotifyPartnerOfUnlink`, `UnlinkNoticeMail`, couple show/update/destroy.
+  15 tests. Taken before P1.T05-T07 so the authorisation sweep can cover
+  every endpoint at once.
 - 2026-11-05 - P1.T04: invite, preview, accept, revoke. `CreateInvite`,
   `AcceptInvite`, `RevokeInvite`, `CoupleLinked`, `InviteMail`,
   `SendInviteEmail`, `invites:remind`. 29 tests including two simultaneous

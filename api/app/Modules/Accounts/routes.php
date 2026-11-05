@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Modules\Accounts\Http\Controllers\AuthController;
+use App\Modules\Accounts\Http\Controllers\CoupleController;
 use App\Modules\Accounts\Http\Controllers\InviteController;
 use App\Modules\Accounts\Http\Controllers\MeController;
 use App\Modules\Accounts\Http\Controllers\SocialAuthController;
@@ -43,4 +44,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('invites', [InviteController::class, 'store'])->name('invites.store');
     Route::post('invites/{code}/accept', [InviteController::class, 'accept'])->name('invites.accept');
     Route::delete('invites/{invite}', [InviteController::class, 'destroy'])->name('invites.destroy');
+
+    Route::get('couple', [CoupleController::class, 'show'])->name('couple.show');
+    Route::patch('couple', [CoupleController::class, 'update'])->name('couple.update');
+    // Unlink. No couple id: a user has at most one, so taking an id would only
+    // create a way to ask about somebody else's.
+    Route::delete('couple', [CoupleController::class, 'destroy'])->name('couple.destroy');
 });
