@@ -45,3 +45,32 @@ export function authStateFor(input: {
 export function routeFor(state: AuthState): (typeof ROUTE_FOR)[keyof typeof ROUTE_FOR] | null {
   return state === 'loading' ? null : ROUTE_FOR[state];
 }
+
+/**
+ * Every route a state may legitimately occupy.
+ *
+ * `ROUTE_FOR` is where the gate *sends* you; this is where it leaves you
+ * alone. The two are different: a solo user is sent to `/invite`, but
+ * `/onboarding` is equally theirs and bouncing them out of it made the
+ * onboarding flow unreachable — it was built and then never shown.
+ *
+ * Data rather than a chain of `startsWith` calls inside the gate, so a new
+ * screen is one line here and the tests read the same list.
+ */
+export const ALLOWED_ROUTES = {
+  unauthenticated: ['/welcome', '/sign-in', '/sign-up'],
+  solo: ['/invite', '/onboarding'],
+  coupled: ['/(tabs)', '/'],
+} as const satisfies Record<Exclude<AuthState, 'loading'>, readonly string[]>;
+
+/**
+ * Whether the current path belongs to this state.
+ *
+ * Note the special case for `/`: a plain `startsWith('/')` matches **every**
+ * route, which would make any path look like it belonged to a coupled user.
+ */
+export function isWithinState(current: string, state: Exclude<AuthState, 'loading'>): boolean {
+  return ALLOWED_ROUTES[state].some((prefix) =>
+    prefix === '/' ? current === '/' : current.startsWith(prefix),
+  );
+}

@@ -1,3 +1,5 @@
+import { useRouter } from 'expo-router';
+
 import { AuthForm } from '../features/accounts/AuthForm';
 import { useRegister } from '../features/accounts/useAuth';
 
@@ -11,6 +13,7 @@ import { useRegister } from '../features/accounts/useAuth';
  */
 export default function SignUpScreen() {
   const register = useRegister();
+  const router = useRouter();
 
   return (
     <AuthForm
@@ -22,7 +25,15 @@ export default function SignUpScreen() {
       busy={register.isPending}
       error={register.error}
       onSubmit={({ name, email, password }) =>
-        register.mutate({ name, email, password, timezone: detectTimezone() })
+        register.mutate(
+          { name, email, password, timezone: detectTimezone() },
+          {
+            // Straight into onboarding. The gate would otherwise send a new
+            // solo user to the invite screen, which skips the questions
+            // entirely — and someone signing IN has already answered them.
+            onSuccess: () => router.replace('/onboarding'),
+          },
+        )
       }
     />
   );

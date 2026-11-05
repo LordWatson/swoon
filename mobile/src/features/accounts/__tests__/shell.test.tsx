@@ -13,7 +13,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ThemeProvider, lightTheme } from '../../../theme';
 import type { Me } from '../api';
-import { authStateFor, ROUTE_FOR, routeFor } from '../navigation';
+import { ALLOWED_ROUTES, authStateFor, isWithinState, ROUTE_FOR, routeFor } from '../navigation';
 import { QUICK_ADD_OPTIONS, QuickAddSheet } from '../QuickAddSheet';
 
 /**
@@ -121,6 +121,39 @@ describe('which stack a person sees', () => {
 
   it('has a route for every state except loading', () => {
     expect(Object.keys(ROUTE_FOR).sort()).toEqual(['coupled', 'solo', 'unauthenticated']);
+  });
+});
+
+describe('which routes a state may occupy', () => {
+  it('leaves a solo user alone in onboarding', () => {
+    // The regression: the gate bounced /onboarding to /invite, so the
+    // onboarding flow was built and then never reachable.
+    expect(isWithinState('/onboarding', 'solo')).toBe(true);
+    expect(isWithinState('/invite', 'solo')).toBe(true);
+    expect(isWithinState('/invite/ABCD2345', 'solo')).toBe(true);
+  });
+
+  it('does not let one state sit in another stack', () => {
+    expect(isWithinState('/welcome', 'solo')).toBe(false);
+    expect(isWithinState('/onboarding', 'coupled')).toBe(false);
+    expect(isWithinState('/(tabs)/moments', 'unauthenticated')).toBe(false);
+  });
+
+  it('treats the root route as exactly the root', () => {
+    // `startsWith('/')` matches EVERY path, which would make any route look
+    // like it belonged to a coupled user and disable the gate entirely.
+    expect(isWithinState('/', 'coupled')).toBe(true);
+    expect(isWithinState('/welcome', 'coupled')).toBe(false);
+    expect(isWithinState('/invite', 'coupled')).toBe(false);
+  });
+
+  it('sends each state somewhere it is allowed to be', () => {
+    // Stops the redirect target and the permitted list drifting apart, which
+    // would be an endless redirect.
+    for (const state of ['unauthenticated', 'solo', 'coupled'] as const) {
+      expect(isWithinState(ROUTE_FOR[state], state)).toBe(true);
+      expect(ALLOWED_ROUTES[state].length).toBeGreaterThan(0);
+    }
   });
 });
 

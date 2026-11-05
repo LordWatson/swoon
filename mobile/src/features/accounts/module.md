@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞 - mobile
 
 **Status:** done
-**Last updated:** 2026-11-05 - P1.T05: deep links. **Phase 1 is complete** - two people can sign up, link, and leave.
+**Last updated:** 2026-11-05 - fixed: sign-in and sign-out did not redirect, and the onboarding flow was unreachable.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > **Canonical doc:** [`api/app/Modules/Accounts/module.md`](../../../../api/app/Modules/Accounts/module.md)
@@ -181,6 +181,43 @@ rather than fetched, so a typo is caught before a round trip — squinting at a
 text message and then waiting for a request to tell you the length is wrong is
 a bad experience.
 
+## Session state must be reactive (fixed 2026-11-05)
+
+**The bug:** registering created the account, saved the token, and left the
+person on the sign-up screen. Nothing was broken on the server — the gate
+simply never recomputed, because token presence was read **once** into
+`useState` on mount. Saving a token later changed nothing anybody was watching.
+
+Token presence is now a **query** (`['auth-token']`), so it is shared, cached
+and invalidatable. `refreshSession()` invalidates the token and the `me` keys
+together, and every mutation that signs in or out calls it — one helper,
+because forgetting the token key is precisely the bug.
+
+Sign-out had the same defect in mirror image: `queryClient.clear()` empties the
+cache but does **not** re-render mounted observers, so the gate kept showing
+the tabs to someone who had signed out. It now invalidates first, then removes
+the previous person's data.
+
+`useMe` is gated on having a token, so a cold start with no session no longer
+fires a guaranteed 401.
+
+> **The lesson for later phases:** anything the navigation gate reads has to
+> live somewhere observable. Component state that is seeded once from storage
+> looks right in a screenshot and never updates.
+
+## The onboarding flow was unreachable (fixed 2026-11-05)
+
+Found while fixing the above. The gate asked `current.startsWith('/invite')`
+for a solo user, so `/onboarding` was bounced to `/invite` — the flow built in
+P1.T06 could never be shown. The routes each state may occupy are now **data**
+(`ALLOWED_ROUTES`), with a test per state, and sign-up sends a newly registered
+person to onboarding explicitly. Someone signing *in* skips it, having already
+answered.
+
+One trap worth knowing: `'/'` cannot be matched with `startsWith`, because it
+matches every path and would disable the gate completely. There is a test for
+that too.
+
 ## Where the token lives
 
 `expo-secure-store`, never AsyncStorage: the token is the whole account, and
@@ -217,6 +254,11 @@ applies, and any reveal/privacy gate as seen from the client.
 - Not implemented yet. See the canonical doc's gaps list.
 
 ## Changelog
+- 2026-11-05 - **Fix:** registering and signing in did not redirect. Token
+  presence was component state seeded once on mount, so nothing recomputed.
+  It is a query now, invalidated with `me` by one `refreshSession()` helper.
+  Sign-out had the mirror bug (`clear()` does not re-render observers). Also
+  found and fixed: the gate made `/onboarding` unreachable. 11 new tests.
 - 2026-11-05 - P1.T05: deep and universal links. `inviteLink.ts`,
   `inviteCode.ts`, `pendingInvite.ts`, `app/invite/[code].tsx`, and the
   pending-code pickup on the invite screen. 16 tests. Phase 1 complete.

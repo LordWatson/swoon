@@ -1,7 +1,7 @@
 import { useRouter, useSegments } from 'expo-router';
 import { type ReactNode, useEffect } from 'react';
 
-import { authStateFor, ROUTE_FOR, type AuthState } from './navigation';
+import { authStateFor, isWithinState, ROUTE_FOR, type AuthState } from './navigation';
 import { useHasToken, useMe } from './useAuth';
 
 /**
@@ -41,30 +41,13 @@ export function AuthGate({ children }: { children: ReactNode }) {
     // handled by its own screen, which sends the person on afterwards.
     if (segments[0] === 'invite' && segments.length > 1) return;
 
-    if (!isWithin(current, state)) {
+    // Checked by prefix rather than exact path, so pushing a screen inside
+    // the right stack — sign-in from Welcome, onboarding from sign-up — does
+    // not bounce the person back out of it.
+    if (!isWithinState(current, state)) {
       router.replace(target);
     }
   }, [router, segments, state]);
 
   return children;
-}
-
-/**
- * Whether the current route already belongs to this state.
- *
- * Checked by group rather than by exact path so pushing a screen inside the
- * right stack — sign-in from Welcome, say — does not bounce the user back out
- * of it.
- */
-function isWithin(current: string, state: Exclude<AuthState, 'loading'>): boolean {
-  // The tabs group is the root route, so every tab path lives under it.
-  if (state === 'coupled') return current === '/' || current.startsWith('/(tabs)');
-
-  if (state === 'solo') return current.startsWith('/invite');
-
-  return (
-    current.startsWith('/welcome') ||
-    current.startsWith('/sign-in') ||
-    current.startsWith('/sign-up')
-  );
 }
