@@ -129,11 +129,32 @@ both enforced server-side before the job is dispatched.
 * A **safety trip is logged with no couple and no user** (ADR-027), so a
   tripped generation costs the business its pennies and costs the couple
   nothing — neither allowance nor a record.
-* Caps are **per tier**, from `config/ai.php` — never a literal in a job.
+* Caps are **per tier**, from `config/ai.php` — never a literal in a job, and
+  checked by `Ai\Actions\CapGuard` **before dispatch**, so a refusal costs
+  nothing.
+* **Only successful generations count against a cap.** A reply in the wrong
+  shape or a transport failure gave the couple nothing, and charging their
+  allowance for our failure would be unkind. The money is still logged, and
+  noticing a lot of it is the cost guard's job: the cap counts what they got,
+  the guard counts what we spent.
+* The month ends at **local midnight in the couple's timezone** — the
+  earliest-joining member's, so the window is stable whoever asks.
 * When a cap is hit, the response is kind and specific (UX rule 8 — no guilt):
-  > That's your date plans for this month 💝 They reset on 1 December.
+  > That's your date plans for this month 💝 They come back on 1 December.
+
+  A feature the tier does not include says so instead — "Weekly recaps come
+  with Together 💛" — rather than pretending there is a reset to wait for.
+* `GET /api/ai/allowance` returns the same numbers and the same copy, so the
+  app can show "1 left" beside the button instead of refusing after the form.
 * A **hard cost ceiling per couple per month** exists above the feature caps, as a
-  runaway guard. Hitting it alerts us; it should never be reached in normal use.
+  runaway guard. It should never be reached in normal use, so hitting it means a
+  bug or abuse rather than a keen couple.
+* A **global daily ceiling** sits above that. Crossing it refuses every
+  generation until the day rolls over and logs `critical`, which is the alert.
+  The message a person sees is calm and does not mention money: "Something's
+  busy at our end 💛 Give it a little while and try again."
+* The global guard is checked **first**. When everyone's spending has crossed
+  the ceiling, one couple's allowance is not the relevant fact.
 * The strong model is used for date planning and recaps; the cheap model for light
   classification and safety pre-checks. Model choice per task is in `config/ai.php`.
 

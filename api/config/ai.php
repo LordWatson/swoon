@@ -47,9 +47,12 @@ return [
     */
 
     'tasks' => [
-        'date_plan' => ['model' => 'strong', 'effort' => 'high', 'max_tokens' => 8000],
-        'weekly_recap' => ['model' => 'strong', 'effort' => 'medium', 'max_tokens' => 4000],
-        'insights' => ['model' => 'strong', 'effort' => 'medium', 'max_tokens' => 2000],
+        // `label` is the plural a couple reads in a cap refusal: "That's your
+        // date plans for this month". Only the capped tasks need one - an
+        // internal task is never refused to anybody's face.
+        'date_plan' => ['model' => 'strong', 'effort' => 'high', 'max_tokens' => 8000, 'label' => 'date plans'],
+        'weekly_recap' => ['model' => 'strong', 'effort' => 'medium', 'max_tokens' => 4000, 'label' => 'weekly recaps'],
+        'insights' => ['model' => 'strong', 'effort' => 'medium', 'max_tokens' => 2000, 'label' => 'insights'],
         'date_pack' => ['model' => 'strong', 'effort' => 'medium', 'max_tokens' => 8000],
         'year_in_moments' => ['model' => 'strong', 'effort' => 'high', 'max_tokens' => 8000],
         'safety_screen' => ['model' => 'light', 'effort' => 'low', 'max_tokens' => 512],

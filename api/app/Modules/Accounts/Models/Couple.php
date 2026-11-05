@@ -94,6 +94,30 @@ final class Couple extends Model
             ->first();
     }
 
+    /**
+     * The timezone the couple's month runs in.
+     *
+     * The earliest-joining live member's, which is role 'a' by construction.
+     * It has to be *stable* rather than fair: if it depended on who asked,
+     * two partners in different zones would see different allowances for a
+     * few hours either side of the first of the month.
+     *
+     * shortcut: derived rather than stored, so a couple cannot choose it.
+     * Upgrade when couple settings land in Phase 5 - a `timezone` column on
+     * `couples`, defaulting to this.
+     */
+    public function timezone(): string
+    {
+        // `value()` rather than `first()->timezone`: one column, no model to
+        // hydrate, and a result that is honestly nullable — a closed couple
+        // has no live members at all.
+        $timezone = $this->activeMembers()
+            ->orderBy('couple_user.joined_at')
+            ->value('users.timezone');
+
+        return is_string($timezone) ? $timezone : (string) config('app.timezone');
+    }
+
     /** True if this user is a live member — the basis of every policy here. */
     public function hasActiveMember(User $user): bool
     {

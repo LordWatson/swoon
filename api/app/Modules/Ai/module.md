@@ -1,7 +1,7 @@
 # AI Platform ✨
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P2.T01-T06 done: the driver seam with its fake, versioned prompts, output validation, **SafetyGuard**, the allow-list privacy filter, and cost logging. Caps, the queued pipeline and the evals are still to come.
+**Last updated:** 2026-11-05 - P2.T01-T07 done: the driver seam with its fake, versioned prompts, output validation, **SafetyGuard**, the allow-list privacy filter, cost logging, and caps with their cost guards. The queued pipeline and the evals are still to come.
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -44,6 +44,14 @@ Nothing here stores a partner's private content: the payload is hashed, not kept
 | POST | /api/ai/generations/{id}/feedback | sanctum | Rate an AI output | AiFeedbackRequest | 204 |
 | POST | /api/ai/generations/{id}/regenerate | sanctum | Regenerate, counting against the cap | - | 202 |
 | GET | /api/ai/allowance | sanctum | What the couple has left this month | - | AllowanceResource |
+
+`/api/ai/allowance` takes **no identifier**: a person has at most one live
+couple and the database guarantees it, so an id would only be a way to ask
+about somebody else's. A solo user gets a 404, because an allowance belongs to
+a couple rather than a person. The numbers and the refusal copy come from the
+same `CapGuard` the job uses, so the screen and the refusal cannot disagree -
+being told "that's your date plans for this month" after filling in a form is
+worse than seeing "1 left" beside the button.
 
 ## Business rules
 1. **Server-side only.** The Anthropic key lives in `api/.env` and never ships in the app. There is no proxy endpoint that forwards arbitrary prompts.
@@ -182,6 +190,57 @@ task's schema and silently unchecked would be a hole that never announces
 itself; the suite walks every declared schema and fails on an unsupported
 keyword, so the gap cannot wait for production.
 
+## Caps and the cost guards
+
+`Actions\CapGuard::check($couple, $task)` is called **before** a job is
+dispatched, so a refusal costs nothing. Three ceilings, in the order a couple
+meets them:
+
+1. the **fair-use cap** for their tier, per task, per calendar month, from
+   `config('ai.caps')`;
+2. a **per-couple cost guard** (`cost_guard.couple_monthly_pence`), far above
+   the caps - in normal use unreachable, so hitting it means a bug or abuse
+   rather than a keen couple;
+3. a **global daily cost guard** (`cost_guard.global_daily_pence`), which is
+   our problem and not theirs. Crossing it logs `critical` - that is the alert -
+   and names no couple, because it is not about one.
+
+The global guard is checked **first**: when everyone's spending has crossed the
+ceiling, this couple's allowance is not the relevant fact.
+
+**Only successful generations count against the cap.** A reply in the wrong
+shape, a transport failure, a guard that broke - none of them gave the couple
+anything, and charging their monthly allowance for our failure would be unkind.
+The money those attempts cost is still logged, and noticing a lot of it is the
+cost guard's job. The feature cap counts what they got; the cost guard counts
+what we spent.
+
+**The month ends at local midnight in the couple's timezone**, so a couple in
+Auckland is not told their allowance resets eleven hours late.
+`Couple::timezone()` takes the **earliest-joining live member's** - stable
+rather than fair, because if it depended on who asked, two partners in
+different zones would see different allowances either side of the first.
+
+**Four refusals, four pieces of copy** (`CapReason`), because "that's your date
+plans for this month" and "something's busy at our end" are not the same news:
+
+| Reason | Says |
+|---|---|
+| `monthly_cap` | "That's your date plans for this month 💝 They come back on 1 December." |
+| `not_on_this_tier` | "Weekly recaps come with Together 💛" - nothing to wait for, so it does not pretend a reset |
+| `couple_cost_guard` | "That is all the AI we can do for you this month 💛 It comes back on 1 December." |
+| `global_cost_guard` | "Something's busy at our end 💛 Give it a little while and try again." - true, vague, calm, and it does not mention money |
+
+The copy travels with the verdict rather than being written wherever a cap is
+checked, so there is one message per reason rather than one per caller. A test
+asserts none of them contains "exceeded", "limit reached", "too many",
+"denied", "quota" or "error" (UX rule 8).
+
+**Entitlement** comes from `Billing\Support\Entitlement::tierFor()`, which is
+the one stub saying everybody is on `spark` until Phase 8. `MeResource` used to
+hold a second copy of it; a stub in two places is how it becomes two stubs that
+disagree.
+
 ## The privacy filter
 
 `Support\PrivacyFilter::apply($task, $payload)` keeps the allow-listed fields
@@ -299,6 +358,10 @@ This is the module where privacy is won or lost.
 ## Tests
 `api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
 
+Done so far (P2.T07): the cap boundary at n-1, n and n+1; counted per couple and per task; only successful generations counted, with `invalid_output`, `error` and `capped` explicitly not; last month excluded. The month rolling over at **local midnight in Auckland** while UTC still says November, with the reset date landing on 1 January in the couple's own zone; the timezone taken from whoever joined first so it cannot wobble. The refusal naming the date; a no-guilt word list across all four reasons; a tier that does not include a feature saying so rather than pretending a reset; a task with no cap entry refused rather than unlimited. Both cost guards, including the global one alerting at `critical` and taking precedence over everything about the couple, and yesterday's spending not counting towards today. A refusal spending nothing.
+
+The endpoint: per-task numbers, the written refusal, capped tasks only (no `safety_screen`), each couple's own figures, a 404 for a solo user, a 401 without a token, and no identifier in the route. Plus `AiAuthorisationTest`, the module's own sweep driven off the route table - proven to bite by adding an undeclared route.
+
 Done so far (P2.T06): the cost arithmetic checked against sums worked out by hand for both models, including the Haiku screen that rounding to pence would lose entirely; a price change in config moving the answer; `toPence()` rounding up; a warning and a gate for a model with no price. A row for each of the five outcomes, including the refusal that never reached the model. For a safety trip: no couple, no user, the attribution dropped even when passed, and the allowance unspent. Supersede keeping both rows with their own prompt versions and outputs; a ULID on every generation; a payload hash and no payload; one rating per person per generation.
 
 Done so far (P2.T05): **one test per private field, by name** - gift vault, individual check-in answers, private moment notes, private love-map entries, locked love notes, the partner's un-revealed answers, email addresses, full postcodes, shipping addresses, coordinates, password hashes and tokens. Each asserts the value is absent from the filtered payload, so widening the allow-list fails the test belonging to the field it exposed. Plus: the kept set equals the allow-list exactly; dietary and accessibility needs survive; both partners survive when one has nothing to say; a list stays a list; an undeclared task is refused; an allow-listed path holding an object throws; no allow-list entry anywhere names a postcode, address, coordinate, email, phone, password or token.
@@ -334,6 +397,12 @@ Run: `composer test -- --filter=Ai`
 - Cost-per-couple model is unvalidated until real traffic exists.
 
 ## Changelog
+- 2026-11-05 - **P2.T07**: `CapGuard`, `CapVerdict`, `CapReason`,
+  `GET /api/ai/allowance` and the module's authorisation sweep.
+  `Billing\Support\Entitlement` absorbs the tier stub `MeResource` was
+  holding, so there is one of it. `Couple::timezone()` added, derived from the
+  earliest-joining live member. Capped tasks gained a `label` in config, which
+  is the plural a couple reads in a refusal.
 - 2026-11-05 - **P2.T06**: migrations for `ai_usage`, `ai_generations` and
   `ai_feedback`, their models, `Support\Cost` and `Support\UsageLogger`.
   Two decisions came out of the arithmetic rather than going in: **ADR-026**

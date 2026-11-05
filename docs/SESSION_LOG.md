@@ -203,6 +203,40 @@ Two decisions came out of the arithmetic rather than going into it.
   `.env.testing` that does not exist and took eleven tests down with it,
   including the AI driver selection ones.
 
+**P2.T07 — caps and the cost guards.** 415 API tests.
+
+* **The cap counts what they got; the guard counts what we spent.** Only
+  successful generations count against a fair-use cap — charging somebody's
+  monthly allowance because our reply came back in the wrong shape would be
+  unkind. The money those attempts cost is still logged, and noticing a lot of
+  it is the per-couple cost guard's job. Two ceilings, two different questions.
+* **The global guard is checked first**, because when everyone's spending has
+  crossed the ceiling, one couple's allowance is not the relevant fact. It logs
+  `critical`, which is the alert, and names no couple because it is not about
+  one.
+* **Four refusals, four pieces of copy.** "That's your date plans for this
+  month" and "something's busy at our end" are not the same news. A tier that
+  does not include a feature says so rather than pretending there is a reset to
+  wait for. A test checks all four against a word list — exceeded, limit
+  reached, too many, denied, quota, error — because those are the words that
+  creep in when somebody writes a limit message without thinking about who is
+  reading it.
+* **The month ends at local midnight in the couple's timezone.** The test that
+  matters sets the clock to 30 November 11:30 UTC, which is already 1 December
+  in Auckland: the allowance is back, and the next reset reads 1 January in
+  their zone. `Couple::timezone()` takes the earliest-joining member's —
+  stable rather than fair, because if it depended on who asked, two partners in
+  different zones would disagree about the allowance for a few hours.
+* **One entitlement stub, not two.** `MeResource` was hardcoding `spark` and
+  `CapGuard` needed the same answer. `Billing\Support\Entitlement` is now the
+  only place that says it, which is where Phase 8 will look.
+* **Larastan refused `$member?->timezone ?? config(...)`** as a nullsafe that
+  can never be null, because it types a relation's `first()` as non-nullable.
+  `->value('users.timezone')` with an `is_string()` check is honest about the
+  nullability, one column instead of a hydrated model, and clean.
+* The AI module has its own authorisation sweep now, same shape as Accounts and
+  driven off the route table. Proven to bite by adding an undeclared route.
+
 **Left over:** the founder's real Anthropic key sits in `api/.env` (untracked,
 git-ignored) and was read aloud during this session while checking the test
 environment — worth rotating.

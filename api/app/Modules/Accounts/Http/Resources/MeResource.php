@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Accounts\Http\Resources;
 
 use App\Models\User;
+use App\Modules\Billing\Support\Entitlement;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -29,25 +30,7 @@ final class MeResource extends JsonResource
         return [
             'user' => new UserResource($this->resource),
             'couple' => $couple === null ? null : new CoupleResource($couple),
-            'entitlement' => $this->entitlement(),
-        ];
-    }
-
-    /**
-     * Entitlement stub.
-     *
-     * Billing is Phase 8. The shape is here from the start so the app can be
-     * built against it and gate features now, rather than every screen growing
-     * an `if (entitlement === undefined)` branch later.
-     *
-     * @return array<string, mixed>
-     */
-    private function entitlement(): array
-    {
-        return [
-            'tier' => 'spark',
-            'trial_ends_at' => null,
-            'is_paid' => false,
+            'entitlement' => Entitlement::describe($couple),
         ];
     }
 }

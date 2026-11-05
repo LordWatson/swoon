@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P2.T07** — caps and the cost guard. **P2.T01–T06 are done**: one interface to the model, pinned versioned prompts, validated output, **SafetyGuard**, an allow-list filter, and cost logged on every call.
+**Current focus:** **P2.T08** — the queued `RunAiTask` and the full pipeline. **P2.T01–T07 are done**: one interface to the model, pinned versioned prompts, validated output, **SafetyGuard**, an allow-list filter, cost logged on every call, and caps checked before dispatch.
 
 ---
 
@@ -992,7 +992,7 @@ this phase; everything after it depends on this being right.
 
 ---
 
-### `[ ]` P2.T07 — Caps and the cost guard · **M**
+### `[x]` P2.T07 — Caps and the cost guard · **M**
 
 **Steps**
 1. `CapGuard` checked **before dispatch**: entitlement tier → `config('ai.caps')` → monthly count from `ai_usage`.
