@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P2.T02** — the prompt registry. **P2.T01 is done**: one interface to the model, a fake the suite runs on by default, and no model id outside `config/ai.php`.
+**Current focus:** **P2.T03** — structured output validation. **P2.T01–T02 are done**: one interface to the model, a fake the suite runs on by default, and prompts as pinned, versioned files.
 
 ---
 
@@ -883,7 +883,7 @@ this phase; everything after it depends on this being right.
 
 ---
 
-### `[ ]` P2.T02 — Prompt registry with versioning · **S**
+### `[x]` P2.T02 — Prompt registry with versioning · **S**
 
 **Steps**
 1. `resources/prompts/<name>/<version>.md`.

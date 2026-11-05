@@ -1,7 +1,7 @@
 # AI Platform ✨
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P2.T01 done: the driver seam, the fake and the no-network guarantee. Prompts, validation, SafetyGuard, cost and caps are still to come.
+**Last updated:** 2026-11-05 - P2.T01 and P2.T02 done: the driver seam with its fake, and the versioned prompt registry. Validation, SafetyGuard, cost and caps are still to come.
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -101,6 +101,30 @@ force-blanked in `phpunit.xml` so it would refuse if it were. The blanking is
 not belt-and-braces theatre - `APP_ENV=testing` with no `.env.testing` loads
 the developer's own `api/.env`, which holds a working key.
 
+## Prompts
+
+`PromptRegistry::resolve($name, $variables)` reads
+`resources/prompts/<name>/<version>.md` at the version pinned in
+`config('ai.prompts.active')` and returns a `RenderedPrompt` carrying the text,
+the version and a `reference()` like `safety_screen/v1` - which is what goes on
+every `ai_usage` row. The version travels with the text rather than being
+looked up again later, so a config change mid-job cannot make a row disagree
+with the prompt that produced it.
+
+Dropping a `v2.md` beside `v1.md` changes nothing: promoting it is a config
+edit. A released version is never edited in place, because `ai_generations`
+rows point at it.
+
+**`config('ai.prompts.active')` lists only prompts whose file exists.** A pin
+without a file is a promise the code cannot keep, and it would surface the
+first time a couple triggered the feature - so the suite fails on one, and each
+phase adds its pin alongside the file it writes.
+
+Slot rules, and why each is strict, are in `docs/AI_PROMPTS.md` and
+`resources/prompts/README.md`. Short version: a slot with no value throws, a
+value with no slot throws, `null` is rejected, and there is no template
+language.
+
 ## Jobs, events & schedules
 **Jobs:** `RunAiTask` (the one queued entry point; per-task payloads), retried once on a transport error, never retried on `invalid_output` after the first retry.
 
@@ -123,6 +147,8 @@ This is the module where privacy is won or lost.
 ## Tests
 `api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
 
+Done so far (P2.T02): the pinned version wins over a newer file on disk; an unpinned prompt, a pin with no file, and a version that is not a version are each refused; every value type renders, including `false` as a word rather than nothing; a missing slot, a stray value and a `null` each throw; braces typed inside a value stay text. Plus the gate: every prompt the real config pins has a file.
+
 Done so far (P2.T01): driver selection both ways and an unknown name refused; the real driver never constructed under the fake; the real driver refusing without a key, which is the *assertion* behind "no network"; the fake's recording, its fixture loading, its queued overrides and its loud failure on a missing fixture; `AiRequest` resolving model, effort and ceiling from config; `TaskAgent`'s provider options following config; `AnthropicDriver`'s mapping, via laravel/ai's own agent fake.
 
 `ModelIdsTest` is a gate rather than a convention: it scans every PHP file under `app/`, `config/`, `database/`, `resources/`, `routes/` and `tests/` for a model id and fails on any outside `config/ai.php`. Proven to bite by adding one on purpose.
@@ -140,6 +166,12 @@ Run: `composer test -- --filter=Ai`
 - Cost-per-couple model is unvalidated until real traffic exists.
 
 ## Changelog
+- 2026-11-05 - **P2.T02**: `PromptRegistry` + `RenderedPrompt`.
+  `config('ai.prompts.active')` was pinning four prompts that had no files;
+  trimmed to the prompts that exist, with a test that fails on a pin without a
+  file. Prompt fixtures for the registry's own tests live in
+  `tests/Fixtures/Ai/prompts/`, so nothing invented sits in
+  `resources/prompts/`.
 - 2026-11-05 - **P2.T01**: `AiDriver` + `AnthropicDriver` + `FakeDriver`, bound
   by `config('ai.driver')` in `AppServiceProvider`. ADR-024 records why both
   our fake and laravel/ai's survive. `config/ai.php` lost its duplicate

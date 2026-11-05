@@ -213,12 +213,15 @@ return [
 
     'prompts' => [
         'path' => resource_path('prompts'),
+
         // Pin a version per prompt so a new file does not silently go live.
+        //
+        // A prompt appears here only once its file exists: a pin without a
+        // file is a promise the code cannot keep, and the suite fails on one.
+        // Each phase adds its own line alongside the file it writes, which is
+        // also the moment to update docs/AI_PROMPTS.md.
         'active' => [
-            'date_plan' => 'v1',
-            'weekly_recap' => 'v1',
-            'insights' => 'v1',
-            'safety_screen' => 'v1',
+            //
         ],
     ],
 

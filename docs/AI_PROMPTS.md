@@ -1,8 +1,13 @@
 # AI prompts — Swoon
 
 **Last updated:** 2026-11-05
-**Status:** skeleton. No prompt files exist yet — they are written in Phase 2
-(the platform) and Phase 3 onward (the features).
+**Status:** the registry works (P2.T02); the prompts themselves are written in
+Phase 2 (`safety_screen`) and Phase 3 onward (the features). The **Status**
+column in the index below is the truth about what exists.
+
+`config('ai.prompts.active')` lists only prompts whose **file exists**, and the
+suite fails on a pin without a file. So a prompt described here but not pinned
+there is a specification, not a working feature.
 
 This is the index of **every** prompt in the product. A prompt that is not listed
 here does not exist as far as review is concerned.
@@ -21,6 +26,28 @@ here does not exist as far as review is concerned.
 * Every user-facing generation passes **SafetyGuard** (fail-closed).
 * Inputs are built by an **allow-list per task** — never a deny-list.
 * Model and effort come from `config('ai.tasks.<task>')`, never a literal.
+
+### Slots
+
+`PromptRegistry::resolve($name, $variables)` fills `{{ slot_name }}`. It is
+strict in both directions, and on purpose:
+
+* **A slot with no value throws.** A prompt sent with a hole in it comes back
+  with a confident answer to a question nobody asked, and nothing downstream
+  can tell.
+* **A value with no slot throws too.** A task's allow-list names exactly what
+  it may see, so a value the prompt never asks for means the allow-list and the
+  prompt have drifted apart — and a reviewer cannot tell which is right.
+* **`null` is rejected.** Decide what absence should say and pass that.
+* Strings go in as written, numbers as numbers, booleans as `yes`/`no`, arrays
+  as pretty JSON. No loops, filters or conditionals: a prompt is a document,
+  and logic belongs in the Action that builds the values, where it is tested.
+* Values are filled in **one pass**, so `{{ ... }}` typed inside a love note is
+  text and cannot reach another variable.
+
+Values are untrusted — they are what two people typed. Nothing escapes them,
+because escaping prose for a language model is theatre. The defences are the
+declared output schema and SafetyGuard, both after the fact and both tested.
 
 ### Changing a prompt
 

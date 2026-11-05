@@ -48,6 +48,29 @@ application and Claude, two implementations, chosen by `config('ai.driver')`.
   model and a couple. `AiRequest` demands a schema and `TaskAgent` refuses an
   empty one.
 
+**P2.T02 — prompts as pinned files.** `resources/prompts/<name>/<version>.md`,
+with the live version in `config('ai.prompts.active')`. 209 API tests.
+
+* **The config was pinning four prompts that had no files.** Trimmed to what
+  exists, with a test that fails on a pin without a file — the alternative is a
+  promise that only breaks when a couple triggers the feature. Each phase now
+  adds its pin alongside the file it writes.
+* **The registry is strict in both directions.** A slot with no value throws,
+  and so does a value with no slot: a task's allow-list names exactly what it
+  may see, so a value the prompt never asks for means the allow-list and the
+  prompt have drifted and nobody can tell which is right. `null` is rejected
+  outright — decide what absence should say and pass that.
+* **`false` renders as "no", not as nothing.** PHP would make it an empty
+  string, which is precisely the empty slot the class exists to prevent.
+* **Values are filled in one pass**, so `{{ nickname }}` typed inside a love
+  note stays text rather than reaching another variable. Nothing escapes the
+  values otherwise, because escaping prose for a language model is theatre; the
+  defences are the output schema and SafetyGuard.
+* **A backslash vanished out of a bash heredoc**, turning `'/\'` into `'/'`
+  and making the file unparseable with an error pointing twenty lines away.
+  Paths are concatenated with forward slashes now. Worth remembering: lint the
+  file, do not trust the reported line.
+
 **Left over:** the founder's real Anthropic key sits in `api/.env` (untracked,
 git-ignored) and was read aloud during this session while checking the test
 environment — worth rotating.
