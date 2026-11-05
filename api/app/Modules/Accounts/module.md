@@ -342,6 +342,14 @@ Still to write: registration, each social path, the full invite/accept happy pat
 
 **Authorisation test per endpoint** - a second couple must receive 404/403 on every route here (Phase 10 makes this a standing requirement).
 
+**The sweep (P1.T10).** `tests/Feature/Authorisation/AccountsAuthorisationTest.php`
+reads the real route table and fails if any Accounts route has no recorded
+authorisation decision — verified by temporarily adding a route and watching it
+fail. Four kinds: `guest`, `auth`, `self` (no id in the route), `owned`. The
+outsider is a member of another live couple, not a solo user, because a solo
+user is refused by accident. `Tests\Authorisation\TwoCouples::make()` is the
+one line later phases copy.
+
 Built in P1.T01: `tests/Feature/Accounts/CoupleTest.php` (the invariant,
 including two concurrent accepts and a third-member attempt) and
 `PolicyTest.php` (either partner equal, stranger refused, other couple refused,
@@ -366,6 +374,9 @@ Run: `composer test -- --filter=Accounts`
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
 - 2026-11-05 - P0.T10: `users` profile columns added to the base migration,
   `HasApiTokens` on `User`, first test file. Schema verified on MySQL 8.0.46.
+- 2026-11-05 - P1.T10: the authorisation sweep, driven off the route table so
+  an undecided endpoint fails the suite. `TwoCouples` fixture for later phases.
+  12 tests.
 - 2026-11-05 - P1.T09: deletion and export. `DeleteAccount`,
   `PurgeDeletedUserData`, `BuildDataExport`, `BuildExportForUser`,
   `ExportReadyMail`, signed download route. Export JSON shape settled, closing

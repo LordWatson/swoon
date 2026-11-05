@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T10** — the authorisation test sweep, now that every Accounts endpoint exists. Then the mobile tasks T05–T07.
+**Current focus:** **P1.T07** — the tab shell and quick-add sheet. The backend of Phase 1 is complete; T05–T07 are the three mobile tasks left.
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 6 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 7 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -735,7 +735,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T10 — Authorisation test sweep for Phase 1 · **S**
+### `[x]` P1.T10 — Authorisation test sweep for Phase 1 · **S**
 
 **Steps**
 1. A `tests/Feature/Authorisation` helper building two unrelated couples.
@@ -750,6 +750,24 @@ the gate to everything else: no couple, no product.
 **Docs to update** `Accounts/module.md` (tests), `docs/ARCHITECTURE.md` § 9.
 
 **Size** S.
+
+> **Done 2026-11-05.** The sweep is **driven off the real route table**, not a
+> hand-written list: every Accounts route must have a recorded decision and the
+> suite fails naming any that does not. Verified by temporarily adding a route
+> and watching it fail — a list of assertions passes forever while the route
+> table grows past it.
+>
+> Naming the right kind was most of the work. The couple routes are not
+> `owned`: they take **no id**, so an outsider cannot aim them at another
+> couple at all — they get their own. Classifying them as `owned` produced a
+> failing test that was *my classification* being wrong, not the code. They are
+> `self`, whose negative case is a signed-in user with no couple, plus a
+> structural assertion that the URI contains no `{`.
+>
+> The outsider in `TwoCouples` is a member of a real, live couple rather than a
+> solo user, because a solo user is refused by accident for having no couple at
+> all. There is a positive control too: a file that only asserts refusals
+> passes with every endpoint broken. 12 tests, 149 total.
 
 ---
 

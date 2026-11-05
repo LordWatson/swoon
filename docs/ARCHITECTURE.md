@@ -379,6 +379,24 @@ Standing requirements:
   along with dummy Resend, Stripe and RevenueCat keys.
 * **Every endpoint has an authorisation test** proving a second couple gets
   403/404 (Phase 10 makes this a gate).
+
+  **The pattern, built in P1.T10** — `tests/Feature/Authorisation/` plus
+  `Tests\Authorisation\TwoCouples::make()`. A module's sweep reads the **real
+  route table** and fails if a route has no recorded decision, so adding an
+  endpoint without thinking about who may reach it breaks the suite rather than
+  shipping. A hand-written list of assertions passes forever while the route
+  table grows past it.
+
+  Four kinds, and naming the right one is most of the work: `guest`
+  (deliberately public — say why), `auth` (token needed, acts only on the
+  caller), `self` (the caller's own singleton resource, **no id in the route**,
+  so it cannot be aimed at anyone else and the negative case is a user with no
+  such resource), `owned` (takes an id, so someone else's must be refused).
+
+  The outsider in the fixture is a member of a **real, live couple**, not a
+  solo user: a solo user is refused by accident for having no couple at all,
+  which proves nothing about the rule. The sweep also keeps a positive control,
+  because a file that only asserts refusals passes with every endpoint broken.
 * **Every privacy rule has a test asserting absence from the JSON**, not absence
   from the screen.
 * The palette cannot regress: the contrast test includes a case asserting the
