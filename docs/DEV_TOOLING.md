@@ -52,6 +52,32 @@ CREATE DATABASE swoon_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 > Both schemas exist and `migrate:fresh` is verified against MySQL 8.0.46
 > (P0.T10).
 
+### Local sign-in accounts
+
+```powershell
+cd api
+php artisan db:seed
+```
+
+| Email | Password | State |
+|---|---|---|
+| `alex@user.com` | `passwordswoon` | **Coupled** with Rimma - lands on the tabs |
+| `rimma@user.com` | `passwordswoon` | **Coupled** with Alex - lands on the tabs |
+| `robin@user.com` | `passwordswoon` | **Solo** - lands on the invite screen |
+
+The couple exists so **the invite flow can be skipped entirely in local work**.
+Partner invites are awkward to exercise here: the universal link needs
+`link.swoon.test` hosted with its association files (§ 4.1), and the custom
+scheme needs a dev build on a real device. Signing in as Alex or Rimma puts you
+straight into the coupled app; Robin is there for the invite and
+waiting-for-partner screens, and for onboarding.
+
+`db:seed` is **idempotent** - it keys on the email address, touches nothing
+else in the database, and needs no `migrate:fresh`. Running it again also
+resets those three passwords, which is the quickest way out of having forgotten
+one. `tests/Feature/Accounts/SeederTest.php` asserts all of that, including
+that a second run does not collide with the one-couple invariant.
+
 To run the suite against MySQL locally — worth doing for any change that
 touches the schema, since that is what CI's `test-mysql` job gates:
 
