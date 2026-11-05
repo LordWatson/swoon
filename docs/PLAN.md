@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T03** — Sign in with Apple and Google.
+**Current focus:** **P1.T04** — partner invite and accept.
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 2 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 3 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -489,7 +489,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T03 — Sign in with Apple and Google · **M**
+### `[x]` P1.T03 — Sign in with Apple and Google · **M**
 
 **Steps**
 1. Verify the Apple identity token server-side (JWKS, audience, nonce, expiry).
@@ -509,6 +509,32 @@ the gate to everything else: no couple, no product.
 **Docs to update** `Accounts/module.md` (rules, gaps), `docs/DECISIONS.md` if the linking rule is non-obvious.
 
 **Size** M. *(Needs `APPLE_*` and `GOOGLE_*` credentials.)*
+
+> **Done 2026-11-05.** One `OidcTokenVerifier` for both providers — they both
+> issue RS256 OIDC tokens — with the checks the library leaves to the caller:
+> **algorithm pinned** rather than read from the token header (alg confusion),
+> audience and issuer matched, and **no configured client id means refuse
+> everything** rather than accept anything. Nonce replay is `Cache::add`, which
+> is atomic, so claiming the nonce *is* the check.
+>
+> Two decisions recorded: ADR-022 for `firebase/php-jwt`, since hand-rolling
+> RS256 + JWKS is where alg-confusion CVEs come from; and ADR-023 for refusing
+> to link a social identity to an existing email account without explicit
+> confirmation — an email match is not proof of being the same person.
+>
+> Two real bugs the tests caught. `apple_sub` was silently dropped because it
+> is not fillable; that default is right, so the Action sets it with
+> `forceFill` — a stray `User::create($request->all())` must never hand
+> someone another person's identity. And my own rejection messages were
+> distinguishable, so the endpoint leaked which check failed; the caller now
+> gets one message and the log gets the reason.
+>
+> 19 tests signing real tokens with a throwaway keypair against a stubbed
+> JWKS, forgeries included. **Not verified:** no live sign-in — the
+> credentials are unset, and until they are both endpoints refuse every token,
+> which is the right failure. Key generation needed a portable openssl-config
+> lookup: PHP on Windows ships `openssl.cnf` under `extras/ssl` and does not
+> point at it.
 
 ---
 

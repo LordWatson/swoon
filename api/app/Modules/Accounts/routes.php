@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Modules\Accounts\Http\Controllers\AuthController;
 use App\Modules\Accounts\Http\Controllers\MeController;
+use App\Modules\Accounts\Http\Controllers\SocialAuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,6 +25,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('throttle:auth')->group(function (): void {
     Route::post('auth/register', [AuthController::class, 'register'])->name('auth.register');
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+    Route::post('auth/apple', [SocialAuthController::class, 'apple'])->name('auth.apple');
+    Route::post('auth/google', [SocialAuthController::class, 'google'])->name('auth.google');
 });
 
 Route::middleware('auth:sanctum')->group(function (): void {

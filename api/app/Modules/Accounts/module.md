@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P1.T02: email sign-up, sign-in and sign-out are live. Four endpoints of sixteen.
+**Last updated:** 2026-11-05 - P1.T03: email, Apple and Google sign-in are all live. Six endpoints of sixteen.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -103,6 +103,43 @@ in 5 ms for unknown addresses and 90 ms for known ones is an account
 enumerator whatever the message says — and for a couples app, "does this person
 have an account" is itself private. Both halves are asserted in `AuthTest`.
 
+### Social sign-in (P1.T03)
+
+Apple and Google both hand the app an RS256-signed OIDC identity token, so the
+verification is one shared `OidcTokenVerifier` and two thin wrappers.
+
+**What is checked, and what happens if it is not.** The algorithm is pinned to
+RS256 rather than read from the token's own header - otherwise `"alg": "none"`,
+or HS256 signed with the public key as an HMAC secret, would pass. Audience and
+issuer are matched against configured values, because a valid Google token
+minted for somebody else's app is still a valid Google token. A nonce, when the
+app sends one, must match and must not have been seen before: `Cache::add` is
+atomic, so claiming the nonce *is* the replay check. **With no client id
+configured, every token is refused** rather than every token accepted.
+
+**Accounts are keyed on the provider's subject id, never on the email.** An
+Apple user can change their relay address and a Google address can change
+hands. `apple_sub` and `google_sub` are deliberately **not** fillable, so a
+stray `User::create($request->all())` anywhere in the app can never hand
+somebody another person's social identity; they are set with `forceFill` by
+verified server code only.
+
+**The reason a token was refused never reaches the caller.** Expired, forged,
+wrong audience, replayed nonce and "nobody configured a client id" are all the
+same 422 with the same message. The specific reason goes to the log, where a
+developer debugging a deploy can have it.
+
+**Private-relay addresses** are never matched against an existing account: a
+relay address is specific to one person *and* one app, so it identifies nothing
+outside it. Joining a social identity to an existing email account needs an
+explicit `link_confirmed` from the person (ADR-023). Apple's **name** arrives
+outside the token and only on first authorisation, so the client forwards it and
+the Action backfills it - but never over a name the user has since chosen.
+
+The provider's token is proof of identity for one request and is then thrown
+away. What the app gets back is a Sanctum token of ours, exactly as from an
+email sign-in.
+
 ### Rate limiting
 
 Two limits on the auth routes, and the second one's key is the point:
@@ -185,7 +222,11 @@ gets wrong).
 Run: `composer test -- --filter=Accounts`
 
 ## Known gaps / TODO
-- Apple/Google client ids and the Apple private key are not yet configured.
+- Apple/Google client ids and the Apple private key are not yet configured, so
+  **no live sign-in has been exercised** - only the full verification path
+  against a stubbed JWKS. Set `APPLE_CLIENT_ID` and the three
+  `GOOGLE_CLIENT_ID_*` values; until then both endpoints correctly refuse
+  everything.
 - Universal-link association files (AASA, assetlinks.json) are not yet hosted.
 - Export format not finalised - JSON shape needs to be decided and documented before Phase 1 ends.
 - Re-linking with the same partner after an unlink: does old shared content come back? Currently no. Needs a product decision.
@@ -194,6 +235,10 @@ Run: `composer test -- --filter=Accounts`
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
 - 2026-11-05 - P0.T10: `users` profile columns added to the base migration,
   `HasApiTokens` on `User`, first test file. Schema verified on MySQL 8.0.46.
+- 2026-11-05 - P1.T03: Sign in with Apple and Google. `OidcTokenVerifier`,
+  `SocialIdentityProvider`, `FindOrCreateSocialUser`. 19 tests against a
+  throwaway keypair and a stubbed JWKS, forgeries included; nothing touches the
+  network. ADR-022 (firebase/php-jwt), ADR-023 (explicit linking).
 - 2026-11-05 - P1.T02: register / login / logout / me. Actions, Form Requests,
   `UserResource`, `PartnerResource`, `CoupleResource`, `MeResource`. Non-
   enumerating sign-in with equalised timing; rate limits keyed so a stranger

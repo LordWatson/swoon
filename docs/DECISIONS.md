@@ -8,6 +8,55 @@ Keep each entry short: context, decision, consequence.
 
 ---
 
+## ADR-023 — A social identity joins an existing account only on explicit confirmation
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** Someone signs in with Google. The token verifies, the subject id
+is new to us, but the verified email already belongs to an account that was
+created with a password. The convenient thing is to link them silently.
+
+**Decision.** Refuse, and ask. The endpoint returns 422 with a
+`link_confirmed` validation error, and the app has to come back with
+`link_confirmed: true` after the person has said yes. An account is keyed on
+the provider's **subject id**, never on the email.
+
+**Consequence.** An email match is not proof of being the same human: anyone
+who can get a provider to issue a token for an address would otherwise walk
+straight into the account already using it. The cost is one extra screen in a
+flow most people will never see. Apple **private-relay** addresses are never
+matched at all — a relay address is specific to one person *and* one app, so it
+identifies nothing outside it, and the account is created separately with no
+email of its own.
+
+---
+
+## ADR-022 — firebase/php-jwt rather than hand-rolled token verification
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** Sign in with Apple and Google both hand the app an RS256-signed
+OIDC identity token to verify server-side. Doing that by hand is openssl plus
+base64url plus JWKS fetching plus key-id matching plus claim checks — more than
+"a few lines", and the place where getting it subtly wrong is an account
+takeover rather than a bug. The minimalism rule requires a record for any new
+dependency.
+
+**Decision.** Add `firebase/php-jwt` (v7). It is small, it is what Google's own
+PHP SDK uses underneath, and the alternative is writing cryptographic plumbing
+ourselves. `OidcTokenVerifier` wraps it with the checks the library leaves to
+the caller: **the algorithm is pinned to RS256** rather than read from the
+token's own header (the alg-confusion bug: `"alg": "none"`, or HS256 signed
+with the public key as an HMAC secret), the audience and issuer are matched
+against configured values, and an unconfigured audience refuses everything
+rather than accepting anything.
+
+**Consequence.** One dependency, in the auth path, so it wants watching for
+advisories. JWKS responses are cached for an hour and re-fetched once on an
+unknown `kid`, so key rotation is not an outage. Every check has a test that
+signs a token with a throwaway keypair and a stubbed JWKS, including the
+forgeries — nothing in the suite touches the network.
+
+---
+
 ## ADR-021 — Three planes, and only one feature plane per screen
 **Date:** 2026-11-05 · **Status:** accepted
 
