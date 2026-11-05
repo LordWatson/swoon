@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Modules\Ai\Http\Controllers\AllowanceController;
+use App\Modules\Ai\Http\Controllers\GenerationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,4 +24,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('ai/allowance', AllowanceController::class)->name('ai.allowance');
+
+    // Bound on `ulid`, not the key: a generation id should not be countable.
+    Route::post('ai/generations/{generation:ulid}/feedback', [GenerationController::class, 'feedback'])
+        ->name('ai.generations.feedback');
+
+    // 202 and a queued job. The model is never reached inside a request.
+    Route::post('ai/generations/{generation:ulid}/regenerate', [GenerationController::class, 'regenerate'])
+        ->name('ai.generations.regenerate');
 });

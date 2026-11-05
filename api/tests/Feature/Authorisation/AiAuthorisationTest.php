@@ -11,6 +11,7 @@ declare(strict_types=1);
  * one sweep per module, each enumerating its own reality.
  */
 
+use App\Modules\Ai\Models\AiGeneration;
 use Illuminate\Support\Facades\Route;
 use Tests\Authorisation\TwoCouples;
 
@@ -19,9 +20,10 @@ usingDatabase();
 /**
  * What each AI route expects, by route name.
  *
- *   self — acts on the caller's own singleton resource, with no id in the
- *          route, so it cannot be aimed at anyone else by construction. The
- *          negative case is a signed-in user who has no such resource.
+ *   self  — acts on the caller's own singleton resource, with no id in the
+ *           route, so it cannot be aimed at anyone else by construction. The
+ *           negative case is a signed-in user who has no such resource.
+ *   owned — takes an id, so it must refuse someone else's.
  *
  * @return array<string, array<string, mixed>>
  */
@@ -35,7 +37,35 @@ function aiCases(): array
             // An allowance belongs to a couple, so a solo user has none.
             'status' => 404,
         ],
+        'ai.generations.feedback' => [
+            'kind' => 'owned',
+            'method' => 'post',
+            'uri' => fn (TwoCouples $w) => '/api/ai/generations/'.generationFor($w)->ulid.'/feedback',
+            // 403, not 404: the ULID is unguessable, so there is nothing to
+            // hide by pretending it does not exist, and 403 is the truth.
+            'status' => 403,
+        ],
+        'ai.generations.regenerate' => [
+            'kind' => 'owned',
+            'method' => 'post',
+            'uri' => fn (TwoCouples $w) => '/api/ai/generations/'.generationFor($w)->ulid.'/regenerate',
+            'status' => 403,
+        ],
     ];
+}
+
+/** One generation belonging to Alex and Sam, for the routes that take an id. */
+function generationFor(TwoCouples $world): AiGeneration
+{
+    return AiGeneration::create([
+        'couple_id' => $world->couple->getKey(),
+        'module' => 'DatePlanner',
+        'task' => 'date_plan',
+        'prompt_name' => 'date_plan',
+        'prompt_version' => 'v1',
+        'payload' => ['partners' => [['first_name' => 'Ada']]],
+        'output' => ['options' => []],
+    ]);
 }
 
 /**
@@ -70,8 +100,22 @@ it('refuses every AI route without a token', function (): void {
     $world = TwoCouples::make();
 
     foreach (aiCases() as $name => $case) {
-        $this->{$case['method'].'Json'}(($case['uri'])($world))
+        $this->{$case['method'].'Json'}(($case['uri'])($world), ['rating' => 'up'])
             ->assertUnauthorized("Route {$name} answered without a token");
+    }
+});
+
+it('refuses another couple\'s generation', function (): void {
+    $world = TwoCouples::make();
+
+    foreach (aiCases() as $name => $case) {
+        if ($case['kind'] !== 'owned') {
+            continue;
+        }
+
+        $this->actingAs($world->outsider)
+            ->{$case['method'].'Json'}(($case['uri'])($world), ['rating' => 'up'])
+            ->assertStatus($case['status'], "Route {$name} let an outsider through");
     }
 });
 
@@ -89,20 +133,18 @@ it('gives a signed-in user with no couple nothing to see', function (): void {
     }
 });
 
-it('keeps the AI routes free of any id', function (): void {
+it('keeps the allowance free of any id', function (): void {
     // Structural: there is no way to *ask* about another couple's allowance,
     // because the route takes no identifier.
-    foreach (aiRoutes() as $name => $route) {
-        expect($route->uri())->not->toContain('{', "Route {$name} takes an identifier");
-    }
+    expect(aiRoutes()['ai.allowance']->uri())->not->toContain('{');
 });
 
-it('exposes no endpoint that reaches a model', function (): void {
-    // The module's standing guarantee: the model is reached only from a queued
-    // job. Every route here is about a couple's own allowance or their own
-    // past generations, so none of them may be a write that generates.
-    foreach (aiRoutes() as $name => $route) {
-        expect(array_intersect($route->methods(), ['GET', 'HEAD']))
-            ->not->toBe([], "Route {$name} is a write; if it generates, it must dispatch a job and say so here");
+it('identifies a generation by its ULID, never its key', function (): void {
+    // An auto-incrementing id in a URL is a way to count how much the product
+    // is used and to walk other couples' rows.
+    // `uri()` prints the binding field out, so the field itself is what has
+    // to be asserted rather than the string.
+    foreach (['ai.generations.feedback', 'ai.generations.regenerate'] as $name) {
+        expect(aiRoutes()[$name]->bindingFieldFor('generation'))->toBe('ulid');
     }
 });

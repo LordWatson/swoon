@@ -27,11 +27,12 @@ use Illuminate\Support\Str;
  * shown, which means the screen said safe, so it could hold one value.
  *
  * @property Carbon $created_at
+ * @property array<string, mixed> $payload
  * @property array<string, mixed> $output
  */
 #[Fillable([
     'couple_id', 'module', 'task', 'prompt_name', 'prompt_version',
-    'payload_hash', 'output',
+    'payload', 'output',
 ])]
 final class AiGeneration extends Model
 {
@@ -50,6 +51,7 @@ final class AiGeneration extends Model
     protected function casts(): array
     {
         return [
+            'payload' => 'array',
             'output' => 'array',
         ];
     }

@@ -25,6 +25,11 @@ use Illuminate\Support\Facades\Schema;
  * asserts it. The side effect is the right one: a generation that tripped does
  * not spend the couple's monthly allowance either.
  *
+ * **`ai_generations` keeps its filtered payload.** The module doc said the
+ * payload was hashed and not kept; a hash cannot ask the question again, and a
+ * generic regenerate needs to. It is safe to keep *because* it has already been
+ * through the allow-list, so it holds no private field by construction.
+ *
  * **`ai_generations` has no `safety_outcome` column.** A generation row only
  * exists when the output was shown, which means the screen said safe, so the
  * column could only ever hold one value. The module doc described one before
@@ -86,9 +91,13 @@ return new class extends Migration
             $table->string('prompt_name', 64);
             $table->string('prompt_version', 16);
 
-            // A hash of the filtered payload, never the payload. Enough to
-            // tell "the same question, asked again" from "a new question".
-            $table->string('payload_hash', 64);
+            // The **filtered** payload: what the prompt was actually built
+            // from. Safe to keep precisely because it went through the
+            // allow-list, so by construction it holds no private field - and
+            // keeping it is what makes a generic regenerate possible. A hash
+            // alone cannot ask the question again, and every feature would
+            // otherwise have to rebuild the payload itself.
+            $table->json('payload');
 
             // What the couple was shown, exactly as they saw it. A prompt
             // change must never rewrite this.

@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * It validates against the same array that went out as
  * `output_config.format`, so these tests build their schemas the way a task
- * does and check replies against them â€” not against a second description of
+ * does and check replies against them — not against a second description of
  * the same shape, which is the thing that drifts.
  */
 
@@ -179,7 +179,7 @@ describe('types', function (): void {
 
 it('refuses to quietly skip a constraint it does not understand', function (): void {
     // The alternative is a constraint declared in a task's schema that nothing
-    // checks â€” a hole that would never announce itself.
+    // checks — a hole that would never announce itself.
     expect(fn (): array => schemaCheck()->problems(
         ['type' => 'object', 'properties' => ['email' => ['type' => 'string', 'format' => 'email']]],
         ['email' => 'not an address'],

@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P2.T08** — the queued `RunAiTask` and the full pipeline. **P2.T01–T07 are done**: one interface to the model, pinned versioned prompts, validated output, **SafetyGuard**, an allow-list filter, cost logged on every call, and caps checked before dispatch.
+**Current focus:** **P2.T09** — eval fixtures and the prompt-change workflow, the last task in Phase 2. **P2.T01–T08 are done**: `AiService::run()` is the only path to the model, and the whole chain runs in a queued job.
 
 ---
 
@@ -1014,7 +1014,7 @@ this phase; everything after it depends on this being right.
 
 ---
 
-### `[ ]` P2.T08 — Queued `RunAiTask` and the full pipeline · **M**
+### `[x]` P2.T08 — Queued `RunAiTask` and the full pipeline · **M**
 
 **Steps**
 1. `RunAiTask` job wiring the whole chain: CapGuard → PrivacyFilter → PromptRegistry → Driver → SchemaValidator → SafetyGuard → UsageLogger → persist.

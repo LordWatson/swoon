@@ -38,8 +38,27 @@ describe('safety_screen', function (): void {
 });
 
 it('refuses a task with no declared shape', function (): void {
-    expect(fn (): Closure => TaskSchemas::for('date_plan'))
+    expect(fn (): Closure => TaskSchemas::for('year_in_moments'))
         ->toThrow(InvalidArgumentException::class, 'has no declared output schema');
+});
+
+describe('date_plan', function (): void {
+    it('insists on exactly three options', function (): void {
+        // "Exactly 3" is in the prompt too, but a prompt is a request and a
+        // schema is a rule: two options is `invalid_output`, not a thin screen.
+        $schema = (new AiRequest('date_plan', 'p', 'date_plan/v1'))->jsonSchema();
+
+        expect($schema['properties']['options']['minItems'])->toBe(3)
+            ->and($schema['properties']['options']['maxItems'])->toBe(3);
+    });
+
+    it('asks for money in integer pence, like everything else', function (): void {
+        $option = (new AiRequest('date_plan', 'p', 'date_plan/v1'))
+            ->jsonSchema()['properties']['options']['items'];
+
+        expect($option['properties']['estimated_cost_pence']['type'])->toBe('integer')
+            ->and($option['required'])->toContain('estimated_cost_pence');
+    });
 });
 
 it('has a declared shape for every task whose prompt is live', function (): void {

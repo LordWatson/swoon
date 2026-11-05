@@ -38,7 +38,12 @@ final readonly class UsageLogger
         // database should say that this couple tripped the safety guard on
         // this date, so the attribution is dropped here rather than left to
         // every caller to remember.
-        $names = $outcome->mayNameTheCouple();
+        //
+        // `safety_screen` rows are stripped too, and for the same reason one
+        // step removed: a trip leaves the generation with *no* attributed row,
+        // so an attributed screen row at the same moment would hand the
+        // correlation straight back.
+        $names = $outcome->mayNameTheCouple() && $task !== 'safety_screen';
 
         return AiUsage::create([
             'couple_id' => $names ? $coupleId : null,

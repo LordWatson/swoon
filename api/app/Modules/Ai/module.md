@@ -1,7 +1,7 @@
 # AI Platform ✨
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P2.T01-T07 done: the driver seam with its fake, versioned prompts, output validation, **SafetyGuard**, the allow-list privacy filter, cost logging, and caps with their cost guards. The queued pipeline and the evals are still to come.
+**Last updated:** 2026-11-05 - P2.T01-T08 done. `AiService::run()` is the only path to the model, and the whole chain runs in a queued job. The eval fixtures and the live eval command (P2.T09) are what remain.
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -41,8 +41,8 @@ Nothing here stores a partner's private content: the payload is hashed, not kept
 ## API endpoints
 | Method | Path | Auth | Purpose | Request | Response resource |
 |---|---|---|---|---|---|
-| POST | /api/ai/generations/{id}/feedback | sanctum | Rate an AI output | AiFeedbackRequest | 204 |
-| POST | /api/ai/generations/{id}/regenerate | sanctum | Regenerate, counting against the cap | - | 202 |
+| POST | /api/ai/generations/{ulid}/feedback | sanctum | Rate an AI output | AiFeedbackRequest | 204 |
+| POST | /api/ai/generations/{ulid}/regenerate | sanctum | Regenerate, counting against the cap | - | 202, or 200 with the cap's copy |
 | GET | /api/ai/allowance | sanctum | What the couple has left this month | - | AllowanceResource |
 
 `/api/ai/allowance` takes **no identifier**: a person has at most one live
@@ -189,6 +189,68 @@ the reply we asked for, and dropping it quietly would hide that.
 task's schema and silently unchecked would be a hole that never announces
 itself; the suite walks every declared schema and fails on an unsupported
 keyword, so the gap cannot wait for production.
+
+## The chain
+
+`Actions\AiService::run()` is the only way in, and it returns a `CapVerdict`:
+refused, with copy to show, or allowed, with a job queued. A feature module
+never sees a driver, a prompt file or a token count.
+
+```
+AiService::run(module, task, payload, couple, user, screen, supersedes)
+  -> CapGuard          refused? log `capped`, return the verdict, spend nothing
+  -> PrivacyFilter     before dispatch, so the jobs table never holds a
+                       un-allow-listed field
+  -> dispatch RunAiTask
+       -> SafetyGuard   each input, one at a time, before the expensive model
+       -> PromptRegistry  pinned version, rendered
+       -> GenerateValidated  one retry on a bad shape
+       -> SafetyGuard   the draft
+       -> persist       ai_generations, superseding if this is a redo
+       -> UsageLogger   a row per call, on every path
+       -> event         Completed | Failed | SafetyTripped
+```
+
+Two steps happen **before** dispatch on purpose. The cap, so a refusal costs
+nothing at all - not a model call, not a queue slot. And the privacy filter:
+the plan put it inside the job, and moving it one step earlier keeps
+un-allow-listed fields out of a `jobs` row that sits on disk until a worker
+picks it up. The guarantee is unchanged - nothing reaches a prompt that was
+not allow-listed - and the queue is cleaner for it.
+
+**Every exit logs.** There is no `return` in `RunAiTask` without an `ai_usage`
+row behind it, and a test walks all six paths asserting each one left a row.
+
+**Retries.** `$tries = 2`, so a transport failure escaping the expensive
+generation gets one more go. A safety trip is a clean return and so is never
+retried. Nor is a screen that *failed*: SafetyGuard has already decided the
+generation is abandoned, and paying twice would not change that.
+
+**Three events** (`Modules/Ai/Events`), and the third is separate for a
+reason:
+
+| Event | Carries | Why |
+|---|---|---|
+| `AiGenerationCompleted` | the generation | something new to look at |
+| `AiGenerationFailed` | couple, user, outcome | "that didn't work, try again" |
+| `AiSafetyTripped` | **one user id**, module, task | not a failure, and a listener treating it like one would say exactly the wrong thing |
+
+`AiSafetyTripped` carries no couple, no category and no content. The signpost
+goes to the person whose words tripped it and to nobody else; their partner
+sees an ordinary failure (ADR-025).
+
+### Regenerate
+
+A generation keeps its **filtered** payload, which is what makes a generic
+regenerate possible: `POST /api/ai/generations/{ulid}/regenerate` asks the same
+question again with the payload already on the row. Keeping it is safe
+*because* it went through the allow-list - by construction it holds no private
+field - and a hash cannot ask a question again.
+
+A regenerate counts against the cap like any other generation, and the old row
+is **superseded** rather than overwritten, so what a couple was shown in March
+survives them asking for something better in April. The reply is 202 and a
+queued job, or 200 with the cap's own copy - a cap is not an error.
 
 ## Caps and the cost guards
 
@@ -358,6 +420,10 @@ This is the module where privacy is won or lost.
 ## Tests
 `api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
 
+Done so far (P2.T08): **every terminal outcome end to end**, each checking what the couple ends up with, what `ai_usage` says and which event fired. `ok` (three calls in the right order - screen, model, screen - a generation row, and the allow-list proven again at the prompt); `invalid_output` (nothing shown, both attempts billed, the allowance unspent); `safety_tripped` on the input (the expensive model never asked, the row naming nobody, the signpost going to the writer, and `AiGenerationFailed` *not* fired) and on the draft (billed for a plan nobody will see); `capped` (no call, nothing queued, a row with no model); `error` from an unpinned prompt and from a screen that broke. Plus: one test walking all six paths asserting each left a usage row; `RunAiTask` being a `ShouldQueue`; a regenerate answering 202 with the request itself having called nothing; supersede keeping both rows; a regenerate counting against the cap; the cap's own copy returned rather than an error; feedback recorded, changeable, kept apart between partners, and validated.
+
+A grep gate too: nothing outside the AI module may mention `AiDriver`, `AnthropicDriver`, `GenerateValidated` or `AiRequest`, which is the phase's exit criterion as a test. `AppServiceProvider` is exempt, because the container binding has to live somewhere.
+
 Done so far (P2.T07): the cap boundary at n-1, n and n+1; counted per couple and per task; only successful generations counted, with `invalid_output`, `error` and `capped` explicitly not; last month excluded. The month rolling over at **local midnight in Auckland** while UTC still says November, with the reset date landing on 1 January in the couple's own zone; the timezone taken from whoever joined first so it cannot wobble. The refusal naming the date; a no-guilt word list across all four reasons; a tier that does not include a feature saying so rather than pretending a reset; a task with no cap entry refused rather than unlimited. Both cost guards, including the global one alerting at `critical` and taking precedence over everything about the couple, and yesterday's spending not counting towards today. A refusal spending nothing.
 
 The endpoint: per-task numbers, the written refusal, capped tasks only (no `safety_screen`), each couple's own figures, a 404 for a solo user, a 401 without a token, and no identifier in the route. Plus `AiAuthorisationTest`, the module's own sweep driven off the route table - proven to bite by adding an undeclared route.
@@ -390,13 +456,23 @@ Run: `composer test -- --filter=Ai`
 
 ## Known gaps / TODO
 - ANTHROPIC_API_KEY not yet set (by hand, by the founder).
-- **No policies on the AI models yet.** `AiGeneration` and `AiFeedback` get theirs with the endpoints in P2.T08, where the authorisation sweep can cover them; a policy with no caller would be untested either way. `AiUsage` is operational and never reaches a client.
+- **How a signpost actually reaches somebody is unresolved.** `AiSafetyTripped` fires with one user id and nothing is stored, which is right (ADR-025) and leaves a gap: the app learns about a finished generation by asking, and there is nothing to ask about when the answer was a signpost. The first feature that needs it decides, and the constraint is that a record saying "this person was signposted on this date" must not exist. Phase 3's to answer.
+- `AiFeedback` has no policy of its own. It is only ever reached through its generation, whose policy covers it, and a rating is never returned to anybody - not even its author. `AiUsage` has none either: it is operational and never reaches a client.
 - Decide whether laravel/ai's own fake/record helpers replace the hand-rolled fake driver - evaluate during P2.T01.
 - **SafetyGuard's battery needs review by someone with relevant expertise before launch** - domestic abuse and crisis support. 77 cases exist and the tests pass; neither fact makes the phrasings right. `tests/Fixtures/Ai/evals/safety_screen/README.md` says the same thing where the cases live.
 - We deliberately store nothing about a safety trip, so there is no way to measure how often it happens in the wild (ADR-025). If that becomes a problem, the answer is a count with no couple, no category and no content attached - not a relaxation of the rule.
 - Cost-per-couple model is unvalidated until real traffic exists.
 
 ## Changelog
+- 2026-11-05 - **P2.T08**: `AiService`, `RunAiTask`, the three events, the
+  feedback and regenerate endpoints with `AiGenerationPolicy`, and
+  `ai:report-costs` on the daily schedule. `ai_generations` now keeps its
+  **filtered payload** instead of a hash - a hash cannot ask the question
+  again, and a generic regenerate has to; it is safe to keep because the
+  allow-list has already been through it. `date_plan`'s output schema is
+  declared ahead of its prompt, same as its allow-list was. `FakeDriver`
+  gained `respondTo($task, ...)`, because one generation makes three calls and
+  a single queue handed the date plan to the first safety screen that asked.
 - 2026-11-05 - **P2.T07**: `CapGuard`, `CapVerdict`, `CapReason`,
   `GET /api/ai/allowance` and the module's authorisation sweep.
   `Billing\Support\Entitlement` absorbs the tier stub `MeResource` was

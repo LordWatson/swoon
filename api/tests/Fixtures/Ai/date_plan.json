@@ -1,0 +1,73 @@
+{
+    "structured": {
+        "options": [
+            {
+                "title": "Bread, then the moors",
+                "emoji": "🥖",
+                "summary": "A late breakfast somewhere warm, then an hour of weather and a pub with a fire.",
+                "timeline": [
+                    {
+                        "time": "10:30",
+                        "what": "Breakfast"
+                    },
+                    {
+                        "time": "12:00",
+                        "what": "Walk"
+                    },
+                    {
+                        "time": "14:00",
+                        "what": "Pub"
+                    }
+                ],
+                "estimated_cost_pence": 4200,
+                "travel_notes": "Twenty minutes by car, parking at the trailhead.",
+                "why_both": "Quiet for one of you, outdoors for the other."
+            },
+            {
+                "title": "Everything indoors",
+                "emoji": "🎥",
+                "summary": "A matinee, then the small Italian place that never needs booking.",
+                "timeline": [
+                    {
+                        "time": "15:00",
+                        "what": "Film"
+                    },
+                    {
+                        "time": "17:30",
+                        "what": "Dinner"
+                    }
+                ],
+                "estimated_cost_pence": 5600,
+                "travel_notes": "Both on the same street, no car needed.",
+                "why_both": "Low effort, and neither of you has to drive."
+            },
+            {
+                "title": "The long way round",
+                "emoji": "🚇",
+                "summary": "Train out, walk back along the river, chips at the end of it.",
+                "timeline": [
+                    {
+                        "time": "11:00",
+                        "what": "Train"
+                    },
+                    {
+                        "time": "11:40",
+                        "what": "Riverside walk"
+                    },
+                    {
+                        "time": "14:30",
+                        "what": "Chips"
+                    }
+                ],
+                "estimated_cost_pence": 2800,
+                "travel_notes": "Off-peak return, about nine pounds each.",
+                "why_both": "Cheap, outdoors, and finishes early."
+            }
+        ]
+    },
+    "text": "",
+    "usage": {
+        "input_tokens": 3100,
+        "output_tokens": 1400
+    }
+}

@@ -36,11 +36,16 @@ final class FakeDriver implements AiDriver
     /** @var list<array<string, mixed>|Throwable> */
     private array $queue = [];
 
+    /** @var array<string, list<array<string, mixed>|Throwable>> */
+    private array $perTask = [];
+
     public function generate(AiRequest $request): AiResult
     {
         $this->calls[] = $request;
 
-        $next = array_shift($this->queue);
+        $next = array_key_exists($request->task, $this->perTask) && $this->perTask[$request->task] !== []
+            ? array_shift($this->perTask[$request->task])
+            : array_shift($this->queue);
 
         if ($next instanceof Throwable) {
             throw $next;
@@ -63,6 +68,24 @@ final class FakeDriver implements AiDriver
     {
         foreach ($responses as $response) {
             $this->queue[] = $response;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Queue the next response(s) **for one task only**.
+     *
+     * The whole-chain tests need this. One generation makes three calls - a
+     * screen, the model, another screen - and a single queue would hand the
+     * date plan to the first safety screen that asked.
+     *
+     * @param  array<string, mixed>|Throwable  ...$responses
+     */
+    public function respondTo(string $task, array|Throwable ...$responses): self
+    {
+        foreach ($responses as $response) {
+            $this->perTask[$task][] = $response;
         }
 
         return $this;

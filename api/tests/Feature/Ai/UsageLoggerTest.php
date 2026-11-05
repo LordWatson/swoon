@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * Two things are being protected here. One is the arithmetic: three units meet
  * in `Cost` and none of them are interchangeable, so the sums are checked
- * against numbers worked out by hand. The other is ADR-027 â€” a safety trip
+ * against numbers worked out by hand. The other is ADR-027 — a safety trip
  * must leave a cost row and no trace of whose it was.
  */
 
@@ -263,7 +263,7 @@ describe('history', function (): void {
             'task' => 'date_plan',
             'prompt_name' => 'date_plan',
             'prompt_version' => 'v1',
-            'payload_hash' => str_repeat('a', 64),
+            'payload' => ['answers' => ['vibe' => 'cosy']],
             'output' => ['options' => [['title' => 'The first idea']]],
         ]);
 
@@ -274,7 +274,7 @@ describe('history', function (): void {
             'prompt_name' => 'date_plan',
             // A new prompt version must not rewrite what they were shown.
             'prompt_version' => 'v2',
-            'payload_hash' => str_repeat('a', 64),
+            'payload' => ['answers' => ['vibe' => 'cosy']],
             'output' => ['options' => [['title' => 'The better idea']]],
         ]);
 
@@ -297,14 +297,14 @@ describe('history', function (): void {
             'task' => 'weekly_recap',
             'prompt_name' => 'weekly_recap',
             'prompt_version' => 'v1',
-            'payload_hash' => str_repeat('b', 64),
+            'payload' => ['week' => '2026-W45'],
             'output' => ['summary' => 'A good week'],
         ]);
 
         expect($generation->ulid)->toHaveLength(26);
     });
 
-    it('keeps a hash of the payload and never the payload', function (): void {
+    it('keeps the filtered payload, which is what makes a regenerate possible', function (): void {
         $world = TwoCouples::make();
 
         $generation = AiGeneration::create([
@@ -313,12 +313,14 @@ describe('history', function (): void {
             'task' => 'date_plan',
             'prompt_name' => 'date_plan',
             'prompt_version' => 'v1',
-            'payload_hash' => hash('sha256', 'the filtered payload'),
+            'payload' => ['partners' => [['first_name' => 'Ada']]],
             'output' => ['options' => []],
         ]);
 
-        expect($generation->payload_hash)->toHaveLength(64)
-            ->and($generation->getAttributes())->not->toHaveKey('payload');
+        // Safe to keep because it has already been through the allow-list:
+        // by construction it holds no private field. A hash could not ask the
+        // same question again, and a regenerate has to.
+        expect($generation->fresh()->payload)->toBe(['partners' => [['first_name' => 'Ada']]]);
     });
 
     it('allows one rating per person per generation', function (): void {
@@ -330,7 +332,7 @@ describe('history', function (): void {
             'task' => 'date_plan',
             'prompt_name' => 'date_plan',
             'prompt_version' => 'v1',
-            'payload_hash' => str_repeat('c', 64),
+            'payload' => ['answers' => []],
             'output' => ['options' => []],
         ]);
 

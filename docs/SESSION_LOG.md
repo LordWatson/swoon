@@ -237,6 +237,50 @@ Two decisions came out of the arithmetic rather than going into it.
 * The AI module has its own authorisation sweep now, same shape as Accounts and
   driven off the route table. Proven to bite by adding an undeclared route.
 
+**P2.T08 — the whole chain, in a worker.** 450 API tests, on SQLite and MySQL 8.
+
+* **The privacy filter moved one step earlier than the plan put it.** Filtering
+  before dispatch rather than inside the job keeps un-allow-listed fields out
+  of a `jobs` row that sits on disk until a worker picks it up. The guarantee is
+  unchanged; the queue is cleaner.
+* **`ai_generations` keeps its filtered payload now, not a hash.** A hash cannot
+  ask the question again, and a generic regenerate has to - otherwise every
+  future feature rebuilds the payload itself. It is safe to keep *because* the
+  allow-list has already been through it: by construction it holds no private
+  field. This replaced `payload_hash`, which was two commits old and had never
+  been deployed.
+* **`AiSafetyTripped` is its own event, not a `Failed` with a reason.** A
+  listener treating it like a failure would say "that didn't work, try again",
+  which is the wrong response to somebody describing a crisis. It carries one
+  user id and no couple, no category, no content.
+* **A `safety_screen` usage row names nobody either.** A trip leaves the
+  generation with no attributed row, so an attributed *screen* row at the same
+  moment would hand the correlation straight back. One more condition in the
+  one place that writes these.
+* **Every exit logs, and a test walks all six.** `ok`, `invalid_output`,
+  `safety_tripped`, `capped`, an unpinned prompt, a screen that broke - each
+  arrangement asserted to leave a usage row. It is the kind of promise that
+  stops being true without anybody noticing.
+* **The exit criterion is a grep now.** Nothing outside the AI module may
+  mention `AiDriver`, `AnthropicDriver`, `GenerateValidated` or `AiRequest`.
+  `AppServiceProvider` is exempt, because the binding has to live somewhere.
+* **`FakeDriver` needed per-task queues.** One generation makes three calls -
+  screen, model, screen - and a single FIFO queue handed the date plan to the
+  first safety screen that asked.
+* **PHP will not unpack after named arguments**, so the test helper took an
+  explicit parameter rather than `...$extra`. And `pluck('outcome')` on an
+  Eloquent query returns cast enums, not strings.
+* **Two Windows traps again.** `fake()` and `logger()` are Laravel helpers, so
+  test helpers cannot have those names. And a `Get-Content -Raw | Out-File`
+  round-trip mangled every emoji in three test files into mojibake; repaired by
+  re-encoding cp1252 to UTF-8. Python with `newline=''` for file edits, always.
+
+**Still open:** how a signpost reaches the person it is for. Nothing is stored
+about a trip, which is right, and it means the app has nothing to ask about
+when the answer was a signpost. The first feature that needs it decides, and
+the constraint is that a record saying "this person was signposted on this
+date" must not exist.
+
 **Left over:** the founder's real Anthropic key sits in `api/.env` (untracked,
 git-ignored) and was read aloud during this session while checking the test
 environment — worth rotating.

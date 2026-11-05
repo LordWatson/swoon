@@ -29,6 +29,7 @@ final class TaskSchemas
     {
         return match ($task) {
             'safety_screen' => self::safetyScreen(),
+            'date_plan' => self::datePlan(),
 
             default => throw new InvalidArgumentException(
                 "AI task [{$task}] has no declared output schema. Add it to ".self::class.'.'
@@ -46,6 +47,44 @@ final class TaskSchemas
      *
      * @return Closure(JsonSchema): array<string, Type>
      */
+    /**
+     * Three date options, and the schema is what makes it three.
+     *
+     * "Exactly 3" is in the prompt as well, but a prompt is a request and a
+     * schema is a rule: `minItems` and `maxItems` both at 3 mean a reply with
+     * two options is `invalid_output` rather than a thin screen.
+     *
+     * Declared now, used from Phase 3, same as the allow-list - so the shape
+     * is reviewable and testable before the prompt that asks for it exists.
+     * The fields are the ones `docs/AI_PROMPTS.md` specifies.
+     *
+     * @return Closure(JsonSchema): array<string, Type>
+     */
+    private static function datePlan(): Closure
+    {
+        return fn (JsonSchema $schema): array => [
+            'options' => $schema->array()->min(3)->max(3)->items(
+                $schema->object([
+                    'title' => $schema->string()->min(3)->max(80)->required(),
+                    'emoji' => $schema->string()->min(1)->max(8)->required(),
+                    'summary' => $schema->string()->min(10)->max(400)->required(),
+                    'timeline' => $schema->array()->min(1)->items(
+                        $schema->object([
+                            'time' => $schema->string()->max(40)->required(),
+                            'what' => $schema->string()->max(200)->required(),
+                        ])
+                    )->required(),
+                    // Integer pence, like every other amount in the app.
+                    'estimated_cost_pence' => $schema->integer()->min(0)->required(),
+                    'travel_notes' => $schema->string()->max(300)->required(),
+                    'why_both' => $schema->string()->max(200)
+                        ->description('One line on how this bridges both answers.')
+                        ->required(),
+                ])
+            )->required(),
+        ];
+    }
+
     private static function safetyScreen(): Closure
     {
         return fn (JsonSchema $schema): array => [
