@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P2.T09** — eval fixtures and the prompt-change workflow, the last task in Phase 2. **P2.T01–T08 are done**: `AiService::run()` is the only path to the model, and the whole chain runs in a queued job.
+**Current focus:** **P3.T01** — the AI Date Planner, the first feature built on the platform. **Phase 2 is complete**: `AiService::run()` is the only path to the model, prompts are pinned files, output is validated, SafetyGuard fails closed, the privacy filter is an allow-list, and every call is capped and costed.
 
 ---
 
@@ -850,13 +850,18 @@ universal links are not hosted either.
 **Goal.** One safe, cheap, testable door to Claude. Nothing user-facing ships
 this phase; everything after it depends on this being right.
 
-**Exit criteria.**
-- `AiService::run()` is the only path to the model.
-- Prompts are versioned files, pinned in config.
-- Structured output validated; malformed output handled.
-- **SafetyGuard works, fails closed, and is independently tested.**
-- Cost tracked per call; caps enforced before dispatch.
-- The whole suite runs with **no network and no spend**.
+**Exit criteria.** All met.
+- `AiService::run()` is the only path to the model — asserted by a grep gate
+  over every file outside the module.
+- Prompts are versioned files, pinned in config; a pin without a file fails
+  the suite.
+- Structured output validated against the same schema that was sent; one
+  retry, then `invalid_output`.
+- **SafetyGuard works, fails closed in three ways, and has a 77-case battery.**
+- Cost tracked per call in millipence (ADR-026); caps enforced before dispatch,
+  with a month that ends in the couple's own timezone.
+- The whole suite runs with no network and no spend — two belts: the fake
+  driver, and a force-blanked API key.
 
 **Dependencies.** Phase 1 (needs couples to scope usage and caps).
 
@@ -1035,7 +1040,7 @@ this phase; everything after it depends on this being right.
 
 ---
 
-### `[ ]` P2.T09 — Eval fixtures and the prompt-change workflow · **S**
+### `[x]` P2.T09 — Eval fixtures and the prompt-change workflow · **S**
 
 **Steps**
 1. `tests/Fixtures/Ai/evals/<prompt>/` with input payloads and shape assertions.

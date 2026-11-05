@@ -64,12 +64,47 @@ declared output schema and SafetyGuard, both after the fact and both tested.
 1. Copy the current version to a new one (`v1.md` → `v2.md`). **Never edit a
    released version in place** — `ai_generations` rows reference it, and history
    must stay true.
-2. Update the eval fixtures in `api/tests/Fixtures/Ai/evals/<name>/`.
-3. Run the evals. Compare against the previous version before promoting.
-4. Promote by changing `config('ai.prompts.active')`.
-5. **Bump the row in this file** with the date and what changed.
+2. Update the eval battery in `api/tests/Fixtures/Ai/evals/<name>/` if the
+   change is meant to alter what the prompt answers. If it is not, leave the
+   battery alone: an eval edited to match a new prompt measures nothing.
+3. **Measure the current version first**, so there is something to compare
+   against:
+
+   ```
+   cd api
+   php artisan swoon:ai-eval <name> --live
+   ```
+
+4. Promote the new version by changing `config('ai.prompts.active')`, measure
+   again, and compare the two reports. Worse on the battery means the old one
+   stays pinned.
+5. **Bump the row in this file** with the date, what changed, and the scores
+   either side.
 6. Add a `docs/DECISIONS.md` entry if the change alters behaviour the couple
    would notice.
+
+### Running an eval
+
+`php artisan swoon:ai-eval <name>` has two modes, and the difference is the
+point.
+
+**Dry, by default.** It loads the battery, checks every case is well formed and
+renders each one through the privacy filter and the prompt registry. It calls
+nothing and spends nothing. This is what CI runs, and what it catches is the
+thing that rots silently: a prompt that gains a slot no case supplies. It does
+**not** tell you whether the prompt is any good — nothing free can.
+
+**`--live` calls the real model**, once per case, and prints what it spent.
+Four gates stand in front of it, and all four have to be open: the flag, an
+interactive confirmation (so `--no-interaction` means no), `AI_DRIVER=anthropic`,
+and a real key. A fifth refuses outright if it is running from a test, because
+a test that spends money is a failure whatever it was trying to prove.
+`--limit=5` takes a cheap sample first.
+
+**Battery format** is in
+`api/tests/Fixtures/Ai/evals/safety_screen/README.md`. Each file names an
+`expect_field`; each case has an `id`, an `expect`, optionally `accept` for
+other answers that are also right, and either `text` or a `variables` map.
 
 ---
 

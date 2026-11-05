@@ -6,7 +6,7 @@ Format: date · task ID(s) · what changed · anything left over.
 
 ---
 
-## 2026-11-05 — Phase 2 in progress · AI platform (P2.T01 …)
+## 2026-11-05 — Phase 2 complete · AI platform (P2.T01 … P2.T09)
 
 **P2.T01 — the driver seam and the fake.** One interface between the
 application and Claude, two implementations, chosen by `config('ai.driver')`.
@@ -280,6 +280,68 @@ about a trip, which is right, and it means the app has nothing to ask about
 when the answer was a signpost. The first feature that needs it decides, and
 the constraint is that a record saying "this person was signposted on this
 date" must not exist.
+
+**P2.T09 — evals, and the difference between free and useful.** 459 API tests.
+
+* **`swoon:ai-eval` is dry by default.** The dry run loads the battery, checks
+  every case is well formed and renders each one through the filter and the
+  registry. It calls nothing, and what it catches is the thing that rots
+  silently: a prompt that gains a slot no case supplies. It is honest about
+  what it cannot do — nothing free tells you whether a prompt is any good.
+* **Five gates in front of a real call**: the flag, an interactive confirmation
+  (so `--no-interaction` means no), `AI_DRIVER=anthropic`, a real key, and a
+  flat refusal when running from a test. The last one is not a judgement call.
+* **The scoring model is explicit now.** Every concerning case `accept`s any
+  concern, because the primary question is whether the screen saw anything at
+  all — one that calls abuse a crisis still signposts, and signposting is what
+  matters. The exact category is the secondary score.
+* **Adding a battery gets CI coverage without wiring anything**, because the
+  test loops the battery directories. And the glob that finds them is itself
+  asserted, so the loop cannot quietly iterate over nothing — the same mistake
+  that made the safety battery collect zero cases earlier in the day.
+
+---
+
+### Phase 2, in one page
+
+**Nine tasks, nine commits, 459 API tests on SQLite and MySQL 8.** Nothing
+user-facing shipped, which was the point: everything after this depends on it
+being right.
+
+The decisions that will outlive the code:
+
+* **Two belts on "no test spends money"** — the fake driver is the default and
+  the API key is force-blanked, because `APP_ENV=testing` with no
+  `.env.testing` loads the developer's own `.env`, which has a working key.
+* **One declaration per task, used twice.** The output schema becomes the
+  `output_config.format` that goes out *and* the array the reply is checked
+  against. A second description of the same shape is the thing that drifts.
+* **The allow-list is the privacy design.** Not because it is thorough, but
+  because it is wrong in the safe direction: a column added next year is
+  excluded by nobody mentioning it. Two tests carry that — one invents a
+  column, one reads the real `users` table.
+* **SafetyGuard has three outcomes, not two.** A guard that *breaks* has told
+  us nothing, so it shows nothing: an unscreened date plan is what the module
+  exists to prevent, and a crisis helpline shown to somebody choosing a
+  restaurant is its own small harm.
+* **Storing nothing has a price, and we paid it** (ADR-025, ADR-027). No row,
+  no log line and no event records that a particular couple tripped the guard
+  — not even the screen's own usage row, because the correlation would hand it
+  back. So we cannot report how often it happens. That was the trade.
+* **Units are in the names.** `pricing_usd_cents_per_mtok`, `cost_millipence`,
+  `couple_monthly_pence`. Three units meet in one calculation and none of them
+  are interchangeable; a safety screen costs 0.0055p and would round to nothing.
+* **Gates, not promises.** Model ids outside config, an unsupported schema
+  keyword, a pinned prompt with no file, a route with no authorisation
+  decision, a battery for a prompt nobody wrote, anything outside the module
+  touching a driver — each one fails the suite, and each was proven to bite by
+  breaking it on purpose.
+
+**What Phase 3 inherits, and what it still has to answer:** how a signpost
+reaches the person it is for. Nothing is stored about a trip, which is right,
+and it leaves the app with nothing to ask about when the answer was a
+signpost. The constraint is that a record saying "this person was signposted on
+this date" must not exist.
 
 **Left over:** the founder's real Anthropic key sits in `api/.env` (untracked,
 git-ignored) and was read aloud during this session while checking the test

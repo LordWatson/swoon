@@ -1,7 +1,7 @@
 # AI Platform ✨
 
-**Status:** in progress
-**Last updated:** 2026-11-05 - P2.T01-T08 done. `AiService::run()` is the only path to the model, and the whole chain runs in a queued job. The eval fixtures and the live eval command (P2.T09) are what remain.
+**Status:** built
+**Last updated:** 2026-11-05 - **Phase 2 complete.** `AiService::run()` is the only path to the model, the whole chain runs in a queued job, and every prompt has a battery that CI runs for free.
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -189,6 +189,29 @@ the reply we asked for, and dropping it quietly would hide that.
 task's schema and silently unchecked would be a hole that never announces
 itself; the suite walks every declared schema and fails on an unsupported
 keyword, so the gap cannot wait for production.
+
+## Evals
+
+`php artisan swoon:ai-eval <name>`, and the two modes are the whole design.
+
+**Dry, by default.** Loads the battery, checks every case is well formed, and
+renders each through the privacy filter and the registry. Calls nothing, spends
+nothing. This is what CI runs, and it catches the thing that rots silently: a
+prompt that gains a slot no case supplies. It does not say whether the prompt is
+*good* - nothing free can.
+
+**`--live`** calls the real model once per case and prints what it spent. Four
+gates must all be open - the flag, an interactive confirmation (so
+`--no-interaction` means no), `AI_DRIVER=anthropic`, and a real key - and a
+fifth refuses outright when running from a test.
+
+Batteries live in `tests/Fixtures/Ai/evals/<prompt>/`. A test loops every
+battery directory, so adding one gets CI coverage without anybody wiring it up,
+and asserts the prompt it names actually exists and is pinned.
+
+The prompt-change workflow is in `docs/AI_PROMPTS.md`: measure the current
+version first, promote, measure again, compare. A battery edited to match a new
+prompt measures nothing.
 
 ## The chain
 
@@ -420,6 +443,8 @@ This is the module where privacy is won or lost.
 ## Tests
 `api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
 
+Done so far (P2.T09): every battery run dry with nothing called and nothing spent; every case rendered; an unpinned prompt failing loudly; a prompt with no battery saying so; `--live` refused from a test even with a driver and a key configured; the default being no call at all; `--limit` sampling. Two gates: a battery directory must name a prompt that exists and is pinned, and the glob that finds the batteries is itself asserted, so the loop cannot quietly iterate over nothing.
+
 Done so far (P2.T08): **every terminal outcome end to end**, each checking what the couple ends up with, what `ai_usage` says and which event fired. `ok` (three calls in the right order - screen, model, screen - a generation row, and the allow-list proven again at the prompt); `invalid_output` (nothing shown, both attempts billed, the allowance unspent); `safety_tripped` on the input (the expensive model never asked, the row naming nobody, the signpost going to the writer, and `AiGenerationFailed` *not* fired) and on the draft (billed for a plan nobody will see); `capped` (no call, nothing queued, a row with no model); `error` from an unpinned prompt and from a screen that broke. Plus: one test walking all six paths asserting each left a usage row; `RunAiTask` being a `ShouldQueue`; a regenerate answering 202 with the request itself having called nothing; supersede keeping both rows; a regenerate counting against the cap; the cap's own copy returned rather than an error; feedback recorded, changeable, kept apart between partners, and validated.
 
 A grep gate too: nothing outside the AI module may mention `AiDriver`, `AnthropicDriver`, `GenerateValidated` or `AiRequest`, which is the phase's exit criterion as a test. `AppServiceProvider` is exempt, because the container binding has to live somewhere.
@@ -464,6 +489,10 @@ Run: `composer test -- --filter=Ai`
 - Cost-per-couple model is unvalidated until real traffic exists.
 
 ## Changelog
+- 2026-11-05 - **P2.T09**: `swoon:ai-eval`, dry by default. The safety battery
+  gained `expect_field` and per-case `accept`, which makes the scoring model
+  explicit: the primary question is whether a concern was seen at all, because
+  a screen that calls abuse a crisis still signposts. **Phase 2 complete.**
 - 2026-11-05 - **P2.T08**: `AiService`, `RunAiTask`, the three events, the
   feedback and regenerate endpoints with `AiGenerationPolicy`, and
   `ai:report-costs` on the daily schedule. `ai_generations` now keeps its

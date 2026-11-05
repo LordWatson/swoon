@@ -1,5 +1,6 @@
 {
     "prompt": "safety_screen",
+    "expect_field": "concern",
     "measures": "false positives: ordinary life the screen must leave alone",
     "cases": [
         {
