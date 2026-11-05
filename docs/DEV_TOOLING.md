@@ -49,6 +49,18 @@ CREATE DATABASE swoon_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 > **Note.** The MySQL root account on this machine has a password set, so
 > `DB_PASSWORD` in `api/.env` must be filled in before `migrate` will run. The
 > test suite defaults to SQLite in-memory and needs neither (ADR-008).
+> Both schemas exist and `migrate:fresh` is verified against MySQL 8.0.46
+> (P0.T10).
+
+To run the suite against MySQL locally — worth doing for any change that
+touches the schema, since that is what CI's `test-mysql` job gates:
+
+```powershell
+cd api
+$env:DB_CONNECTION='mysql'; $env:DB_DATABASE='swoon_test'
+./vendor/bin/pest --no-coverage
+Remove-Item Env:DB_CONNECTION, Env:DB_DATABASE
+```
 
 ---
 

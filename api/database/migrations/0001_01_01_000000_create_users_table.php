@@ -20,6 +20,21 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+
+            // Profile fields every later phase assumes. Kept on `users` rather
+            // than a profile table: one row per person, always loaded with them.
+            $table->string('timezone')->default('Europe/London');
+            $table->string('locale', 10)->default('en-GB');
+            // One of the four partner colours in mobile/src/theme/colours.ts.
+            // Null until onboarding picks one (partners must differ).
+            $table->string('colour', 16)->nullable();
+            $table->string('avatar_path')->nullable();
+            // Feeds the date planner's allow-list; never free-text to the model.
+            $table->json('dietary_needs')->nullable();
+            $table->json('accessibility_needs')->nullable();
+            // Private until the user shares it for birthday milestones.
+            $table->date('date_of_birth')->nullable();
+
             $table->timestamps();
         });
 

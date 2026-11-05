@@ -6,6 +6,46 @@ Format: date · task ID(s) · what changed · anything left over.
 
 ---
 
+## 2026-11-05 — P0.T10 · MySQL connected, `users` schema live
+
+`DB_PASSWORD` had been filled in, so the one blocker on this task was gone.
+
+**Built**
+
+* `swoon` and `swoon_test` created (utf8mb4 / utf8mb4_unicode_ci); `swoon` was
+  already carrying the default tables, so it was altered to the project
+  collation rather than recreated.
+* The seven profile columns later phases assume — `timezone` (default
+  `Europe/London`), `locale` (`en-GB`), `colour`, `avatar_path`,
+  `dietary_needs`, `accessibility_needs`, `date_of_birth` — went into the
+  **base** `create_users_table` migration, not a second one. Nothing is
+  deployed, so a clean 15-column schema beats an immediate `ALTER`.
+* `HasApiTokens` on `App\Models\User` (the Sanctum installer asked for it in
+  P0.T01 and it was still missing), plus fillable and the json/date casts.
+* `api/tests/Feature/Accounts/UserTest.php` — token issuance, the UK defaults,
+  and a cast round-trip.
+
+**Verified** `migrate:fresh` twice against MySQL 8.0.46. The suite runs green on
+SQLite *and* on MySQL 8 — the second run is the one that matters for schema
+(ADR-008), and `docs/DEV_TOOLING.md` § 2 now says how to do it locally.
+`composer check` clean: Pint 52 files, Larastan 6 no errors, 6 tests.
+
+**One thing worth knowing.** Larastan could not read the cast types off the
+schema and reported `date_of_birth` as `string`. The choice was a suppression or
+telling it the truth, so `User` now carries three `@property` lines. Expect the
+same for every model with a non-trivial cast.
+
+**Left over** `colour` is a plain `varchar(16)`, not an enum — the four valid
+values are validated in the Form Request in P1, which keeps the column from
+needing an `ALTER` when a colour is added. `email` and `password` are still
+non-nullable; P1.T01 relaxes them for Apple private relay and social-only
+accounts.
+
+**Next:** **P0.T11** — Resend transport. The `MAIL_MAILER=log` half can be done
+now; the live send needs `RESEND_API_KEY` and a verified domain.
+
+---
+
 ## 2026-11-05 — P0.T01 … P0.T09 · Project setup
 
 **Kickoff session.** Set up the monorepo, tooling, brand, documentation system

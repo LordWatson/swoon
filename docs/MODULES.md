@@ -7,8 +7,9 @@
 `module.md` in its backend folder — **that is the source of truth**, and it must
 be updated in the same change as the code (see `CLAUDE.md`).
 
-**Everything is `planned`.** This session set up the project; no feature code
-exists yet.
+**Almost everything is `planned`.** Accounts is `in progress`: the `users`
+table and Sanctum token issuance are live (P0.T10), but no endpoint exists yet.
+No other module has feature code.
 
 ---
 
@@ -16,7 +17,7 @@ exists yet.
 
 | # | Module | Sig | Phase | Status | Canonical doc | Mobile |
 |---|---|---|---|---|---|---|
-| 1 | **Accounts & Couple Linking** | 💞 Rosé | 1 | planned | [`Accounts`](../api/app/Modules/Accounts/module.md) | [`accounts`](../mobile/src/features/accounts/module.md) |
+| 1 | **Accounts & Couple Linking** | 💞 Rosé | 1 | in progress | [`Accounts`](../api/app/Modules/Accounts/module.md) | [`accounts`](../mobile/src/features/accounts/module.md) |
 | 2 | **AI Platform** | ✨ Lavender | 2 | planned | [`Ai`](../api/app/Modules/Ai/module.md) | — |
 | 3 | **AI Date Planner** | 🍷 Rosé | 3 | planned | [`DatePlanner`](../api/app/Modules/DatePlanner/module.md) | [`date-planner`](../mobile/src/features/date-planner/module.md) |
 | 4 | **Reminders** | ⏰ Apricot | 3 | planned | [`Reminders`](../api/app/Modules/Reminders/module.md) | [`reminders`](../mobile/src/features/reminders/module.md) |

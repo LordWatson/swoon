@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞
 
-**Status:** planned
-**Last updated:** 2026-11-05 - created during project setup; scaffolding only, no implementation yet.
+**Status:** in progress
+**Last updated:** 2026-11-05 - `users` table live on MySQL 8 with its profile columns and Sanctum tokens (P0.T10). No endpoints yet.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -22,6 +22,19 @@ Owns who a person is and who they are coupled with. Handles sign-up and sign-in 
 
 ## Data model
 **users** - id, name, email (unique, nullable for Apple private relay), password (nullable for social-only), apple_sub, google_sub, avatar_path, colour (`rose`|`lavender`|`apricot`|`sage`), timezone, locale, date_of_birth (nullable, for birthday milestones), dietary_needs (json, feeds the planner), accessibility_needs (json), deleted_at.
+
+> **Built so far (P0.T10).** `users` has `name`, `email` (unique, not yet
+> nullable), `password`, `email_verified_at`, `remember_token`, `timezone`
+> (default `Europe/London`), `locale` (default `en-GB`), `colour` (nullable
+> until onboarding picks one - partners must differ, rule 12), `avatar_path`,
+> `dietary_needs` (json), `accessibility_needs` (json), `date_of_birth` (date).
+> `User` uses `HasApiTokens`, so `personal_access_tokens` is the live auth
+> store. Cast types are declared as `@property` on the model because Larastan
+> cannot read them off the schema.
+>
+> **Still to come in P1.T01:** `apple_sub`, `google_sub`, `deleted_at`, a
+> nullable `email` and `password` for social-only accounts, and the `couples`,
+> `couple_user` and `couple_invites` tables with the one-active-couple index.
 
 **couples** - id, ulid (public id), linked_at, lock_in_mode (`both_heart`|`either_locks`, couple setting), anniversary_on (nullable), first_date_on (nullable), unlinked_at.
 
@@ -95,7 +108,11 @@ Never exposed to the partner: password hash, social subject ids, auth tokens, em
 Nothing in this module is sent to the AI.
 
 ## Tests
-`api/tests/Feature/Accounts/` - registration, each social path, the full invite/accept happy path, and the edge cases that matter: accepting while already coupled, accepting your own invite, expired code, reused code, unlink from either side, deletion cascade, export completeness.
+`api/tests/Feature/Accounts/UserTest.php` exists now: Sanctum token issuance,
+the UK defaults, and a round-trip of the json and date casts. It runs green on
+both SQLite and MySQL 8.
+
+Still to write: registration, each social path, the full invite/accept happy path, and the edge cases that matter: accepting while already coupled, accepting your own invite, expired code, reused code, unlink from either side, deletion cascade, export completeness.
 
 **Authorisation test per endpoint** - a second couple must receive 404/403 on every route here (Phase 10 makes this a standing requirement).
 
@@ -109,3 +126,5 @@ Run: `composer test -- --filter=Accounts`
 
 ## Changelog
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
+- 2026-11-05 - P0.T10: `users` profile columns added to the base migration,
+  `HasApiTokens` on `User`, first test file. Schema verified on MySQL 8.0.46.

@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P0.T10** — connect MySQL and run the first migration (needs `DB_PASSWORD` in `api/.env`).
+**Current focus:** **P0.T11** — Resend transport and the first real email (the `MAIL_MAILER=log` half can be done now; the live send needs `RESEND_API_KEY`).
 
 ---
 
@@ -63,7 +63,7 @@ here or linked from here.
 
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
-| **0** | [Foundations](#phase-0--foundations) | 12 | **9 / 12 done** |
+| **0** | [Foundations](#phase-0--foundations) | 12 | **10 / 12 done** |
 | **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 0 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
@@ -94,7 +94,7 @@ and component library exist and are AA-verified, and every check runs in CI.
 - [x] Pint, Larastan 6, ESLint, Prettier, tsc strict, Pest, Jest all pass.
 - [x] CI runs every check.
 - [x] All docs written; 21 module docs scaffolded.
-- [ ] MySQL connected and migrated.
+- [x] MySQL connected and migrated.
 - [ ] Resend transport verified end to end.
 - [ ] Queue worker and scheduler verified.
 
@@ -269,10 +269,11 @@ a block); `.githooks/pre-commit` running Pint + ESLint on staged files only;
 
 ---
 
-### `[ ]` P0.T10 — Connect MySQL and run the first migration · **S**
+### `[x]` P0.T10 — Connect MySQL and run the first migration · **S**
 
-> ⚠️ **Blocked on a human:** the MySQL root account on this machine has a
-> password. Add `DB_PASSWORD` to `api/.env` before starting.
+> ~~⚠️ **Blocked on a human:** the MySQL root account on this machine has a
+> password. Add `DB_PASSWORD` to `api/.env` before starting.~~ **Unblocked** —
+> the founder filled it in.
 
 **Steps**
 1. Set `DB_PASSWORD` in `api/.env`.
@@ -292,6 +293,14 @@ a block); `.githooks/pre-commit` running Pint + ESLint on staged files only;
 **Docs to update** `api/app/Modules/Accounts/module.md` (data model), `docs/DEV_TOOLING.md` § 2.
 
 **Size** S.
+
+> **Done 2026-11-05.** MySQL 8.0.46; `swoon` and `swoon_test` both utf8mb4 /
+> utf8mb4_unicode_ci. The profile columns went into the **base** `users`
+> migration rather than a second one — nothing is deployed, so a clean schema
+> beats an immediate `ALTER`. `migrate:fresh` run twice. Suite green on both
+> SQLite and MySQL 8 (6 tests). Cast types needed `@property` lines on `User`;
+> Larastan cannot read them off the schema, and the alternative was a
+> suppression.
 
 ---
 

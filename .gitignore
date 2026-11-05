@@ -46,6 +46,11 @@ node_modules/
 # The generated cache is ignored; the graph REPORT is committed so a new
 # session can orient without rebuilding it first (docs/DECISIONS.md ADR-014).
 graphify-out/cache/
+# Rebuild leaves a dated backup of the previous graph and some incremental
+# state behind. Both are regenerated, so neither belongs in a diff.
+graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+graphify-out/.graphify_build_state.json
+graphify-out/.graphify_labels.pending.json
 
 # ─── Build / test output ────────────────────────────────────────────────────
 coverage/
