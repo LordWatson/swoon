@@ -11,23 +11,17 @@ use Illuminate\Queue\SerializesModels;
 /**
  * The base every Swoon email extends.
  *
- * It exists for one guarantee: the from-name is the product name from
- * config/swoon.php, not MAIL_FROM_NAME. The env var interpolates ${SWOON_NAME},
- * so a deploy that forgets that variable would otherwise send mail from a
- * nameless address.
+ * The sender name is NOT set here. AppServiceProvider::boot() points
+ * mail.from.name at config('swoon.name') for the whole application, which also
+ * covers Laravel's own notifications — password reset, email verification —
+ * that never pass through this class. Setting it again in a constructor would
+ * have protected only half the mail, and silently lost the name for any
+ * subclass that forgot to call parent::__construct().
  *
- * A subclass with its own constructor must call parent::__construct().
- * A subclass that defines `from:` in its own envelope() overrides this.
+ * What is left is the shell every email shares: queueable, and safe to pass a
+ * model to. Shared headers, tags or a footer belong here when they arrive.
  */
 abstract class SwoonMailable extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public function __construct()
-    {
-        $this->from(
-            (string) config('mail.from.address'),
-            (string) config('swoon.name'),
-        );
-    }
 }

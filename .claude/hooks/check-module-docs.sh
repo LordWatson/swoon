@@ -20,6 +20,9 @@ changed=$(
   {
     git diff --name-only --diff-filter=ACMRD 2>/dev/null
     git diff --name-only --cached --diff-filter=ACMRD 2>/dev/null
+    # New files too. `git diff` cannot see an untracked file, and a brand-new
+    # Action or Resource is exactly the case this hook exists to catch.
+    git ls-files --others --exclude-standard 2>/dev/null
   } | sort -u
 )
 

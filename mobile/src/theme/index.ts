@@ -6,7 +6,7 @@
  * font family name — enforced by the `no-restricted-syntax` rule in
  * eslint.config.js. See docs/BRAND.md § 9.
  */
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { AccessibilityInfo, useColorScheme } from 'react-native';
 
 import { darkColours, lightColours, type ColourTokens } from './colours';
@@ -68,7 +68,6 @@ function buildTheme(scheme: 'light' | 'dark', reduceMotion: boolean): Theme {
 }
 
 export const lightTheme = buildTheme('light', false);
-export const darkTheme = buildTheme('dark', false);
 
 const ThemeContext = createContext<Theme>(lightTheme);
 
@@ -103,7 +102,10 @@ export function useSystemTheme(): Theme {
     };
   }, []);
 
-  return buildTheme(scheme, reduceMotion);
+  // Memoised because this object is the context value: a new identity on every
+  // render would re-render every component that reads useTheme(), including on
+  // renders where neither the colour scheme nor reduce-motion changed.
+  return useMemo(() => buildTheme(scheme, reduceMotion), [scheme, reduceMotion]);
 }
 
 /**

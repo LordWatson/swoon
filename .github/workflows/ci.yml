@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # This repo's default branch is master. Listing both so a later rename
+    # cannot silently switch every gate off again.
+    branches: [master, main]
   pull_request:
 
 # A new push supersedes an in-flight run on the same ref.

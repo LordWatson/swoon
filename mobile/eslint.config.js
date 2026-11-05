@@ -45,8 +45,6 @@ module.exports = defineConfig([
   {
     rules: {
       'no-restricted-syntax': noRawDesignValues,
-      // An icon-only control with no label is an accessibility bug, and the
-      // lint stage is the cheapest place to catch it (UX rule 12).
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },

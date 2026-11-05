@@ -6,6 +6,89 @@ Format: date · task ID(s) · what changed · anything left over.
 
 ---
 
+## 2026-11-05 — Review and audit fixes (no task ID)
+
+A code review of P0.T11 and a whole-repo audit, then every finding fixed. No
+feature work. Two findings were serious enough to be worth the detour.
+
+**The two that mattered**
+
+1. **CI had never run.** `.github/workflows/ci.yml` triggered on `push` to
+   `main`; this repo's branch is `master`. Only pull requests ran anything, so
+   both of today's commits went in with every gate skipped — the contrast gate,
+   the docs gate, the MySQL job, all of it. Now `[master, main]`.
+2. **The API client reported a captive portal as a healthy connection.**
+   `apiRequest` fell back to `{ message: <body> }` for any body that would not
+   parse as JSON, including on a **200**, and handed that back as the expected
+   type. A café portal answering 200 with an HTML page made Home render
+   `Connected to  ✅` in green. It now throws on a non-JSON success and keeps
+   the text only as an error message.
+
+**Also fixed**
+
+* `config/ai.php` held provider prices as USD floats next to caps in pence with
+  no exchange rate anywhere — the first cost guard would have been ~100× wrong,
+  in money. Now `pricing_usd_cents_per_mtok` in whole numbers plus one
+  `usd_to_pence` rate (ADR-016). The `safety.enabled` flag is gone: a
+  documented fail-closed guarantee should not be one env var from off
+  (ADR-017). Together and Forever caps were identical copies; defined once now.
+* **`APP_NAME="${SWOON_NAME}"` was a trap I introduced in P0.T11.** Verified
+  against the project's own Dotenv: substitution only works for a variable
+  defined *earlier in the same file*, and otherwise leaves the literal text
+  `${SWOON_NAME}`. A production env assembled in another order would have put
+  that string in the header of a real invite email. `AppServiceProvider::boot()`
+  now maps `app.name` and `mail.from.name` from `config('swoon.name')`, which
+  also covers Laravel's own notifications — they never passed through
+  `SwoonMailable`, so that class only ever protected half the mail (ADR-015).
+  `SwoonMailable`'s constructor is deleted as a result.
+* `resend.routes` is `false` in `AppServiceProvider::register()` rather than in
+  an env line a hand-built deploy can omit, with a test asserting the
+  unsigned webhook route stays unregistered.
+* **The API client had no tests at all** — the one file in the app that touches
+  the network. Nine now: the bearer header, 204, Laravel's 422 shape, a
+  transport failure as status 0, 401, the non-JSON success above, a non-JSON
+  error body, cancellation, and the timeout.
+* An aborted request was relabelled `ApiError(0, 'Network request failed')`, so
+  a cancelled query showed the offline state and got retried. It is rethrown.
+* **Nothing ever timed out.** `fetch` has no default timeout, so a connection
+  that neither answers nor fails left the promise unsettled — no error, no
+  retry, no offline state, just a spinner. 15s via `AbortController`, not
+  `AbortSignal.timeout`/`any`, which React Native does not polyfill and which
+  would therefore have passed in Jest and thrown on a device.
+* `ModuleServiceProvider` re-read and re-registered all 21 module route files
+  on every request even with a warm route cache. One `routesAreCached()` guard,
+  matching what Laravel's own route provider does.
+* **The Stop hook `CLAUDE.md` promises was never registered** — the script was
+  committed and nothing ran it. Registered, and taught to see untracked files:
+  it used only `git diff`, so a brand-new Action file, which is most of what
+  Phase 1 writes, was invisible until staged.
+* `.claude/settings.json` is committed and hardcoded an absolute path to one
+  machine's Python install, which would fail on every tool call for anyone
+  else. `graphify` resolves on PATH; verified.
+* An eslint comment claimed icon-button labels were linted. No such rule
+  existed, so UX rule 12 was enforced by nothing — the comment is gone rather
+  than a dependency added. All eight components do label correctly; only the
+  claimed enforcement was imaginary.
+* **147 `.gitkeep` files and 147 empty directories deleted** — seven empty
+  folders each for 21 modules, 20 of which have no code. Folders appear when
+  the first file lands.
+* Small ones: unused `darkTheme` export; a commented-out line in the seeder;
+  `useSystemTheme()` rebuilt the theme object on every render, which is the
+  context value, so every themed component re-rendered — now memoised.
+
+**Verified** `composer check` clean (Pint, Larastan 6, 12 tests / 32
+assertions); the API suite green on SQLite **and** MySQL 8; `npm run check`
+clean (tsc, ESLint, Prettier, 66 tests). The docs hook exercised both ways.
+
+**Worth knowing.** `MAIL_FROM_ADDRESS` in `.env` is now `swoon@lordwatson.uk`,
+not the unverifiable `hello@swoon.test` — so the live Resend send from P0.T11
+very likely did arrive. `.env.example` still ships the placeholder.
+
+**Next:** **P0.T12** — queue, scheduler and the Maestro smoke harness. Last
+task in Phase 0.
+
+---
+
 ## 2026-11-05 — P0.T11 · Resend transport and the first real email
 
 **Built**

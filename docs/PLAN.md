@@ -729,7 +729,7 @@ this phase; everything after it depends on this being right.
 **Steps**
 1. Migration `ai_usage` (indexed on `couple_id, created_at`).
 2. `UsageLogger` writing on **every** outcome, including failures.
-3. Compute `cost_pence` from `config('ai.pricing')` and the returned token counts.
+3. Compute `cost_pence` from `config('ai.pricing_usd_cents_per_mtok')`, `config('ai.usd_to_pence')` and the returned token counts. The prices are in US cents and every budget in the app is in pence — convert, never compare directly.
 4. Migration `ai_generations` (+ `superseded_by`) and `ai_feedback`.
 5. Tests: a row per call including failures; cost arithmetic; regenerate supersedes rather than overwrites.
 

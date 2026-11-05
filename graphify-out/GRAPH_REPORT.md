@@ -1,17 +1,17 @@
 # Graph Report - Smitten  (2026-11-05)
 
 ## Corpus Check
-- 149 files · ~72,947 words
+- 150 files · ~75,894 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 171 file(s) not represented in the graph (top: (none) 167, .example 1, .neon 1)
+- Unclassified: 24 file(s) not represented in the graph (top: (none) 20, .example 1, .neon 1)
 
 ## Summary
-- 1298 nodes · 1709 edges · 144 communities (93 shown, 51 thin omitted)
-- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 216 edges (avg confidence: 0.95)
+- 1307 nodes · 1725 edges · 150 communities (94 shown, 56 thin omitted)
+- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 220 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `63502082`
+- Built from commit: `7a906ff7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -50,8 +50,8 @@
 - Moments 📸
 - On This Day 🕰️
 - Shared Planner 🗓️
-- _layout.tsx
-- Phosphor Icons
+- @tanstack/react-query
+- Wishlist & Gift Vault 🎁 - mobile
 - Weekly Recap (AI) ✨
 - Wishlist & Gift Vault 🎁
 - Year in Moments 📖
@@ -94,7 +94,7 @@
 - Phase 7 — AI Recap & Insights
 - steps
 - env
-- Reminders ⏰ - mobile
+- Insights (AI) 💡 - mobile
 - Swoon 💞
 - Illuminate\Http\JsonResponse
 - Build plan — Swoon 💞
@@ -112,13 +112,19 @@
 - 2026-11-05 — P0.T01 … P0.T09 · Project setup
 - docs
 - on
-- expo-symbols@~58.0.4
-- react-native-screens@~4.30.1
-- Daily Spark 🔥 - mobile
+- Love Map / Profiles 🗺️ - mobile
+- Shared Planner 🗓️ - mobile
+- expo-font@~58.0.11
 - Weekly Recap (AI) ✨ - mobile
 - Milestones & Countdowns ⏳ - mobile
 - Moments 📸 - mobile
 - Year in Moments 📖 - mobile
+- expo-image@~58.0.18
+- expo-linking@~58.0.16
+- expo-system-ui@~58.0.7
+- expo-web-browser@~58.0.7
+- react-native-gesture-handler@~3.3.0
+- react-native-svg@15.16.0
 
 ## God Nodes (most connected - your core abstractions)
 1. `Card()` - 42 edges
@@ -130,7 +136,7 @@
 7. `useTheme()` - 22 edges
 8. `AITag()` - 21 edges
 9. `ProgressBar()` - 19 edges
-10. `UX rules — Swoon` - 17 edges
+10. `Decisions — Swoon` - 19 edges
 
 ## Surprising Connections (you probably didn't know these)
 - ``[x]` P0.T10 — Connect MySQL and run the first migration · **S**` --references--> `User`  [INFERRED]
@@ -147,19 +153,19 @@
 ## Import Cycles
 - None detected.
 
-## Communities (144 total, 51 thin omitted)
+## Communities (150 total, 56 thin omitted)
 
 ### Community 0 - "with"
 Cohesion: 0.17
 Nodes (12): with, cache, cache-dependency-path, coverage, extensions, fetch-depth, key, node-version (+4 more)
 
 ### Community 1 - "App Root & Theme Provider"
-Cohesion: 0.07
-Nodes (41): ColourTokens, darkColours, lightColours, PartnerColourKey, partnerColourKeys, ADR-0004, buildTheme(), darkShadows (+33 more)
+Cohesion: 0.06
+Nodes (48): react@19.3.0, queryClient, RootLayout(), AvatarPairProps, Partner, ColourTokens, darkColours, lightColours (+40 more)
 
 ### Community 2 - "Card"
 Cohesion: 0.11
-Nodes (62): Mobile, Mobile, Mobile, Mobile, Mobile, Mobile, Mobile, Mobile (+54 more)
+Nodes (60): Mobile, Mobile, Mobile, Mobile, Mobile, Mobile, Mobile, Mobile (+52 more)
 
 ### Community 3 - "User"
 Cohesion: 0.21
@@ -171,11 +177,11 @@ Nodes (9): {closure#1}(), {closure#2}(), {closure#3}(), {closure#1}(), {closure#
 
 ### Community 5 - "dependencies"
 Cohesion: 0.09
-Nodes (23): dependencies, expo-constants@~58.0.15, expo-device@~58.0.5, expo-glass-effect@~58.0.5, expo-image@~58.0.18, @expo/ui@~58.0.27, expo-web-browser@~58.0.7, react-dom@19.3.0 (+15 more)
+Nodes (23): dependencies, expo-constants@~58.0.15, expo-device@~58.0.5, expo-glass-effect@~58.0.5, @expo-google-fonts/nunito@^0.4.2, expo-router@~58.0.30, expo-status-bar@~58.0.4, expo-symbols@~58.0.4 (+15 more)
 
 ### Community 6 - "API HTTP Client"
-Cohesion: 0.09
-Nodes (22): `[ ]` P0.T12 — Queue, scheduler and Maestro harness · **S**, Phase 0 — Foundations, `[x]` P0.T02 — Expo app with Expo Router and TS strict · **M**, `[x]` P0.T03 — Theme tokens and the contrast gate · **M**, `[x]` P0.T05 — Linting and static analysis · **S**, `[x]` P0.T06 — Health endpoint and typed API client · **S**, `[x]` P0.T07 — Documentation system · **M**, `[x]` P0.T08 — Hooks, gitignore, pre-commit, CI · **S** (+14 more)
+Cohesion: 0.08
+Nodes (26): `[ ]` P0.T12 — Queue, scheduler and Maestro harness · **S**, Phase 0 — Foundations, `[x]` P0.T02 — Expo app with Expo Router and TS strict · **M**, `[x]` P0.T03 — Theme tokens and the contrast gate · **M**, `[x]` P0.T05 — Linting and static analysis · **S**, `[x]` P0.T06 — Health endpoint and typed API client · **S**, `[x]` P0.T07 — Documentation system · **M**, `[x]` P0.T08 — Hooks, gitignore, pre-commit, CI · **S** (+18 more)
 
 ### Community 7 - "Service Providers & Routing"
 Cohesion: 0.21
@@ -183,15 +189,15 @@ Nodes (5): AppServiceProvider, ModuleServiceProvider, Coding conventions, ADR-00
 
 ### Community 8 - "package.json"
 Cohesion: 0.12
-Nodes (16): expo-font@~58.0.11, expo-linking@~58.0.16, expo-splash-screen@~58.0.13, expo-system-ui@~58.0.7, react-native-reanimated@4.7.1, react-native-web@~0.21.4, main, name (+8 more)
+Nodes (16): @expo-google-fonts/fraunces@^0.4.1, expo-splash-screen@~58.0.13, @expo/ui@~58.0.27, phosphor-react-native@^3.0.6, react-dom@19.3.0, react-native-worklets@0.13.0, main, name (+8 more)
 
 ### Community 9 - "Mobile Dev Dependencies"
 Cohesion: 0.13
 Nodes (15): devDependencies, jest@^30.5.2, jest-expo@^58.0.14, prettier@^3.9.10, @testing-library/react-native@^14.1.0, @types/jest@^30.0.0, @types/react@~19.3.0, typescript@~6.0.3 (+7 more)
 
 ### Community 10 - "Daily Spark 🔥"
-Cohesion: 0.17
-Nodes (12): AI usage (if any), API endpoints, Business rules, Changelog, Daily Spark 🔥, Data model, Jobs, events & schedules, Known gaps / TODO (+4 more)
+Cohesion: 0.10
+Nodes (19): AI usage (if any), API endpoints, Business rules, Changelog, Daily Spark 🔥, Data model, Jobs, events & schedules, Known gaps / TODO (+11 more)
 
 ### Community 11 - "Composer Scripts"
 Cohesion: 0.15
@@ -246,8 +252,8 @@ Cohesion: 0.50
 Nodes (3): config, expo@~58.0.23, expo
 
 ### Community 31 - "Love Map / Profiles 🗺️"
-Cohesion: 0.10
-Nodes (19): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Love Map / Profiles 🗺️ (+11 more)
+Cohesion: 0.17
+Nodes (12): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Love Map / Profiles 🗺️ (+4 more)
 
 ### Community 32 - "Laravel Package Discovery"
 Cohesion: 0.67
@@ -258,7 +264,7 @@ Cohesion: 0.17
 Nodes (12): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Milestones & Countdowns ⏳ (+4 more)
 
 ### Community 37 - "Moments 📸"
-Cohesion: 0.17
+Cohesion: 0.14
 Nodes (12): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Moments 📸 (+4 more)
 
 ### Community 38 - "On This Day 🕰️"
@@ -266,20 +272,20 @@ Cohesion: 0.10
 Nodes (19): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, On This Day 🕰️ (+11 more)
 
 ### Community 39 - "Shared Planner 🗓️"
-Cohesion: 0.10
-Nodes (19): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Permissions & privacy (+11 more)
+Cohesion: 0.17
+Nodes (12): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Permissions & privacy (+4 more)
 
-### Community 40 - "_layout.tsx"
-Cohesion: 0.13
-Nodes (16): @expo-google-fonts/fraunces@^0.4.1, @expo-google-fonts/nunito@^0.4.2, expo-router@~58.0.30, expo-status-bar@~58.0.4, react@19.3.0, @tanstack/react-query@^5.106.1, queryClient, RootLayout() (+8 more)
+### Community 41 - "Wishlist & Gift Vault 🎁 - mobile"
+Cohesion: 0.22
+Nodes (7): Changelog, Known gaps / TODO, Local state, Offline behaviour, Tests, Theme usage, Wishlist & Gift Vault 🎁 - mobile
 
 ### Community 42 - "Weekly Recap (AI) ✨"
 Cohesion: 0.17
 Nodes (12): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Permissions & privacy (+4 more)
 
 ### Community 43 - "Wishlist & Gift Vault 🎁"
-Cohesion: 0.10
-Nodes (19): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Permissions & privacy (+11 more)
+Cohesion: 0.17
+Nodes (12): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Permissions & privacy (+4 more)
 
 ### Community 44 - "Year in Moments 📖"
 Cohesion: 0.17
@@ -298,8 +304,8 @@ Cohesion: 0.12
 Nodes (16): 10. Environments, 1. Shape of the system, 2. Request lifecycle, 3.1 Privacy classes, 3.2 Conventions, 3. Data model, 4.1 Rules that make this safe, 4.2 What never reaches a prompt (+8 more)
 
 ### Community 79 - "Decisions — Swoon"
-Cohesion: 0.13
-Nodes (15): ADR-001 — "Swoon" is a placeholder in exactly two config values, ADR-002 — API-only Laravel: Vite and Blade removed, ADR-003 — Lint rule uses `no-restricted-syntax`, not a custom plugin, ADR-004 — Palette adjusted to meet WCAG AA, ADR-005 — Reveal gates are enforced server-side, ADR-006 — Model choice: Opus 5.5 strong, Haiku 5.5 light, ADR-007 — `laravel/ai` over the Anthropic PHP SDK, ADR-008 — Tests on SQLite by default, MySQL in CI (+7 more)
+Cohesion: 0.11
+Nodes (18): ADR-001 — "Swoon" is a placeholder in exactly two config values, ADR-002 — API-only Laravel: Vite and Blade removed, ADR-003 — Lint rule uses `no-restricted-syntax`, not a custom plugin, ADR-004 — Palette adjusted to meet WCAG AA, ADR-005 — Reveal gates are enforced server-side, ADR-006 — Model choice: Opus 5.5 strong, Haiku 5.5 light, ADR-007 — `laravel/ai` over the Anthropic PHP SDK, ADR-008 — Tests on SQLite by default, MySQL in CI (+10 more)
 
 ### Community 80 - "Dev tooling — Swoon"
 Cohesion: 0.12
@@ -318,8 +324,8 @@ Cohesion: 0.14
 Nodes (13): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Mobile (+5 more)
 
 ### Community 84 - "Reminders ⏰"
-Cohesion: 0.15
-Nodes (13): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Mobile (+5 more)
+Cohesion: 0.09
+Nodes (21): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Jobs, events & schedules, Known gaps / TODO, Mobile (+13 more)
 
 ### Community 85 - "Billing & Entitlements 🧾"
 Cohesion: 0.17
@@ -350,8 +356,8 @@ Cohesion: 0.17
 Nodes (12): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Date Roulette 🎡, Jobs, events & schedules, Known gaps / TODO (+4 more)
 
 ### Community 92 - "Insights (AI) 💡"
-Cohesion: 0.10
-Nodes (19): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Insights (AI) 💡, Jobs, events & schedules, Known gaps / TODO (+11 more)
+Cohesion: 0.14
+Nodes (12): AI usage (if any), API endpoints, Business rules, Changelog, Data model, Insights (AI) 💡, Jobs, events & schedules, Known gaps / TODO (+4 more)
 
 ### Community 93 - "Love Notes 💕"
 Cohesion: 0.17
@@ -378,7 +384,7 @@ Cohesion: 0.18
 Nodes (11): MYSQL_DATABASE, MYSQL_ROOT_PASSWORD, test-mysql, env, image, options, ports, mysql (+3 more)
 
 ### Community 99 - "Accounts & Couple Linking 💞 - mobile"
-Cohesion: 0.20
+Cohesion: 0.25
 Nodes (8): Accounts & Couple Linking 💞 - mobile, Changelog, Known gaps / TODO, Local state, Offline behaviour, Screens, navigation, components, Tests, Theme usage
 
 ### Community 100 - "CLAUDE.md — Swoon"
@@ -402,11 +408,11 @@ Cohesion: 0.20
 Nodes (10): `[ ]` P6.T01 — Daily Spark question library · **S**, `[ ]` P6.T02 — Daily Spark assignment and reveal · **M**, `[ ]` P6.T03 — Daily Spark UI · **S**, `[ ]` P6.T04 — Challenge library · **S**, `[ ]` P6.T05 — Weekly challenges and gentle streaks · **M**, `[ ]` P6.T06 — Love Notes · **M**, `[ ]` P6.T07 — Love Notes UI and local notifications · **S**, `[ ]` P6.T08 — Date idea library and Date Roulette · **M** (+2 more)
 
 ### Community 105 - "Billing & Entitlements 🧾 - mobile"
-Cohesion: 0.29
+Cohesion: 0.22
 Nodes (7): Billing & Entitlements 🧾 - mobile, Changelog, Known gaps / TODO, Local state, Offline behaviour, Tests, Theme usage
 
 ### Community 106 - "Love Notes 💕 - mobile"
-Cohesion: 0.22
+Cohesion: 0.29
 Nodes (7): Changelog, Known gaps / TODO, Local state, Love Notes 💕 - mobile, Offline behaviour, Tests, Theme usage
 
 ### Community 107 - "Phase 1 — Accounts & Couples"
@@ -437,9 +443,9 @@ Nodes (8): steps, steps, steps, name, run, uses, working-directory, steps
 Cohesion: 0.25
 Nodes (8): AI_DRIVER, DB_CONNECTION, DB_DATABASE, DB_HOST, DB_PASSWORD, DB_PORT, DB_USERNAME, env
 
-### Community 115 - "Reminders ⏰ - mobile"
-Cohesion: 0.25
-Nodes (8): Changelog, Known gaps / TODO, Local state, Offline behaviour, Reminders ⏰ - mobile, Screens, navigation, components, Tests, Theme usage
+### Community 115 - "Insights (AI) 💡 - mobile"
+Cohesion: 0.29
+Nodes (7): Changelog, Insights (AI) 💡 - mobile, Known gaps / TODO, Local state, Offline behaviour, Tests, Theme usage
 
 ### Community 116 - "Swoon 💞"
 Cohesion: 0.25
@@ -470,7 +476,7 @@ Cohesion: 0.29
 Nodes (7): Changelog, Check-in (Temperature Check) 🌡️ - mobile, Known gaps / TODO, Local state, Offline behaviour, Tests, Theme usage
 
 ### Community 124 - "Date Debrief 💬 - mobile"
-Cohesion: 0.22
+Cohesion: 0.29
 Nodes (7): Changelog, Date Debrief 💬 - mobile, Known gaps / TODO, Local state, Offline behaviour, Tests, Theme usage
 
 ### Community 125 - "AI Date Planner 🍷 - mobile"
@@ -482,8 +488,8 @@ Cohesion: 0.29
 Nodes (7): Changelog, Date Roulette 🎡 - mobile, Known gaps / TODO, Local state, Offline behaviour, Tests, Theme usage
 
 ### Community 127 - "TestPingMail"
-Cohesion: 0.12
-Nodes (8): MailTest, SwoonMailable, TestPingMail, {closure#1}(), {closure#2}(), {closure#3}(), {closure#4}(), `[x]` P0.T11 — Resend transport and the first real email · **S**
+Cohesion: 0.11
+Nodes (8): MailTest, SwoonMailable, TestPingMail, {closure#1}(), {closure#3}(), {closure#4}(), {closure#5}(), `[x]` P0.T11 — Resend transport and the first real email · **S**
 
 ### Community 129 - "Modules — Swoon"
 Cohesion: 0.33
@@ -501,16 +507,20 @@ Nodes (4): if, name, runs-on, docs
 Cohesion: 0.50
 Nodes (4): on, pull_request, push, branches
 
-### Community 138 - "Daily Spark 🔥 - mobile"
-Cohesion: 0.22
-Nodes (7): Changelog, Daily Spark 🔥 - mobile, Known gaps / TODO, Local state, Offline behaviour, Tests, Theme usage
+### Community 136 - "Love Map / Profiles 🗺️ - mobile"
+Cohesion: 0.29
+Nodes (7): Changelog, Known gaps / TODO, Local state, Love Map / Profiles 🗺️ - mobile, Offline behaviour, Tests, Theme usage
+
+### Community 137 - "Shared Planner 🗓️ - mobile"
+Cohesion: 0.29
+Nodes (7): Changelog, Known gaps / TODO, Local state, Offline behaviour, Shared Planner 🗓️ - mobile, Tests, Theme usage
 
 ### Community 139 - "Weekly Recap (AI) ✨ - mobile"
-Cohesion: 0.22
+Cohesion: 0.29
 Nodes (7): Changelog, Known gaps / TODO, Local state, Offline behaviour, Tests, Theme usage, Weekly Recap (AI) ✨ - mobile
 
 ### Community 140 - "Milestones & Countdowns ⏳ - mobile"
-Cohesion: 0.29
+Cohesion: 0.22
 Nodes (7): Changelog, Known gaps / TODO, Local state, Milestones & Countdowns ⏳ - mobile, Offline behaviour, Tests, Theme usage
 
 ### Community 141 - "Moments 📸 - mobile"
@@ -518,28 +528,28 @@ Cohesion: 0.29
 Nodes (7): Changelog, Known gaps / TODO, Local state, Moments 📸 - mobile, Offline behaviour, Tests, Theme usage
 
 ### Community 142 - "Year in Moments 📖 - mobile"
-Cohesion: 0.29
+Cohesion: 0.22
 Nodes (7): Changelog, Known gaps / TODO, Local state, Offline behaviour, Tests, Theme usage, Year in Moments 📖 - mobile
 
 ## Knowledge Gaps
 - **3 isolated node(s):** `ADR-0004`, `ADR-0004`, `expo/tsconfig.base`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 814 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **51 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 820 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **56 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Phase 0 — Foundations` connect `API HTTP Client` to `Card`, `TestPingMail`, `Build plan — Swoon 💞`, `Service Providers & Routing`?**
-  _High betweenness centrality (0.092) - this node is a cross-community bridge._
+- **Why does `Card()` connect `Card` to `Phase 4 — Moments & On This Day`?**
+  _High betweenness centrality (0.074) - this node is a cross-community bridge._
 - **Are the 37 inferred relationships involving `Card()` (e.g. with `Mobile` and `Mobile`) actually correct?**
   _`Card()` has 37 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `ADR-0004`, `ADR-0004`, `expo/tsconfig.base` to the rest of the system?**
   _3 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `App Root & Theme Provider` be split into smaller, more focused modules?**
-  _Cohesion score 0.06560283687943262 - nodes in this community are weakly interconnected._
-- **Why does `Card()` connect `Card` to `Phase 4 — Moments & On This Day`?**
-  _High betweenness centrality (0.081) - this node is a cross-community bridge._
+  _Cohesion score 0.05639097744360902 - nodes in this community are weakly interconnected._
+- **Why does `Build plan — Swoon 💞` connect `Build plan — Swoon 💞` to `Phase 9 — More modules`, `README.md`, `Phase 2 — AI platform`, `API HTTP Client`, `Phase 3 — AI Date Planner`, `Phase 4 — Moments & On This Day`, `Phase 6 — Engagement`, `Phase 1 — Accounts & Couples`, `Phase 8 — Monetisation`, `Phase 11 — High-ticket add-ons`, `Phase 7 — AI Recap & Insights`, `Phase 5 — Planner & Milestones`, `Phase 10 — Launch readiness`?**
+  _High betweenness centrality (0.073) - this node is a cross-community bridge._
 - **Are the 34 inferred relationships involving `Button()` (e.g. with `Mobile` and `Mobile`) actually correct?**
   _`Button()` has 34 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Card` be split into smaller, more focused modules?**
-  _Cohesion score 0.10837245696400626 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11466325660699062 - nodes in this community are weakly interconnected._

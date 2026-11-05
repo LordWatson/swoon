@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+$paidCaps = [
+    'date_plan' => 20,
+    'weekly_recap' => 5,
+    'insights' => 10,
+];
+
 return [
 
     /*
@@ -84,16 +90,11 @@ return [
             'weekly_recap' => 0,
             'insights' => 0,
         ],
-        'together' => [
-            'date_plan' => 20,
-            'weekly_recap' => 5,
-            'insights' => 10,
-        ],
-        'forever' => [
-            'date_plan' => 20,
-            'weekly_recap' => 5,
-            'insights' => 10,
-        ],
+        // Together and Forever share one allowance, defined once so the two
+        // can never drift apart by half an edit. Give a tier its own array the
+        // day it is genuinely meant to differ.
+        'together' => $paidCaps,
+        'forever' => $paidCaps,
     ],
 
     /*
@@ -117,16 +118,28 @@ return [
     | Prices used to compute the cost we log in ai_usage
     |---------------------------------------------------------------------------
     |
-    | USD per 1M tokens. Kept here so ai_usage.cost is comparable over time even
-    | after provider prices change; update alongside a model change.
+    | Kept here so ai_usage.cost is comparable over time even after provider
+    | prices change; update alongside a model change.
+    |
+    | The unit is in the key on purpose. Provider prices are quoted in US
+    | dollars, every cap and budget in this app is in pence, and the two are
+    | NOT interchangeable — cost_guard.couple_monthly_pence is 500, which is
+    | five pounds, not five hundred dollars. Convert with usd_to_pence before
+    | comparing anything here to anything there. Whole numbers only, so the
+    | arithmetic matches the rest of the app (docs/ARCHITECTURE.md § 3).
     |
     */
 
-    'pricing' => [
-        'claude-opus-5-5' => ['input' => 4.00, 'output' => 20.00],
-        'claude-sonnet-5-5' => ['input' => 2.00, 'output' => 10.00],
-        'claude-haiku-5-5' => ['input' => 0.10, 'output' => 0.50],
+    'pricing_usd_cents_per_mtok' => [
+        'claude-opus-5-5' => ['input' => 400, 'output' => 2000],
+        'claude-sonnet-5-5' => ['input' => 200, 'output' => 1000],
+        'claude-haiku-5-5' => ['input' => 10, 'output' => 50],
     ],
+
+    // One dollar in pence. A rough, deliberately conservative rate: this
+    // decides when spending stops, so erring high stops us a little early
+    // rather than a lot late. Review it when the exchange rate moves far.
+    'usd_to_pence' => env('AI_USD_TO_PENCE', 80),
 
     /*
     |---------------------------------------------------------------------------
@@ -140,7 +153,10 @@ return [
     */
 
     'safety' => [
-        'enabled' => env('AI_SAFETY_ENABLED', true),
+        // There is deliberately no "enabled" flag. SafetyGuard runs on every
+        // user-facing generation and fails closed; a switch would make a
+        // documented non-negotiable one environment variable away from off.
+        // Tests that must not reach a model use AI_DRIVER=fake.
 
         // UK support services shown when SafetyGuard trips.
         'signposts' => [

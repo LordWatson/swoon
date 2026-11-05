@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/alexa/AppData/Local/Programs/Python/Python312/Scripts/graphify.EXE hook-guard search",
+            "command": "graphify hook-guard search",
             "timeout": 10
           }
         ]
@@ -16,8 +16,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/alexa/AppData/Local/Programs/Python/Python312/Scripts/graphify.EXE hook-guard read",
+            "command": "graphify hook-guard read",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-module-docs.sh",
+            "timeout": 15
           }
         ]
       }

@@ -391,11 +391,11 @@ Standing requirements:
 
 Phones and emulators cannot resolve `.test` — see `docs/DEV_TOOLING.md`.
 
-**Email.** One class owns the shell: `App\Mail\SwoonMailable` sets the
-from-name from `config('swoon.name')`, and every email extends it. Bodies are
-markdown mailables on Laravel's own mail theme, whose header and footer read
-`config('app.name')` — which is why `APP_NAME` interpolates `${SWOON_NAME}` in
-the env, leaving exactly one place to rename the product. `swoon:mail-test`
-proves the transport without involving a feature. Feature emails live in their
-module (`app/Modules/<Module>/Mail/`); only the base and the test ping are
-shared.
+**Email.** Every email extends `App\Mail\SwoonMailable`, which carries the
+shared shell: queueable, safe to pass a model to. Bodies are markdown mailables
+on Laravel's own mail theme, whose header and footer read `config('app.name')`
+— so `AppServiceProvider::boot()` points `app.name` and `mail.from.name` at
+`config('swoon.name')`, naming the product once for mailables and for Laravel's
+own notifications alike (ADR-015). `swoon:mail-test` proves the transport
+without involving a feature. Feature emails live in their module
+(`app/Modules/<Module>/Mail/`); only the base and the test ping are shared.

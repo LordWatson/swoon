@@ -197,15 +197,19 @@ inbox" are not the same thing, and only the dashboard tells you which happened.
 A send from an address whose domain is not verified in Resend may be accepted
 and then fail on delivery.
 
-Every Swoon email extends `App\Mail\SwoonMailable`, which sets the from-name
-from `config('swoon.name')` rather than `MAIL_FROM_NAME`. The env var
-interpolates `${SWOON_NAME}`, so a deploy that forgets that variable would
-otherwise send from a nameless address.
+The sender's name comes from `config('swoon.name')`, pointed at `app.name` and
+`mail.from.name` in `AppServiceProvider::boot()`. That covers Laravel's own
+notifications — password reset, email verification — which never pass through
+`App\Mail\SwoonMailable`, and it keeps the product named in one place without
+interpolating `${SWOON_NAME}` in the env file, where Dotenv silently leaves the
+literal text if the variable is defined later or not at all (ADR-015).
 
-`RESEND_ROUTES=false`. The package's `POST /resend/webhook` route attaches its
-signature middleware **only** when `RESEND_WEBHOOK_SECRET` is set — with no
-secret it accepts anything from anyone. Turn it back on together with a secret,
-when bounce and complaint handling is actually built.
+`POST /resend/webhook` is off in `AppServiceProvider::register()`, not in the
+env. The package attaches its signature middleware **only** when
+`RESEND_WEBHOOK_SECRET` is set — with no secret it accepts anything from anyone
+— so the default belongs in code, where a hand-built deploy cannot omit it. A
+test asserts the route is unregistered. Set `RESEND_ROUTES=true` together with a
+secret when bounce and complaint handling is built.
 
 ---
 

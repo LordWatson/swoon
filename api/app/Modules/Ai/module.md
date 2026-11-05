@@ -1,7 +1,7 @@
 # AI Platform ✨
 
 **Status:** planned
-**Last updated:** 2026-11-05 - created during project setup; scaffolding only, no implementation yet.
+**Last updated:** 2026-11-05 - scaffolding only, no implementation yet. `config/ai.php` hardened after the repo audit: no safety off switch (ADR-017), prices in US cents with an explicit pence conversion (ADR-016).
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -39,11 +39,11 @@ Nothing here stores a partner's private content: the payload is hashed, not kept
 3. **Prompts are versioned files**, not strings in code, under `resources/prompts/<name>/<version>.md`. The active version per prompt is pinned in `config('ai.prompts.active')`, so adding a file does not change behaviour.
 4. **Structured output is validated** against a JSON schema before the couple ever sees it. A malformed response is retried once, then recorded as `invalid_output` and surfaced as a friendly 'that didn't work, try again'.
 5. **SafetyGuard runs on every user-facing generation** - as a distinct, separately tested step, never a line in a prompt. If the input suggests abuse, crisis or harm, the normal output is discarded and replaced with a short, kind signpost to UK services (`config('ai.safety.signposts')`) and nothing else.
-6. SafetyGuard is **fail-closed**: if the safety step itself errors, the generation is abandoned, not shipped unchecked.
+6. SafetyGuard is **fail-closed**: if the safety step itself errors, the generation is abandoned, not shipped unchecked. There is deliberately **no config flag to disable it** - see ADR-017. Work that must not reach a model uses `AI_DRIVER=fake`.
 7. **Private data never enters a prompt that produces shared output.** The filter is a allow-list built per task, not a deny-list, so a new private field is excluded by default.
 8. **Caps are checked before dispatch**, per couple per calendar month, from `config('ai.caps')` by entitlement tier. A capped request returns a kind message, not a 429.
 9. A **runaway cost guard** sits above the caps (per couple, and global per day). Crossing it alerts and refuses - it should never be reached.
-10. **Every call is logged to `ai_usage`**, including failures, with tokens and computed cost. An unlogged call is a bug.
+10. **Every call is logged to `ai_usage`**, including failures, with tokens and computed cost. An unlogged call is a bug. `cost_pence` is computed from `config('ai.pricing_usd_cents_per_mtok')` and `config('ai.usd_to_pence')` - provider prices are quoted in US cents, every cap and budget in this app is in pence, and the two must never be compared without converting (ADR-016).
 11. **Model ids come from config**, never a literal. `config('ai.tasks.<task>')` picks the model key and effort.
 12. The **fake driver** (`AI_DRIVER=fake`) returns fixtures from `tests/Fixtures/Ai`. The test suite pins it; a test that makes a real call is a failing test.
 13. AI output is **never** attributed to a partner. The API marks it `source: ai` and the app labels it (UX rule 6).
@@ -100,3 +100,7 @@ Run: `composer test -- --filter=Ai`
 
 ## Changelog
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
+- 2026-11-05 - Audit fixes to `config/ai.php`, before any code reads it: the
+  `safety.enabled` flag removed (ADR-017), prices renamed to
+  `pricing_usd_cents_per_mtok` as whole numbers with a `usd_to_pence` rate
+  (ADR-016), and the Together/Forever caps defined once instead of copied.

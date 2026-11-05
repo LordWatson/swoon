@@ -1,16 +1,15 @@
 {
   ".claude/hooks/check-module-docs.sh": {
-    "mtime": 1793877233.8188083,
-    "seen": 1793877483.296082,
-    "ast_hash": "c2b7065ccb2b0cc706886f77d3461158",
-    "semantic_hash": "c2b7065ccb2b0cc706886f77d3461158"
+    "mtime": 1793883592.6660745,
+    "seen": 1793883815.110215,
+    "ast_hash": "5c209dc54d8e3cfe7f7294f840961911",
+    "semantic_hash": ""
   },
   ".claude/settings.json": {
-    "mtime": 1793877346.6293824,
-    "seen": 1793877483.296082,
-    "ast_hash": "2f0c318f4e933a375c7eed1bb893c037",
-    "semantic_hash": "2f0c318f4e933a375c7eed1bb893c037",
-    "ast_empty": true
+    "mtime": 1793883565.2786033,
+    "seen": 1793883815.110215,
+    "ast_hash": "a34e726fac136ff8bec9956a8a9a8cdf",
+    "semantic_hash": ""
   },
   ".githooks/pre-commit": {
     "mtime": 1793877611.441054,
@@ -19,10 +18,10 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1793877308.130821,
-    "seen": 1793877483.296082,
-    "ast_hash": "28277134c762e1404586d2212be53f61",
-    "semantic_hash": "28277134c762e1404586d2212be53f61"
+    "mtime": 1793883551.485062,
+    "seen": 1793883815.110215,
+    "ast_hash": "db490b28ad115491bf1bd1029d6ddf4c",
+    "semantic_hash": ""
   },
   "api/app/Http/Controllers/Controller.php": {
     "mtime": 1793875365.3083022,
@@ -163,16 +162,16 @@
     "semantic_hash": "ce49fd89efb7aaa319fcf0d482dd0884"
   },
   "api/app/Providers/AppServiceProvider.php": {
-    "mtime": 1793875365.3310552,
-    "seen": 1793877483.298256,
-    "ast_hash": "326d3a235ac075af050d40597642b15d",
-    "semantic_hash": "326d3a235ac075af050d40597642b15d"
+    "mtime": 1793883367.9984863,
+    "seen": 1793883815.110215,
+    "ast_hash": "f6a0c9c5436c9fa66a77ce5511de31ae",
+    "semantic_hash": ""
   },
   "api/app/Providers/ModuleServiceProvider.php": {
-    "mtime": 1793875399.7481382,
-    "seen": 1793877483.298256,
-    "ast_hash": "e54e060b7b6320c1bb4cd98e6f132ff1",
-    "semantic_hash": "e54e060b7b6320c1bb4cd98e6f132ff1"
+    "mtime": 1793883629.9149618,
+    "seen": 1793883815.110215,
+    "ast_hash": "c39a3cce1671d9bb2dfe4459d4e05e75",
+    "semantic_hash": ""
   },
   "api/artisan": {
     "mtime": 1773754980.0,
@@ -199,10 +198,10 @@
     "semantic_hash": "8b5974998d07ff36747a0efbc6e3c34f"
   },
   "api/config/ai.php": {
-    "mtime": 1793875153.809513,
-    "seen": 1793877483.298256,
-    "ast_hash": "ba985a1011019e4b6849bec3bb8a3de4",
-    "semantic_hash": "ba985a1011019e4b6849bec3bb8a3de4"
+    "mtime": 1793883729.4664536,
+    "seen": 1793883815.110215,
+    "ast_hash": "c23cde5821578fac828f88368ae464e1",
+    "semantic_hash": ""
   },
   "api/config/app.php": {
     "mtime": 1793875365.3652556,
@@ -313,10 +312,10 @@
     "semantic_hash": "1371bb97f81e56d240a2c75d52838eca"
   },
   "api/database/seeders/DatabaseSeeder.php": {
-    "mtime": 1793875365.539311,
-    "seen": 1793877483.2992556,
-    "ast_hash": "b2705ed0688b4cf2b69f815b2409015e",
-    "semantic_hash": "b2705ed0688b4cf2b69f815b2409015e"
+    "mtime": 1793883551.485062,
+    "seen": 1793883815.110215,
+    "ast_hash": "413be6c6672d005cd40537d9de817b3a",
+    "semantic_hash": ""
   },
   "api/pint.json": {
     "mtime": 1793875246.8938098,
@@ -381,10 +380,10 @@
     "ast_empty": true
   },
   "mobile/eslint.config.js": {
-    "mtime": 1793876400.2424397,
-    "seen": 1793877483.300256,
-    "ast_hash": "b7321575417a9db5c3e3e6f8452064b7",
-    "semantic_hash": "b7321575417a9db5c3e3e6f8452064b7"
+    "mtime": 1793883540.446721,
+    "seen": 1793883815.110215,
+    "ast_hash": "598e50358290319762c48767f6dfde9b",
+    "semantic_hash": ""
   },
   "mobile/jest.setup.js": {
     "mtime": 1793876424.0638716,
@@ -399,10 +398,10 @@
     "semantic_hash": "d4b7bc8593a001b3340a9b81e1e29124"
   },
   "mobile/src/api/client.ts": {
-    "mtime": 1793876424.0628724,
-    "seen": 1793877483.300256,
-    "ast_hash": "b618424abd854fb145db58246452a134",
-    "semantic_hash": "b618424abd854fb145db58246452a134"
+    "mtime": 1793883479.7279942,
+    "seen": 1793883815.110215,
+    "ast_hash": "a1da47b884b973fce889e1fd403364e9",
+    "semantic_hash": ""
   },
   "mobile/src/app/_layout.tsx": {
     "mtime": 1793876339.0212512,
@@ -489,10 +488,10 @@
     "semantic_hash": "32d0be143376d4aaa8d9d2f54adfbb8b"
   },
   "mobile/src/theme/index.ts": {
-    "mtime": 1793876424.0628724,
-    "seen": 1793877483.3018398,
-    "ast_hash": "915d8240a64962ebe77cf2f1f568c91f",
-    "semantic_hash": "915d8240a64962ebe77cf2f1f568c91f"
+    "mtime": 1793883540.446721,
+    "seen": 1793883815.110215,
+    "ast_hash": "6cdf5b44f873038d1d82a95ec24123a7",
+    "semantic_hash": ""
   },
   "mobile/src/theme/modules.ts": {
     "mtime": 1793876094.2502725,
@@ -555,9 +554,9 @@
     "semantic_hash": ""
   },
   "api/app/Modules/Ai/module.md": {
-    "mtime": 1793876028.2526066,
-    "seen": 1793881533.0892825,
-    "ast_hash": "3e9f932997ec1b0371850c697defabc5",
+    "mtime": 1793883773.205726,
+    "seen": 1793883815.110215,
+    "ast_hash": "cce808f54303a293ca9a8a0319867e1a",
     "semantic_hash": ""
   },
   "api/app/Modules/Billing/module.md": {
@@ -687,9 +686,9 @@
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
-    "mtime": 1793882435.7875605,
-    "seen": 1793882481.7619324,
-    "ast_hash": "00e9fd62e1665fd6fdcc969e6559a84e",
+    "mtime": 1793883729.4664536,
+    "seen": 1793883815.110215,
+    "ast_hash": "5c1c493e43138d842606f870c0e72536",
     "semantic_hash": ""
   },
   "docs/BRAND.md": {
@@ -699,15 +698,15 @@
     "semantic_hash": ""
   },
   "docs/DECISIONS.md": {
-    "mtime": 1793880873.4044893,
-    "seen": 1793881533.0892825,
-    "ast_hash": "627bf0165017954e929b37037f9ac6b9",
+    "mtime": 1793883752.390689,
+    "seen": 1793883815.110215,
+    "ast_hash": "8dc888b2ab3582d6f1541681d5ac7569",
     "semantic_hash": ""
   },
   "docs/DEV_TOOLING.md": {
-    "mtime": 1793882435.786557,
-    "seen": 1793882481.7619324,
-    "ast_hash": "2dba51ab04ae3a083c46cc7112915c9b",
+    "mtime": 1793883729.4664536,
+    "seen": 1793883815.110215,
+    "ast_hash": "fc1ebf33949cb8d8365d30d822d9cb71",
     "semantic_hash": ""
   },
   "docs/MODULES.md": {
@@ -717,9 +716,9 @@
     "semantic_hash": ""
   },
   "docs/PLAN.md": {
-    "mtime": 1793882455.7644515,
-    "seen": 1793882481.7619324,
-    "ast_hash": "5184ac54c5ad5387104b9efa632cbc4b",
+    "mtime": 1793883551.485062,
+    "seen": 1793883815.110215,
+    "ast_hash": "1e7d0a70479dc3d16baf463af9251234",
     "semantic_hash": ""
   },
   "docs/PRICING.md": {
@@ -729,9 +728,9 @@
     "semantic_hash": ""
   },
   "docs/SESSION_LOG.md": {
-    "mtime": 1793882474.5875163,
-    "seen": 1793882481.7619324,
-    "ast_hash": "dbee22e7fa6819bcc4beaaa5bfff70b8",
+    "mtime": 1793883806.420583,
+    "seen": 1793883815.110215,
+    "ast_hash": "5de7c712c1f207a8ee5cbfc98610677e",
     "semantic_hash": ""
   },
   "docs/UX_RULES.md": {
@@ -1011,9 +1010,9 @@
     "semantic_hash": ""
   },
   "api/app/Mail/SwoonMailable.php": {
-    "mtime": 1793881955.237326,
-    "seen": 1793882481.7619324,
-    "ast_hash": "f23dda476df6a63bd2194b2de4ddd56e",
+    "mtime": 1793883368.038137,
+    "seen": 1793883815.110215,
+    "ast_hash": "338189fbddd413d8e233e464ee2adcc4",
     "semantic_hash": ""
   },
   "api/app/Mail/TestPingMail.php": {
@@ -1029,9 +1028,15 @@
     "semantic_hash": ""
   },
   "api/tests/Feature/Mail/TestPingMailTest.php": {
-    "mtime": 1793882011.2194471,
-    "seen": 1793882481.7619324,
-    "ast_hash": "fc5657764dc5146b29499e0ca53df79a",
+    "mtime": 1793883650.2187283,
+    "seen": 1793883815.110215,
+    "ast_hash": "216ce4e548fd12b001beaea5ffe3dc0f",
+    "semantic_hash": ""
+  },
+  "mobile/src/api/__tests__/client.test.ts": {
+    "mtime": 1793883528.3460338,
+    "seen": 1793883815.110215,
+    "ast_hash": "f38d94cebf3b05f15d771fa64005b761",
     "semantic_hash": ""
   },
   "mobile/package-lock.json": {

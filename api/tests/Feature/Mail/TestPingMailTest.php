@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 use App\Mail\TestPingMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
+use Symfony\Component\Mime\Email;
 
 it('names the product from config, in the subject and the body', function (): void {
     config()->set('swoon.name', 'Renamed');
@@ -20,16 +22,24 @@ it('names the product from config, in the subject and the body', function (): vo
         ->and($mail->render())->toContain('Hello from Renamed');
 });
 
-it('takes the from-name from config, not from MAIL_FROM_NAME', function (): void {
-    // The env var interpolates ${SWOON_NAME}; a deploy that forgets it would
-    // otherwise send mail from a nameless address. This is why SwoonMailable
-    // exists, so it is the assertion that must not rot.
-    config()->set('mail.from.name', '');
-    config()->set('swoon.name', 'Swoon');
+it('points the whole application at the product name', function (): void {
+    // AppServiceProvider::boot() does this, so it covers Laravel's own
+    // notifications too — password reset and email verification never pass
+    // through SwoonMailable. If this breaks, email goes out nameless.
+    expect(config('mail.from.name'))->toBe(config('swoon.name'))
+        ->and(config('app.name'))->toBe(config('swoon.name'));
+});
 
-    expect((new TestPingMail)->from)->toHaveCount(1)
-        ->and((new TestPingMail)->from[0]['name'])->toBe('Swoon')
-        ->and((new TestPingMail)->from[0]['address'])->toBe(config('mail.from.address'));
+it('puts the product name on a real sent message', function (): void {
+    $sent = Mail::to('partner@example.com')->send(new TestPingMail);
+
+    $message = $sent?->getSymfonySentMessage()->getOriginalMessage();
+
+    expect($message)->toBeInstanceOf(Email::class);
+    assert($message instanceof Email);
+
+    expect($message->getFrom()[0]->getName())->toBe(config('swoon.name'))
+        ->and($message->getFrom()[0]->getAddress())->toBe(config('mail.from.address'));
 });
 
 it('sends the ping to the address given', function (): void {
@@ -48,4 +58,10 @@ it('sends nothing when the address is not an address', function (): void {
         ->assertFailed();
 
     Mail::assertNothingSent();
+});
+
+it('leaves the unsigned Resend webhook route unregistered', function (): void {
+    // The package signature-checks that route only when a webhook secret is
+    // set, so until bounce handling exists it must not be reachable at all.
+    expect(Route::has('resend.webhook'))->toBeFalse();
 });

@@ -8,6 +8,73 @@ Keep each entry short: context, decision, consequence.
 
 ---
 
+## ADR-017 — SafetyGuard has no off switch
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** `config/ai.php` carried `'safety' => ['enabled' => env('AI_SAFETY_ENABLED', true)]`,
+written before any AI code existed. `CLAUDE.md` and `Ai/module.md` both describe
+SafetyGuard as running on every user-facing generation and failing closed, and
+list it as non-negotiable. A flag made that one environment variable away from off.
+
+**Decision.** No `enabled` key. SafetyGuard always runs. Work that must not
+reach a model uses `AI_DRIVER=fake`, which is the honest lever: it replaces the
+provider rather than skipping the safety step.
+
+**Consequence.** There is no supported way to turn safety off, including in an
+incident. If the guard itself becomes the problem, the fix is to fix the guard
+or stop generating — both of which fail closed, as intended.
+
+---
+
+## ADR-016 — AI prices in US cents, every budget in pence, converted explicitly
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** `config/ai.php` held provider prices as US-dollar floats
+(`'input' => 4.00`) directly beside caps in pence
+(`couple_monthly_pence => 500`), with no exchange rate anywhere in the repo.
+`config/pricing.php` meanwhile states "prices are in pence so they are never
+floats". The first code to compare the two would have been wrong by roughly
+100× and by the exchange rate, and the error would have shown up as a real bill.
+
+**Decision.** Rename the key to `pricing_usd_cents_per_mtok` so the unit
+travels with the value, hold whole numbers only, and add one
+`usd_to_pence` rate (default 80) that cost logging must apply before comparing
+anything to a cap. The unit goes in the key name, not in a comment above it.
+
+**Consequence.** Cost logging gains one multiplication and must never skip it.
+The rate is approximate and deliberately conservative — it decides when
+spending stops, so erring high stops us a little early rather than a lot late.
+Revisit when the exchange rate moves far.
+
+---
+
+## ADR-015 — The product name reaches Laravel's own config through a provider
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** ADR-001 puts the working name in `config/swoon.php` and
+`mobile/src/config/app.ts` only. Laravel's markdown mail theme prints
+`config('app.name')` as the header and footer of every email, and notifications
+take their sender name from `mail.from.name` — neither reads `swoon.name`, and
+neither passes through `App\Mail\SwoonMailable`. The first attempt coupled them
+in the env file with `APP_NAME="${SWOON_NAME}"`. Dotenv substitutes only
+variables defined **earlier in the same file** and otherwise leaves the literal
+text `${SWOON_NAME}`, which was verified against the project's own Dotenv: a
+production env assembled in another order would have put that string in the
+header of a real invite email.
+
+**Decision.** `AppServiceProvider::boot()` sets `app.name` and
+`mail.from.name` from `config('swoon.name')`. `APP_NAME` stays a plain literal,
+where its value only feeds the cache prefix, the Redis prefix and the session
+cookie name.
+
+**Consequence.** ADR-001 still holds, and now covers Laravel's own email too.
+Anything resolved at config-load time rather than at render time — those three
+prefixes — still reads `APP_NAME`, so renaming the product means changing
+`SWOON_NAME` and `APP_NAME` in the env, with `config/swoon.php` as the value
+everything user-facing actually reads.
+
+---
+
 ## ADR-014 — Graphify output: commit the report, ignore the cache
 **Date:** 2026-11-05 · **Status:** accepted
 
