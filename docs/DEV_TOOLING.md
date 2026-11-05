@@ -165,6 +165,46 @@ a blank screen.
 > `10.0.2.2` and LAN-IP options above need an `expo-build-properties` opt-in for
 > a dev build, or use `herd share` over HTTPS and avoid the issue.
 
+### 4.1 Invite links (P1.T05)
+
+Two forms, both landing on `app/invite/[code].tsx`:
+
+| Form | Example | Needs |
+|---|---|---|
+| Custom scheme | `swoon://invite/ABCD2345` | Nothing. Works in a dev build immediately. |
+| Universal link | `https://link.swoon.test/invite/ABCD2345` | The two association files below, hosted. |
+
+Test the scheme without any hosting at all:
+
+```powershell
+# Android
+adb shell am start -a android.intent.action.VIEW -d "swoon://invite/ABCD2345"
+
+# iOS simulator
+xcrun simctl openurl booted "swoon://invite/ABCD2345"
+```
+
+**The association files are not hosted yet** — `link.swoon.test` is not a real
+domain. Until they are, universal links fall back to opening the browser, and
+the custom scheme is the one that works. Both files must be served over HTTPS,
+with `Content-Type: application/json`, at these exact paths and **no redirect**:
+
+| Platform | Path | Contents |
+|---|---|---|
+| iOS | `https://link.swoon.test/.well-known/apple-app-site-association` | `applinks.details[].appIDs` = `<TEAM_ID>.test.swoon.app`, with a path component of `/invite/*` |
+| Android | `https://link.swoon.test/.well-known/assetlinks.json` | `delegate_permission/common.handle_all_urls` for `test.swoon.app`, with the release keystore's SHA-256 fingerprint |
+
+The app side is already configured and needs no change when they go up:
+`associatedDomains: ['applinks:link.swoon.test']` and the Android intent filter
+for `/invite` are both in `mobile/app.config.ts` from P0.T02. The Android
+fingerprint comes from the keystore EAS creates, so that file cannot be written
+until the first release build exists.
+
+Three things that will cost an afternoon if forgotten: iOS caches the AASA file
+aggressively, so test on a fresh install; the Android fingerprint must be the
+**release** keystore's, not the debug one; and neither file may be served
+behind a redirect.
+
 ---
 
 ## 5. Checks

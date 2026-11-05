@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞 - mobile
 
-**Status:** planned
-**Last updated:** 2026-11-05 - P1.T06: onboarding and the waiting screen. Only deep links (P1.T05) left in Phase 1.
+**Status:** done
+**Last updated:** 2026-11-05 - P1.T05: deep links. **Phase 1 is complete** - two people can sign up, link, and leave.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > **Canonical doc:** [`api/app/Modules/Accounts/module.md`](../../../../api/app/Modules/Accounts/module.md)
@@ -148,6 +148,39 @@ the person reads. It shares `reminded_at` with the scheduled three-day
 reminder, so a manual nudge suppresses the automatic one rather than both
 arriving.
 
+## Deep links and universal links (P1.T05)
+
+Both forms land on `app/invite/[code].tsx`:
+
+- `swoon://invite/<code>` — the custom scheme, works in a dev build with no
+  hosting at all.
+- `https://link.swoon.test/invite/<code>` — needs the two association files
+  (`docs/DEV_TOOLING.md` § 4.1), which are **not hosted yet**.
+
+**Parsing is a pure function** (`inviteLink.ts`), because this is the one part
+of the app that genuinely cannot be checked by tapping around: a cold start
+from a link, and a link followed before the app existed, are both
+unreproducible by hand. It is lenient about what messaging apps do to a URL —
+trailing slashes, tracking parameters, fragments, lower case — and strict about
+the code, so a malformed one is rejected before it becomes an API call.
+
+**The install detour** is the sequence this was built for: tap the link, have
+no app, visit the store, install, open — and the cold start carries **no URL**.
+So the code is stashed the moment it is seen (`pendingInvite.ts`) and resolved
+once there is an account to attach it to, which happens on the invite screen.
+It is kept in `expo-secure-store` because the code is a capability: anyone
+holding it can join a couple's space. It is validated on the way out as well as
+in, and cleared as soon as it is used.
+
+A dead code gets a **warm, specific message** — expired, or not a code at all —
+rather than a 404 screen. The person reading it did nothing wrong: their
+partner's code simply ran out.
+
+`inviteCode.ts` mirrors the server's alphabet (no 0/O, no 1/I/L). Duplicated
+rather than fetched, so a typo is caught before a round trip — squinting at a
+text message and then waiting for a request to tell you the length is wrong is
+a bad experience.
+
 ## Where the token lives
 
 `expo-secure-store`, never AsyncStorage: the token is the whole account, and
@@ -184,6 +217,9 @@ applies, and any reveal/privacy gate as seen from the client.
 - Not implemented yet. See the canonical doc's gaps list.
 
 ## Changelog
+- 2026-11-05 - P1.T05: deep and universal links. `inviteLink.ts`,
+  `inviteCode.ts`, `pendingInvite.ts`, `app/invite/[code].tsx`, and the
+  pending-code pickup on the invite screen. 16 tests. Phase 1 complete.
 - 2026-11-05 - P1.T06: onboarding (`onboarding.ts`, `useOnboardingDraft`,
   `onboarding.tsx`), the waiting screen and the server-side nudge. Needed two
   API endpoints that did not exist yet. 10 tests.

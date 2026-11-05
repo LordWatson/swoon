@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { ScrollView, Share, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ApiError } from '../api/client';
 import { AvatarPair, Button, Card, Hero } from '../components';
+import { readPendingInvite } from '../features/accounts/pendingInvite';
 import { useCreateInvite, useMe, useRemindInvite, useSignOut } from '../features/accounts/useAuth';
 import { useTheme } from '../theme';
 
@@ -23,6 +25,24 @@ export default function InviteScreen() {
   const remind = useRemindInvite();
   const signOut = useSignOut();
   const [shared, setShared] = useState(false);
+  const router = useRouter();
+
+  // The other half of the install detour. Someone who tapped a link before
+  // they had an account arrives here once signed in — with the code stashed
+  // but the URL long gone — so this is where it gets resolved.
+  useEffect(() => {
+    let active = true;
+
+    void readPendingInvite().then((code) => {
+      if (active && code !== null) {
+        router.replace({ pathname: '/invite/[code]', params: { code } });
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const body = scaleType('body');
   const display = scaleType('display');

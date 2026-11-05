@@ -6,6 +6,104 @@ Format: date · task ID(s) · what changed · anything left over.
 
 ---
 
+## 2026-11-05 — Phase 1 complete · Accounts & Couples (P1.T01 … P1.T10)
+
+Ten tasks, ten commits. Two people can now sign up, link into a couple, and
+leave cleanly. Sixteen endpoints, 161 API tests and 136 mobile tests.
+
+**Order changed.** T08–T10 were taken before T05–T07: those three are mobile,
+and finishing the backend first let T10's authorisation sweep cover every
+endpoint in one pass. T07 (the shell) then came before T05 and T06, because
+both navigate into it and building them first would have meant guessing.
+
+**The things worth remembering**
+
+* **The one-couple invariant is a unique index on a virtual generated column.**
+  MySQL has no partial index, and `unique(user_id, left_at)` does not work
+  because a UNIQUE index treats NULLs as distinct. Three details each cost a
+  failed migration: `CASE` not `IF()` so SQLite accepts it; VIRTUAL not STORED,
+  because MySQL refuses `ON DELETE CASCADE` on a base column of a stored
+  generated column (error 1215); and declared in `CREATE TABLE`, because SQLite
+  cannot add one by `ALTER`. Proven by a test that inserts straight into the
+  table.
+* **Concurrency guards are conditional writes, not checks.** Two accepts of one
+  code both pass every up-front check; `update(... where accepted_at is null)`
+  succeeds once.
+* **Sign-in refuses identically and in the same time.** A wrong password and an
+  unknown address give the same 422, and the Action hashes against a dummy
+  rather than returning early — a login answering in 5 ms for unknown addresses
+  and 90 ms for known ones is an enumeration oracle whatever the message says.
+* **The email rate limit is keyed on email+IP.** Keyed on the address alone, a
+  stranger could lock a real person out of their own account with five failed
+  attempts.
+* **Social tokens: algorithm pinned, audience matched, no client id means
+  refuse everything.** Reading the algorithm from the token's own header is the
+  alg-confusion bug. ADR-022 for `firebase/php-jwt`; ADR-023 for refusing to
+  link a social identity to an existing email account without explicit
+  confirmation, because an email match is not proof of being the same person.
+* **Deletion leaves a tombstone.** The row survives, emptied, because the other
+  partner's shared content has to keep resolving — a couple's memories are two
+  people's memories. The purge job refuses to touch an account that is not
+  soft-deleted, which has its own test: a stale retry scrubbing a live account
+  would be the worst bug in the system.
+* **The export JSON shape is settled**, closing a gap open since P0.T07. The
+  partner appears as a name and a colour, asserted against the bytes.
+* **The authorisation sweep reads the real route table** and fails naming any
+  route with no recorded decision. Verified by adding a route and watching it
+  fail. It then did its job for real in T06, refusing to pass until
+  `PATCH /api/me` and the nudge endpoint had decisions.
+
+**Five bugs the tests caught, four of them mine**
+
+1. `apple_sub` was silently dropped on create, because it is not fillable.
+   That default is right, so the Action sets it with `forceFill` — a stray
+   `User::create($request->all())` must never hand someone another person's
+   identity.
+2. My social-auth rejection messages were distinguishable, so the endpoint
+   leaked which check had failed. One message to the caller, the reason to the
+   log.
+3. `SwoonMailable` lost its constructor in the audit fixes, so `InviteMail`
+   calling `parent::__construct()` was fatal.
+4. `CoupleInviteFactory::accepted()` called `getKey()` on a Factory.
+5. Classifying the couple routes as `owned` in the sweep produced a failing
+   test that was my classification being wrong, not the code: they take no id,
+   so an outsider cannot aim them anywhere. They are `self`.
+
+**Four pieces of module wiring**, each of which every later module needs:
+`Factory::guessFactoryNamesUsing` (Laravel looks for a module model's factory
+in `Database\Factories\Modules\…`); an explicit `Gate::policy` for `User`,
+whose convention points at `App\Policies`; module Artisan command registration
+(discovery covers `app/Console/Commands` only, so `invites:remind` would have
+failed from the scheduler at 3am); and module event discovery — scoped by glob
+to `app/Modules/*/Listeners`, because scanning the tree wholesale registered
+every **Action** as a listener for its own first parameter's type.
+
+**Dependencies added:** `firebase/php-jwt` (ADR-022) and `expo-secure-store`
+(already mandated by CLAUDE.md). `expo-localization` was *not* added —
+`Intl.DateTimeFormat().resolvedOptions().timeZone` is the same answer from the
+platform.
+
+**Not verified, and it matters**
+
+* **No mobile code has run on a device.** No JVM, no Android SDK, no emulator
+  (P0.T12). Every mobile claim rests on 136 Jest tests and `tsc`.
+* **No live Apple or Google sign-in.** `APPLE_CLIENT_ID` and the three
+  `GOOGLE_CLIENT_ID_*` values are unset, and until they are both endpoints
+  correctly refuse every token.
+* **Universal links are not live.** `link.swoon.test` is not a real domain and
+  the Android fingerprint needs a release keystore. Paths and file shapes are
+  in `docs/DEV_TOOLING.md` § 4.1; the custom scheme works now.
+* **Two screens are specified but not built:** the unlink confirm and the
+  Privacy & data screen. Their required copy — including the billing
+  consequence of an unlink — is written into `Accounts/module.md` so it cannot
+  be lost.
+
+**Next:** **Phase 2** — the AI platform. `config/ai.php` was hardened during
+the audit (ADR-016, ADR-017), so the cost and safety rules are already written
+down and waiting.
+
+---
+
 ## 2026-11-05 — Design-language uplift (founder-directed, no task ID)
 
 The founder asked for a major UI/UX and branding lift: "currently it's very

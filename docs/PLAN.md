@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T05** — deep links and universal links. The last task in Phase 1.
+**Current focus:** **P2.T01** — the AI platform's first task. **Phase 1 is complete**: two people can sign up, link into a couple, and leave cleanly.
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 9 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | **10 / 10 done** ✅ |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -396,13 +396,21 @@ a block); `.githooks/pre-commit` running Pint + ESLint on staged files only;
 the gate to everything else: no couple, no product.
 
 **Exit criteria.**
-- Sign up and sign in with email, Apple and Google.
-- Invite by link **and** code; accept creates the couple.
-- One active couple per user, enforced in the database.
-- Either partner can unlink immediately, without the other's consent.
-- Account deletion is immediate and cascades; data export works.
-- The five-tab shell exists with the quick-add sheet.
-- **Every endpoint has an authorisation test.**
+- [x] Sign up and sign in with email, Apple and Google. *(Apple and Google are
+  verified against a stubbed JWKS; no live sign-in — the credentials are unset,
+  and until they are both endpoints refuse every token.)*
+- [x] Invite by link **and** code; accept creates the couple.
+- [x] One active couple per user, enforced in the database.
+- [x] Either partner can unlink immediately, without the other's consent.
+- [x] Account deletion is immediate and cascades; data export works.
+- [x] The five-tab shell exists with the quick-add sheet.
+- [x] **Every endpoint has an authorisation test** — and the sweep fails if a
+  new route has no recorded decision, so it stays true.
+
+**Not verified:** none of the mobile work has run on a device. There is no JVM,
+no Android SDK and no emulator on this machine (see P0.T12), so every mobile
+claim rests on 136 Jest tests and the type checker. The association files for
+universal links are not hosted either.
 
 **Dependencies.** Phase 0 complete (notably P0.T10).
 
@@ -580,7 +588,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T05 — Deep links and universal links · **M**
+### `[x]` P1.T05 — Deep links and universal links · **M**
 
 **Steps**
 1. Expo Router route `app/invite/[code].tsx`.
@@ -597,6 +605,29 @@ the gate to everything else: no couple, no product.
 **Docs to update** `mobile/src/features/accounts/module.md`, `docs/DEV_TOOLING.md` § 4.
 
 **Size** M.
+
+> **Done 2026-11-05.** Parsing is a **pure function**, because this is the one
+> part of the app that cannot be checked by tapping around — a cold start from
+> a link, and a link followed before the app existed, are both unreproducible
+> by hand. It is lenient about what messaging apps do to a URL (trailing
+> slashes, tracking parameters, fragments, lower case) and strict about the
+> code, so a malformed one never becomes an API call.
+>
+> **The install detour** is the sequence that needed the work: tap the link,
+> have no app, visit the store, install, open — and the cold start carries
+> **no URL**. The code is stashed on sight and resolved once there is an
+> account to attach it to. Kept in `expo-secure-store` because the code is a
+> capability: anyone holding it can join a couple's space.
+>
+> A dead code gets a warm, specific message rather than a 404 screen — the
+> person reading it did nothing wrong, their partner's code ran out.
+>
+> **Not done:** the association files are not hosted, because `link.swoon.test`
+> is not a real domain and the Android fingerprint needs a release keystore
+> that does not exist yet. Both paths, both file shapes and the three things
+> that waste an afternoon are written up in `docs/DEV_TOOLING.md` § 4.1. The
+> app side needs no change when they go up. Until then universal links fall
+> back to the browser and the custom scheme is the one that works. 16 tests.
 
 ---
 
