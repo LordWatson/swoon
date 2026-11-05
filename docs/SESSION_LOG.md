@@ -136,6 +136,34 @@ project. 339 API tests, 101 of them in this one file.
 someone with relevant expertise before launch.** The tests passing does not
 close that, and it stays in the module's gaps until it is reviewed.
 
+**P2.T05 — the privacy filter.** 361 API tests.
+
+* **An allow-list, so the person who forgets is safe.** A deny-list has to be
+  updated every time a private column is added, by somebody who happens to
+  remember the file exists. The filter does not need to know a field is
+  private; it only needs to not know it at all.
+* **Entries name leaves, never containers.** `partners.*.answers` for "all the
+  answers" would quietly include whatever is added inside it later, so the
+  filter throws when an allow-listed path holds an object. A list of plain
+  values is fine - it can grow longer, not wider.
+* **Two tests carry the future**: a column nobody has heard of yet, and every
+  column of the real `users` table read from `Schema::getColumnListing()`. The
+  second grows with the table rather than with somebody's memory of it.
+* **One test per private field, by name**, so widening the list fails the test
+  belonging to the field it exposed. Proven by allow-listing
+  `partners.*.email`: three tests went red, including the one that scans the
+  list itself for forbidden words.
+* **A filtered list keeps its length** - an item with nothing allowed stays as
+  an empty object, because the model cannot tell that two partners became one.
+  But a list where *nothing* survived collapses, which took a second pass to
+  get right: `gift_vault` was arriving as `[[]]` and so surviving as a key.
+* **`safety_screen` is allow-listed to see raw text on purpose.** A locked love
+  note is exactly where somebody might say something that needs a signpost, so
+  a screen that skipped private text would skip the most important cases. It is
+  safe because of what the task is, not because of what it is given. Routing it
+  through the filter anyway makes that a line a reviewer can read rather than an
+  omission.
+
 **Left over:** the founder's real Anthropic key sits in `api/.env` (untracked,
 git-ignored) and was read aloud during this session while checking the test
 environment — worth rotating.

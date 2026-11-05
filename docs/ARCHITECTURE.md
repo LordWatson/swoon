@@ -264,6 +264,24 @@ addresses.
 The date planner stores and sends the **postcode outcode only** (`NE1`, not
 `NE1 4ST`) — enough to be useful, not enough to locate a home.
 
+**How it is enforced** (P2.T05). `Ai\Support\PrivacyFilter` keeps only what
+`Ai\Schemas\TaskAllowList` declares for the task, as dotted leaf paths, and
+every prompt variable goes through it. It is an **allow-list**, so the list
+above is a description of the outcome rather than the mechanism: a field is
+excluded by not being mentioned, which is what makes a column added next year
+safe by default. Each item in that list has its own test asserting it cannot
+reach a payload, and one further test reads the real `users` columns and
+asserts every one of them is dropped unless allow-listed.
+
+The filter refuses an allow-list entry that names a container, and refuses a
+task with no allow-list at all — so neither "allow the whole answers object"
+nor "we forgot to write one" can turn into sending everything.
+
+`safety_screen` is the one task allow-listed to receive raw text, private text
+included, because a locked love note is exactly where somebody might say
+something that needs a signpost. It returns a classification, stores nothing,
+and never reaches the other partner (ADR-025).
+
 ### 4.3 Tasks
 
 | Task | Model key | Effort | Cap (Together) | Prompt |

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Ai\Actions;
 
 use App\Modules\Ai\Support\AiRequest;
+use App\Modules\Ai\Support\PrivacyFilter;
 use App\Modules\Ai\Support\PromptRegistry;
 use App\Modules\Ai\Support\SafetyVerdict;
 use Throwable;
@@ -36,6 +37,7 @@ final readonly class SafetyGuard
 {
     public function __construct(
         private PromptRegistry $prompts,
+        private PrivacyFilter $privacy,
         private GenerateValidated $generate,
     ) {}
 
@@ -47,7 +49,13 @@ final readonly class SafetyGuard
         }
 
         try {
-            $prompt = $this->prompts->resolve('safety_screen', ['text' => $text]);
+            // Through the filter like every other prompt, even though the
+            // allow-list is one entry. No exceptions: an exception is where a
+            // leak lives, and `safety_screen` being allowed to see raw text
+            // is a line somebody can read rather than an omission.
+            $variables = $this->privacy->apply('safety_screen', ['text' => $text]);
+
+            $prompt = $this->prompts->resolve('safety_screen', $variables);
 
             $generation = $this->generate->handle(new AiRequest(
                 task: 'safety_screen',

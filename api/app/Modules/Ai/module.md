@@ -1,7 +1,7 @@
 # AI Platform ✨
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P2.T01-T04 done: the driver seam with its fake, versioned prompts, output validation, and **SafetyGuard**. Cost logging and caps are still to come.
+**Last updated:** 2026-11-05 - P2.T01-T05 done: the driver seam with its fake, versioned prompts, output validation, **SafetyGuard**, and the allow-list privacy filter. Cost logging and caps are still to come.
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -170,6 +170,55 @@ task's schema and silently unchecked would be a hole that never announces
 itself; the suite walks every declared schema and fails on an unsupported
 keyword, so the gap cannot wait for production.
 
+## The privacy filter
+
+`Support\PrivacyFilter::apply($task, $payload)` keeps the allow-listed fields
+and drops everything else. **Every** variable that reaches a prompt comes
+through it, `safety_screen` included, because an exception is where a leak
+would live.
+
+What survives is declared in **`Schemas/TaskAllowList`** - one file, per task,
+as dotted paths with `*` for a position in a list:
+
+```
+partners.*.first_name
+partners.*.answers.outcode
+recent_dates.*.title
+```
+
+**An allow-list, never a deny-list**, and that is the whole design. A deny-list
+has to be updated every time a private column is added, by somebody who happens
+to remember this file exists. An allow-list excludes a new column by not
+mentioning it, which is the behaviour we want from the person who forgets. The
+filter does not need to know a field is private; it only needs to not know it
+at all.
+
+**Every entry names a leaf.** `partners.*.answers` for "all the answers" would
+quietly include whatever is added inside it later, so the filter throws when an
+allow-listed path turns out to hold an object. A list of plain values
+(`dietary_needs`) is fine: it can grow longer, but it cannot grow new fields.
+
+**An undeclared task is refused outright**, so "we forgot to write the
+allow-list" cannot become "it sent everything".
+
+**A list keeps its length.** An item with nothing allow-listed in it stays, as
+an empty object, because dropping it would change how many things the payload
+describes and the model cannot tell that two partners became one. A list where
+*nothing* survived collapses instead, so an unmentioned branch - a gift vault,
+a set of check-in answers - disappears completely rather than arriving as a row
+of empty objects.
+
+**`safety_screen` is allow-listed to see raw text**, private text included, and
+that is deliberate rather than an oversight: a locked love note is exactly
+where somebody might say something that needs a signpost, and a screen that
+skipped private text would skip the most important cases. It is safe because of
+what the task *is* - a classification, nothing stored, nothing shown to the
+partner (ADR-025) - not because of what it is given.
+
+`date_plan`'s allow-list is declared now and used from Phase 3. The prompt is
+not written yet; the list is, so the privacy tests exist before the feature
+does. Note `outcode`, never `postcode`.
+
 ## SafetyGuard
 
 `Actions\SafetyGuard::screen($text): SafetyVerdict`, run **twice** on every
@@ -231,12 +280,16 @@ This is the module where privacy is won or lost.
 
 **Excluded from every prompt, always:** gift vault entries, individual check-in answers, unsent love notes, private moment notes, the other partner's un-revealed answers, auth credentials, email addresses, exact addresses or coordinates.
 
-**The filter is an allow-list per task.** A task declares the fields it may see; anything else is dropped. A newly added private column is therefore excluded without anyone remembering to exclude it.
+**The filter is an allow-list per task**, declared in `Schemas/TaskAllowList` and applied by `Support\PrivacyFilter` - see **The privacy filter** above. A task declares the leaves it may see; anything else is dropped. A newly added private column is therefore excluded without anyone remembering to exclude it, and there is a test that reads the real `users` columns to prove it.
 
 `ai_feedback` is private to the rater - a partner never sees that the other thumbs-downed a plan.
 
 ## Tests
 `api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
+
+Done so far (P2.T05): **one test per private field, by name** - gift vault, individual check-in answers, private moment notes, private love-map entries, locked love notes, the partner's un-revealed answers, email addresses, full postcodes, shipping addresses, coordinates, password hashes and tokens. Each asserts the value is absent from the filtered payload, so widening the allow-list fails the test belonging to the field it exposed. Plus: the kept set equals the allow-list exactly; dietary and accessibility needs survive; both partners survive when one has nothing to say; a list stays a list; an undeclared task is refused; an allow-listed path holding an object throws; no allow-list entry anywhere names a postcode, address, coordinate, email, phone, password or token.
+
+Two tests carry the future: a column nobody has heard of yet is dropped, and **every column of the real `users` table** is dropped unless allow-listed - read from `Schema::getColumnListing()`, so it grows with the table rather than with somebody's memory of it. Proven to bite by allow-listing `partners.*.email`: three tests failed, including the one that scans the list itself.
 
 Done so far (P2.T04): **77 battery cases, one test each** - 32 concerning phrasings across every category including indirect and euphemistic forms, and 45 benign ones (ordinary rows, grumbles, dark humour, fiction, grief, surprises). Each asserts the handling *and* that the words reached the screen. Plus: `unclear` treated as a concern; every failure route landing on `unusable`; a single test asserting no route can answer `safe` by accident; empty text costing nothing; the pinned version, light model and low effort used; the signpost's keys fixed at two; no emoji and no diagnosis words in the copy; the verdict carrying none of the text; nothing written to the log on either the tripped or the failed path; and the battery's own integrity (categories covered, benign set larger, no concerning case expecting `none`).
 
@@ -266,6 +319,10 @@ Run: `composer test -- --filter=Ai`
 - Cost-per-couple model is unvalidated until real traffic exists.
 
 ## Changelog
+- 2026-11-05 - **P2.T05**: `PrivacyFilter` and `TaskAllowList`. `SafetyGuard`
+  now builds its one variable through the filter like everything else, so the
+  rule has no exceptions. `date_plan`'s allow-list is declared ahead of its
+  prompt, which is what lets the privacy tests exist before the feature.
 - 2026-11-05 - **P2.T04**: `SafetyGuard`, `SafetyVerdict`, `SafetyState`,
   `resources/prompts/safety_screen/v1.md` (now pinned), the signpost copy in
   `config('ai.safety.message')`, and the 77-case battery under

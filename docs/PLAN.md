@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P2.T05** — the privacy filter. **P2.T01–T04 are done**: one interface to the model, pinned versioned prompts, validated output, and **SafetyGuard** with a 77-case battery.
+**Current focus:** **P2.T06** — cost tracking and `ai_usage`. **P2.T01–T05 are done**: one interface to the model, pinned versioned prompts, validated output, **SafetyGuard**, and an allow-list filter with a test per private field.
 
 ---
 
@@ -952,7 +952,7 @@ this phase; everything after it depends on this being right.
 
 ---
 
-### `[ ]` P2.T05 — Privacy filter (allow-list) · **M**
+### `[x]` P2.T05 — Privacy filter (allow-list) · **M**
 
 **Steps**
 1. `PrivacyFilter` built from a **declared allow-list per task** — never a deny-list.
