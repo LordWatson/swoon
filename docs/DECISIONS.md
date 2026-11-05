@@ -8,6 +8,46 @@ Keep each entry short: context, decision, consequence.
 
 ---
 
+## ADR-024 — Our own fake driver, alongside laravel/ai's agent fake
+**Date:** 2026-11-05 · **Status:** accepted
+
+**Context.** ADR-007 chose `laravel/ai` partly for its testing fakes and left
+one question open for P2.T01: does `laravel/ai`'s own fake make a hand-rolled
+`FakeDriver` redundant? Reading the package: `Agent::fake()` installs a
+`FakeTextGateway` for **one agent class**, with `assertPrompted()`,
+`assertPromptedTimes()` and `preventStrayPrompts()`. It is good, and it is
+opt-in per test.
+
+**Decision.** Keep both, each where it fits.
+
+* **`FakeDriver`** is bound by `config('ai.driver')` and is what the suite runs
+  on by default. It answers from `tests/Fixtures/Ai/<task>.json` and records
+  every `AiRequest`.
+* **`laravel/ai`'s agent fake** covers `AnthropicDriver` itself — the mapping
+  from a provider response to an `AiResult` — which `FakeDriver` by definition
+  replaces and so could never test.
+
+Three things decided it. **Opt-in versus default:** "no test makes a real AI
+call" has to hold for a test nobody thought about, and `AI_DRIVER=fake` in
+`phpunit.xml` means the real driver is never constructed, where a forgotten
+`Agent::fake()` line would be a live call. **Keyed on the agent class:** Swoon
+has one agent class (`TaskAgent`) and many tasks, because a task is a prompt
+file plus a config row, so the provider's per-class fake cannot tell
+`date_plan` from `safety_screen` without plumbing of its own. **The assertions
+we actually need** are about our chain — which task ran, which pinned prompt
+version, whether a private field reached the rendered prompt — not about the
+wire call, and those belong at our seam.
+
+**Consequence.** About 150 lines of fake to maintain, against a guarantee that
+holds without anyone remembering. Two belts, not one: the API key is also
+**force-blanked** in `phpunit.xml`, because `APP_ENV=testing` with no
+`.env.testing` loads the developer's own `api/.env` — which holds a working
+key — and `AnthropicDriver` refuses outright without one. ADR-007 stands
+otherwise: `laravel/ai` is the transport, and `AiDriver` is the one interface
+between it and everything else.
+
+---
+
 ## ADR-023 — A social identity joins an existing account only on explicit confirmation
 **Date:** 2026-11-05 · **Status:** accepted
 
@@ -380,8 +420,9 @@ given every AI call must be queued and no test may make a real call.
 brand-new Anthropic API feature may land there later than in the first-party SDK.
 Acceptable: our usage is structured text generation, not the API frontier. The
 `Ai` module wraps it behind our own `AiService`, so swapping to the Anthropic SDK
-would be one adapter, not a rewrite. **Re-evaluate during P2.T01**, including
-whether `laravel/ai`'s own fake replaces our hand-rolled fake driver.
+would be one adapter, not a rewrite. The P2.T01 re-evaluation happened and is
+recorded in **ADR-024**: `laravel/ai` stays, and so does our own fake driver,
+for reasons that turned out to be about test defaults rather than features.
 
 ---
 

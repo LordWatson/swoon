@@ -19,7 +19,7 @@ feature code yet.
 | # | Module | Sig | Phase | Status | Canonical doc | Mobile |
 |---|---|---|---|---|---|---|
 | 1 | **Accounts & Couple Linking** | 💞 Rosé | 1 | done | [`Accounts`](../api/app/Modules/Accounts/module.md) | [`accounts`](../mobile/src/features/accounts/module.md) |
-| 2 | **AI Platform** | ✨ Lavender | 2 | planned | [`Ai`](../api/app/Modules/Ai/module.md) | — |
+| 2 | **AI Platform** | ✨ Lavender | 2 | in progress | [`Ai`](../api/app/Modules/Ai/module.md) | — |
 | 3 | **AI Date Planner** | 🍷 Rosé | 3 | planned | [`DatePlanner`](../api/app/Modules/DatePlanner/module.md) | [`date-planner`](../mobile/src/features/date-planner/module.md) |
 | 4 | **Reminders** | ⏰ Apricot | 3 | planned | [`Reminders`](../api/app/Modules/Reminders/module.md) | [`reminders`](../mobile/src/features/reminders/module.md) |
 | 5 | **Moments** | 📸 Apricot | 4 | planned | [`Moments`](../api/app/Modules/Moments/module.md) | [`moments`](../mobile/src/features/moments/module.md) |

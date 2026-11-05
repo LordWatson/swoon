@@ -1,7 +1,7 @@
 # AI Platform ✨
 
-**Status:** planned
-**Last updated:** 2026-11-05 - scaffolding only, no implementation yet. `config/ai.php` hardened after the repo audit: no safety off switch (ADR-017), prices in US cents with an explicit pence conversion (ADR-016).
+**Status:** in progress
+**Last updated:** 2026-11-05 - P2.T01 done: the driver seam, the fake and the no-network guarantee. Prompts, validation, SafetyGuard, cost and caps are still to come.
 **Owner phase:** Phase 2 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -64,6 +64,43 @@ AiService::run(task, payload, couple)
        -> persist ai_generations
 ```
 
+## Drivers
+
+`AiDriver` is the transport step and only the transport step: one rendered
+prompt in, one `AiResult` out. It does not validate, screen, filter or log -
+each of those is a separate step the job chains around it, which is what lets
+the whole suite run on fixtures and still exercise every rule.
+
+| Piece | What it does |
+|---|---|
+| `Contracts\AiDriver` | `generate(AiRequest): AiResult`. The only door to a model. |
+| `Support\AiRequest` | One rendered prompt, plus the task's `model`, `effort` and `maxTokens` resolved from `config('ai.tasks')` **in the constructor**. This is why no model id appears anywhere else: a driver asks the request, the request asks config. An unknown task or model key throws before a cap is spent. |
+| `Support\AiResult` | `structured`, `text`, `model`, `usage`. Nothing in it has been vouched for yet. `usage` is laravel/ai's own `TextUsage`, which already separates cached from uncached input tokens - what cost logging will need the day prompt caching is turned on. |
+| `Support\TaskAgent` | The laravel/ai agent. laravel/ai expects one agent class per job with its model and ceiling as PHP attributes; we have one agent and many tasks, and an attribute cannot read config, so the per-task settings ride in as **provider options** (`max_tokens`, `output_config.effort`). No `thinking` key: these models take adaptive thinking by default and reject an explicit `budget_tokens` with a 400. |
+| `Drivers\AnthropicDriver` | The real door, over laravel/ai. Refuses outright when `config('ai.providers.anthropic.key')` is blank. |
+| `Drivers\FakeDriver` | Answers from `tests/Fixtures/Ai/<task>.json`, or from a queued response, and **records every request**. |
+
+**A schema is required on every request.** A task with no schema would leave
+`SchemaValidator` nothing to check, so `AiRequest` demands one and `TaskAgent`
+refuses an empty one - laravel/ai would otherwise send no `output_config` at
+all and the model would answer in free text.
+
+**The API key has one home:** `config('ai.providers.anthropic.key')`, which
+laravel/ai merges into our own `config/ai.php` under the same `ai` key. There
+is deliberately no second copy of it in the file we wrote.
+
+### Why there is a fake driver *and* laravel/ai's fake
+
+Both, each where it fits - see ADR-024. Ours is the default for the suite and
+records what the chain sent; laravel/ai's `TaskAgent::fake()` covers
+`AnthropicDriver`'s own mapping, which ours by definition replaces.
+
+Two belts hold "no test makes a real AI call": `AI_DRIVER=fake` means the
+Anthropic driver is **never constructed**, and `ANTHROPIC_API_KEY` is
+force-blanked in `phpunit.xml` so it would refuse if it were. The blanking is
+not belt-and-braces theatre - `APP_ENV=testing` with no `.env.testing` loads
+the developer's own `api/.env`, which holds a working key.
+
 ## Jobs, events & schedules
 **Jobs:** `RunAiTask` (the one queued entry point; per-task payloads), retried once on a transport error, never retried on `invalid_output` after the first retry.
 
@@ -86,7 +123,11 @@ This is the module where privacy is won or lost.
 ## Tests
 `api/tests/Feature/Ai/` and `api/tests/Unit/Ai/`.
 
-Must cover: cap enforced before dispatch; cost guard refuses; fake driver used throughout; malformed output retried then recorded; **SafetyGuard trips on a battery of crisis and abuse phrasings and returns only the signpost**; SafetyGuard failing closed; privacy filter dropping each private field (one test per private field, so the list cannot rot); prompt version pinning; `ai_usage` written on success AND on every failure path.
+Done so far (P2.T01): driver selection both ways and an unknown name refused; the real driver never constructed under the fake; the real driver refusing without a key, which is the *assertion* behind "no network"; the fake's recording, its fixture loading, its queued overrides and its loud failure on a missing fixture; `AiRequest` resolving model, effort and ceiling from config; `TaskAgent`'s provider options following config; `AnthropicDriver`'s mapping, via laravel/ai's own agent fake.
+
+`ModelIdsTest` is a gate rather than a convention: it scans every PHP file under `app/`, `config/`, `database/`, `resources/`, `routes/` and `tests/` for a model id and fails on any outside `config/ai.php`. Proven to bite by adding one on purpose.
+
+Still to cover: cap enforced before dispatch; cost guard refuses; fake driver used throughout; malformed output retried then recorded; **SafetyGuard trips on a battery of crisis and abuse phrasings and returns only the signpost**; SafetyGuard failing closed; privacy filter dropping each private field (one test per private field, so the list cannot rot); prompt version pinning; `ai_usage` written on success AND on every failure path.
 
 **Prompt evaluation fixtures** live in `tests/Fixtures/Ai/evals/` - input payloads with expected-shape assertions, so a prompt edit shows its effect without a live call.
 
@@ -99,6 +140,12 @@ Run: `composer test -- --filter=Ai`
 - Cost-per-couple model is unvalidated until real traffic exists.
 
 ## Changelog
+- 2026-11-05 - **P2.T01**: `AiDriver` + `AnthropicDriver` + `FakeDriver`, bound
+  by `config('ai.driver')` in `AppServiceProvider`. ADR-024 records why both
+  our fake and laravel/ai's survive. `config/ai.php` lost its duplicate
+  `anthropic.api_key` (one secret, one path), and `phpunit.xml` lost its
+  placeholder key in favour of a forced blank - a placeholder would have let an
+  accidental call go out and come back 401, a far quieter failure.
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
 - 2026-11-05 - Audit fixes to `config/ai.php`, before any code reads it: the
   `safety.enabled` flag removed (ADR-017), prices renamed to

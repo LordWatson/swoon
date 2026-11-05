@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P2.T01** — the AI platform's first task. **Phase 1 is complete**: two people can sign up, link into a couple, and leave cleanly.
+**Current focus:** **P2.T02** — the prompt registry. **P2.T01 is done**: one interface to the model, a fake the suite runs on by default, and no model id outside `config/ai.php`.
 
 ---
 
@@ -862,7 +862,7 @@ this phase; everything after it depends on this being right.
 
 ---
 
-### `[ ]` P2.T01 — AI driver abstraction and the fake · **M**
+### `[x]` P2.T01 — AI driver abstraction and the fake · **M**
 
 **Steps**
 1. `AiDriver` interface: `generate(prompt, schema, options): AiResult`.

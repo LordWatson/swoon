@@ -6,6 +6,9 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Modules\Accounts\Policies\UserPolicy;
+use App\Modules\Ai\Contracts\AiDriver;
+use App\Modules\Ai\Drivers\AnthropicDriver;
+use App\Modules\Ai\Drivers\FakeDriver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -13,6 +16,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +32,38 @@ class AppServiceProvider extends ServiceProvider
         // This has to be register(), not boot(): the package reads the flag in
         // its own boot(), and every register() runs before any boot().
         config(['resend.routes' => false]);
+
+        $this->registerAiDriver();
+    }
+
+    /**
+     * Pick the AI driver named by config('ai.driver').
+     *
+     * A `match` rather than a container alias because only the chosen branch
+     * is ever constructed: under AI_DRIVER=fake the Anthropic driver is not
+     * built, not warmed and not reachable, which is the first half of "no test
+     * makes a real AI call". The second half is that the suite sets no API
+     * key, so the real driver refuses even if something resolves it.
+     *
+     * A singleton, so the instance a test asserts on is the one the job used.
+     */
+    private function registerAiDriver(): void
+    {
+        // Also bound on its own, so a test can take the fake with its real
+        // type and still be holding the instance the application uses.
+        $this->app->singleton(FakeDriver::class);
+
+        $this->app->singleton(AiDriver::class, function ($app): AiDriver {
+            $driver = (string) config('ai.driver');
+
+            return match ($driver) {
+                'fake' => $app->make(FakeDriver::class),
+                'anthropic' => $app->make(AnthropicDriver::class),
+                default => throw new InvalidArgumentException(
+                    "Unknown AI driver [{$driver}]. config('ai.driver') must be 'anthropic' or 'fake'."
+                ),
+            };
+        });
     }
 
     public function boot(): void

@@ -69,10 +69,23 @@ return [
 
     'driver' => env('AI_DRIVER', 'anthropic'),
 
-    'anthropic' => [
-        // Server-side only. This key must NEVER reach the mobile app.
-        'api_key' => env('ANTHROPIC_API_KEY'),
-    ],
+    /*
+    |---------------------------------------------------------------------------
+    | What laravel/ai adds to this file
+    |---------------------------------------------------------------------------
+    |
+    | laravel/ai merges its own config under this same 'ai' key, so alongside
+    | everything above there is also 'default', 'caching', 'remote_files',
+    | 'conversations' and 'providers' — none of which collide with ours, and
+    | all of which can be overridden here by naming the key.
+    |
+    | The Anthropic API key therefore already has a home at
+    | config('ai.providers.anthropic.key'), reading ANTHROPIC_API_KEY. There is
+    | deliberately no second copy of it here: one secret with two config paths
+    | is one of them going stale. Server-side only either way — this key must
+    | NEVER reach the mobile app.
+    |
+    */
 
     /*
     |---------------------------------------------------------------------------

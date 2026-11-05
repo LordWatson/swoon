@@ -6,6 +6,52 @@ Format: date · task ID(s) · what changed · anything left over.
 
 ---
 
+## 2026-11-05 — Phase 2 in progress · AI platform (P2.T01 …)
+
+**P2.T01 — the driver seam and the fake.** One interface between the
+application and Claude, two implementations, chosen by `config('ai.driver')`.
+195 API tests.
+
+* **Model ids are gated, not promised.** `AiRequest` resolves its model, effort
+  and token ceiling from `config('ai.tasks')` in its constructor, so a driver
+  asks the request and the request asks config. `ModelIdsTest` then scans every
+  PHP file in the project and fails on a model id anywhere but `config/ai.php`.
+  Proven to bite by pasting one in on purpose.
+* **"No test makes a real AI call" needed two belts.** `AI_DRIVER=fake` means
+  the Anthropic driver is never constructed — asserted through
+  `app()->resolved()`, not assumed. The second belt matters more than it looks:
+  `phpunit.xml` used to set a placeholder `ANTHROPIC_API_KEY`, and because
+  `APP_ENV=testing` with no `.env.testing` loads the developer's own `api/.env`
+  (which holds a working key), a placeholder would have let an accidental call
+  go out and come back 401 — a far quieter failure than "no key, refusing".
+  It is force-blanked now, and a test asserts the real driver refuses.
+* **Kept both fakes, for a reason about defaults rather than features**
+  (ADR-024). laravel/ai's `Agent::fake()` is good but opt-in per test and keyed
+  on the agent class; ours is the suite default and records per task. laravel/ai's
+  earns its place covering `AnthropicDriver`'s own mapping, which our fake
+  replaces and so could never test.
+* **laravel/ai merges its config into our `config/ai.php`** under the same `ai`
+  key — `providers`, `default`, `caching`, `conversations`, none of which
+  collide with ours. So the Anthropic key already had a home at
+  `config('ai.providers.anthropic.key')`, and the duplicate we had written is
+  gone. One secret, one path.
+* **laravel/ai is agent-class-shaped; Swoon is task-shaped.** Its model and
+  token ceiling are PHP attributes, which are compile-time constants and cannot
+  read config. One `TaskAgent` carries the per-task settings as **provider
+  options** instead, which the gateway merges over the body it built — merging
+  `output_config` key by key, so setting `effort` leaves the structured-output
+  format intact. No `thinking` key: these models reject an explicit
+  `budget_tokens` with a 400.
+* **A schema is required on every request.** Without one laravel/ai sends no
+  `output_config`, the model answers in free text, and `SchemaValidator` has
+  nothing to check — a silent hole in the one rule that stands between the
+  model and a couple. `AiRequest` demands a schema and `TaskAgent` refuses an
+  empty one.
+
+**Left over:** the founder's real Anthropic key sits in `api/.env` (untracked,
+git-ignored) and was read aloud during this session while checking the test
+environment — worth rotating.
+
 ## 2026-11-05 — Phase 1 complete · Accounts & Couples (P1.T01 … P1.T10)
 
 Ten tasks, ten commits. Two people can now sign up, link into a couple, and

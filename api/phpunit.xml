@@ -41,10 +41,23 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
 
-        <!-- No test may make a real AI call: fake driver returns fixtures. -->
-        <env name="AI_DRIVER" value="fake"/>
-        <env name="ANTHROPIC_API_KEY" value="test-key-not-real"/>
-        <env name="AI_SAFETY_ENABLED" value="true"/>
+        <!--
+            No test may make a real AI call. Two belts: the fake driver answers
+            from fixtures, and the API key is force-blanked so the real driver
+            refuses outright if anything ever resolves it.
+
+            force="true" matters. APP_ENV=testing but there is no .env.testing,
+            so the suite loads the developer's own api/.env — which holds a
+            working key. Without the override a test could reach the real API
+            and spend real money. A placeholder key would be no better: the
+            call would still go out and come back 401, which is a much quieter
+            failure than "no key, refusing".
+
+            There is no AI_SAFETY_ENABLED: no such flag exists, by decision
+            (ADR-017). SafetyGuard always runs.
+        -->
+        <env name="AI_DRIVER" value="fake" force="true"/>
+        <env name="ANTHROPIC_API_KEY" value="" force="true"/>
 
         <!-- No test may send mail, charge a card, or write to S3. -->
         <env name="RESEND_API_KEY" value="test-key-not-real"/>

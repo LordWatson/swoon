@@ -1,0 +1,11 @@
+{
+    "structured": {
+        "concern": "none",
+        "confidence": "high"
+    },
+    "text": "",
+    "usage": {
+        "input_tokens": 420,
+        "output_tokens": 18
+    }
+}
