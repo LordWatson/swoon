@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,6 +16,7 @@ import { useTheme } from '../theme';
 export default function WelcomeScreen() {
   const { colours, spacing, screenGutter, scaleType } = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const body = scaleType('body');
 
   return (
@@ -45,24 +46,27 @@ export default function WelcomeScreen() {
 
       <View style={{ flexGrow: 1 }} />
 
+      {/*
+        router.push rather than `<Link asChild>` wrapping a Button whose own
+        onPress was a no-op. That worked — Link's clone overrode the prop —
+        but it read as a dead button, and dead-looking is indistinguishable
+        from dead at review time, which is how the rest of this screen's
+        problems got missed.
+      */}
       <View style={{ gap: spacing.md }}>
-        <Link href="/sign-up" asChild>
-          <Button
-            label="Get started"
-            size="large"
-            emoji="💞"
-            onPress={() => undefined}
-            testID="go-sign-up"
-          />
-        </Link>
-        <Link href="/sign-in" asChild>
-          <Button
-            label="I already have an account"
-            variant="ghost"
-            onPress={() => undefined}
-            testID="go-sign-in"
-          />
-        </Link>
+        <Button
+          label="Get started"
+          size="large"
+          emoji="💞"
+          onPress={() => router.push('/sign-up')}
+          testID="go-sign-up"
+        />
+        <Button
+          label="I already have an account"
+          variant="ghost"
+          onPress={() => router.push('/sign-in')}
+          testID="go-sign-in"
+        />
       </View>
     </ScrollView>
   );

@@ -7,8 +7,8 @@ export default function PlannerScreen() {
       overline="What is coming"
       title="Planner"
       emoji="🗓️"
-      message="Nothing in the diary. A quiet week is allowed too."
-      actionLabel="Add something"
+      message="Anniversaries, birthdays and whatever you have booked, with a nudge the day before."
+      arriving="Phase 5"
     />
   );
 }

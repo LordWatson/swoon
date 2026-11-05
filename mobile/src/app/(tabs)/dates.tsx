@@ -7,8 +7,8 @@ export default function DatesScreen() {
       overline="The two of you"
       title="Dates"
       emoji="🍷"
-      message="No dates planned yet. Shall we fix that?"
-      actionLabel="Plan a date"
+      message="This is where date ideas land: three at a time, picked for the pair of you, and nobody else gets a say."
+      arriving="Phase 3"
     />
   );
 }

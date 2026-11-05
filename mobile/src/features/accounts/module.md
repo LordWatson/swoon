@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞 - mobile
 
 **Status:** done
-**Last updated:** 2026-11-05 - fixed: Home showed hardcoded names and invented content to real signed-in users.
+**Last updated:** 2026-11-05 - audit after a founder review: tab icons, four dead buttons, and an inventory gate so "what is real?" has an answer that is not me.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > **Canonical doc:** [`api/app/Modules/Accounts/module.md`](../../../../api/app/Modules/Accounts/module.md)
@@ -249,6 +249,36 @@ own mapping is how two screens end up disagreeing about which colour somebody
 is. Null falls back rather than blanking an avatar, because "nobody has chosen
 yet" is a real state.
 
+## The tab bar showed five crosses (fixed 2026-11-05)
+
+No `tabBarIcon` was configured for any tab, so React Navigation drew its
+placeholder glyph. `phosphor-react-native` had been installed since P0.T02 and
+never used, despite BRAND.md § 7 mandating it.
+
+Icons now, not emoji — emoji are content, icons are UI, and a tab bar is UI.
+Phosphor at `bold`, which § 7 specifies for inline UI, one weight across all
+five because mixing weights within a screen is out. Every tab keeps its text
+label: colour alone marks the active tab, so the label is the non-colour
+signal, not decoration. The centre "+" was a `+` text character and is now a
+`Plus` icon with a real accessibility label.
+
+`__tests__/tabBar.test.tsx` asserts every tab has both an icon and a label,
+that there are exactly five, and that only one weight is used.
+
+## How to know what is real
+
+**`docs/PLACEHOLDERS.md`**, backed by
+`src/app/__tests__/inventory.test.tsx`, which fails if a screen exists with no
+declared status. It also enforces three things that each caused a real bug:
+
+- a placeholder must render `PlaceholderScreen` (no action button, states its
+  phase), so it cannot quietly grow realistic-looking content;
+- no screen may wire a control to `() => undefined`;
+- no screen may contain a person's name as a literal.
+
+Verified by adding a screen that broke all three and watching the suite name
+it.
+
 ## Where the token lives
 
 `expo-secure-store`, never AsyncStorage: the token is the whole account, and
@@ -285,6 +315,11 @@ applies, and any reveal/privacy gate as seen from the client.
 - Not implemented yet. See the canonical doc's gaps list.
 
 ## Changelog
+- 2026-11-05 - **Audit after review.** Tab bar had no icons (five placeholder
+  crosses). Four placeholder tabs had buttons wired to nothing. The quick-add
+  sheet's options closed and did nothing. A coupled user could not sign out at
+  all. Welcome's buttons only worked by a `Link asChild` quirk. Fixed, plus
+  `docs/PLACEHOLDERS.md` and an inventory gate. 20 new tests.
 - 2026-11-05 - **Fix:** Home was hardcoded to "Alex & Sam" with invented
   stats, bookings and AI output. It now reads `/api/me`, shows nothing the
   product cannot answer, and the data helpers are pure and tested

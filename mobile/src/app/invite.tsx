@@ -70,7 +70,7 @@ export default function InviteScreen() {
           tone="feature"
           partners={[
             { name: me.data?.user.name ?? 'You', colour: 'primary', done: true },
-            { name: 'Them', colour: 'ai', done: false },
+            { name: 'Partner', colour: 'ai', done: false },
           ]}
           showPending
         />

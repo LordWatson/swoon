@@ -11,8 +11,9 @@ export type HeroProps = {
   title: string;
   /**
    * A second line in Butter, for the half of the couple that is not you:
-   * `title="Alex"  accent="& Sam"`. Omit it on screens that are not about the
-   * two of you.
+   * `title={firstName(user)}  accent={`& ${firstName(partner)}`}`. Both come
+   * from `/api/me` — never a literal. Omit `accent` on screens that are not
+   * about the two of you, rather than passing a dangling ampersand.
    */
   accent?: string;
   /** A stat row, an avatar pair, a countdown — whatever this screen leads on. */

@@ -7,8 +7,8 @@ export default function MomentsScreen() {
       overline="Your shared shoebox"
       title="Moments"
       emoji="📸"
-      message="No moments yet. Go on, bottle one."
-      actionLabel="Add a moment"
+      message="Photos, notes and small things worth keeping, in one place only the two of you can open."
+      arriving="Phase 4"
     />
   );
 }
