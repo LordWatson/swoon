@@ -6,8 +6,13 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Modules\Accounts\Policies\UserPolicy;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -51,5 +56,40 @@ class AppServiceProvider extends ServiceProvider
         // App\Policies and finds nothing. One explicit line beats moving the
         // model or inventing a second guesser.
         Gate::policy(User::class, UserPolicy::class);
+
+        $this->registerRateLimiters();
+
+        // A resource returned from a controller is wrapped in a "data" key by
+        // default, while one nested inside an array is not — so half this API
+        // would have a wrapper and half would not. The app would then unwrap
+        // per endpoint, which is exactly the kind of inconsistency a typed
+        // client makes painful. Flat everywhere.
+        JsonResource::withoutWrapping();
+    }
+
+    /**
+     * Rate limits for the auth routes.
+     *
+     * Two limits, and the second one's key is the whole point. Throttling by
+     * email **alone** would let a stranger lock a real person out of their own
+     * account just by failing to log in as them a few times — a denial of
+     * service against the victim, trivially cheap to run. Keying it on
+     * email+IP means an attacker only ever throttles themselves, while a
+     * genuine user who has forgotten their password still gets a tighter limit
+     * than the per-IP one.
+     *
+     * The per-IP limit is the one that actually slows credential stuffing,
+     * since that sprays many addresses from few hosts.
+     */
+    private function registerRateLimiters(): void
+    {
+        RateLimiter::for('auth', function (Request $request): array {
+            $email = Str::lower(trim((string) $request->input('email')));
+
+            return [
+                Limit::perMinute(20)->by('ip:'.$request->ip()),
+                Limit::perMinute(5)->by('email:'.$email.'|'.$request->ip()),
+            ];
+        });
     }
 }

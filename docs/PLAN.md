@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T02** — email registration, login and logout.
+**Current focus:** **P1.T03** — Sign in with Apple and Google.
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 1 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 2 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -448,7 +448,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T02 — Email registration, login, logout · **M**
+### `[x]` P1.T02 — Email registration, login, logout · **M**
 
 **Steps**
 1. `RegisterRequest`, `LoginRequest` (Form Requests, British-English messages).
@@ -468,6 +468,24 @@ the gate to everything else: no couple, no product.
 **Docs to update** `Accounts/module.md` (endpoints, rules), `mobile/src/features/accounts/module.md`.
 
 **Size** M.
+
+> **Done 2026-11-05.** Four endpoints: register, login, logout, me. The two
+> details worth the time were both about not leaking who has an account — a
+> wrong password and an unknown address return the identical 422, and the
+> Action hashes against a dummy rather than returning early, because a login
+> that answers in 5 ms for unknown addresses and 90 ms for known ones is an
+> enumeration oracle whatever the message says. Both halves asserted.
+>
+> The email rate limit is keyed on **email + IP**, not email alone: keyed on
+> the address, a stranger could lock a real person out of their own account
+> with five failed attempts. There is a test for that specifically.
+>
+> `PartnerResource` is a separate class from `UserResource` rather than
+> conditionals in one shape — a privacy gate written as an `if` is one edit
+> from leaking. `JsonResource::withoutWrapping()`, because a top-level resource
+> is wrapped in `data` while a nested one is not, and half-wrapped responses
+> are miserable for a typed client. Password policy is length-only (10, no
+> composition rules) and documented in module.md. 18 tests.
 
 ---
 

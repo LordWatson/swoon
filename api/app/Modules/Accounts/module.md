@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P1.T01: schema, models, policies, factories and the database-enforced one-couple invariant. No endpoints yet.
+**Last updated:** 2026-11-05 - P1.T02: email sign-up, sign-in and sign-out are live. Four endpoints of sixteen.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -83,6 +83,40 @@ Private to one partner: nothing in this module is partner-private except `users.
 | POST | /api/me/export | sanctum | Request a data export | - | 202 + ExportResource |
 | DELETE | /api/me | sanctum | Delete the account and its data | ConfirmDeletionRequest | 204 |
 
+### Password policy
+
+**Length, no composition rules.** Minimum 10 characters; nothing about symbols,
+digits or mixed case. That is current practice (NIST SP 800-63B): composition
+rules push people towards `Passw0rd!`, which is weaker than a long phrase.
+
+No breached-password check. Laravel's `uncompromised()` rule calls
+api.pwnedpasswords.com on every registration, which would put a third-party
+network call in the sign-up path and in the test suite. A local blocklist is the
+better answer if sign-up volume ever justifies one.
+
+### How sign-in refuses
+
+A wrong password and an unknown address return the **same** 422 with the same
+message, and they take the same time to do it: when there is no account, the
+Action hashes against a dummy instead of returning early. A login that answers
+in 5 ms for unknown addresses and 90 ms for known ones is an account
+enumerator whatever the message says — and for a couples app, "does this person
+have an account" is itself private. Both halves are asserted in `AuthTest`.
+
+### Rate limiting
+
+Two limits on the auth routes, and the second one's key is the point:
+
+| Limit | Key | Why |
+|---|---|---|
+| 20/min | IP | Slows credential stuffing, which sprays many addresses from few hosts |
+| 5/min | **email + IP** | Tighter limit for one account — but keyed on the IP too |
+
+Keying the email limit on the address **alone** would let a stranger lock a real
+person out of their own account by failing to log in as them five times: a cheap
+denial of service against the victim. Keyed on email+IP, an attacker only ever
+throttles themselves. Asserted in `AuthTest`.
+
 ## Business rules
 1. **One active couple per user.** Accepting an invite while already coupled is rejected with a clear message, not a silent re-link.
 2. A couple is created **only** when the invite is accepted. Before that, the inviter is a solo user.
@@ -124,6 +158,13 @@ None. Authentication and linking never involve the model.
 
 Never exposed to the partner: password hash, social subject ids, auth tokens, email address (shown only as the masked form the inviter typed), raw `date_of_birth` unless shared for milestones.
 
+**How that is enforced (P1.T02).** `PartnerResource` is a separate class from
+`UserResource`, not a set of conditionals inside one shape. A privacy gate
+written as an `if` in a shared resource is one careless edit from leaking;
+a resource that never mentions `email` cannot leak it. `apple_sub` and
+`google_sub` are on the model's `#[Hidden]` list as well, so they cannot escape
+through a stray `toArray()` either.
+
 Nothing in this module is sent to the AI.
 
 ## Tests
@@ -153,6 +194,10 @@ Run: `composer test -- --filter=Accounts`
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
 - 2026-11-05 - P0.T10: `users` profile columns added to the base migration,
   `HasApiTokens` on `User`, first test file. Schema verified on MySQL 8.0.46.
+- 2026-11-05 - P1.T02: register / login / logout / me. Actions, Form Requests,
+  `UserResource`, `PartnerResource`, `CoupleResource`, `MeResource`. Non-
+  enumerating sign-in with equalised timing; rate limits keyed so a stranger
+  cannot lock someone out. 18 tests.
 - 2026-11-05 - P1.T01: `couples`, `couple_user`, `couple_invites`; `Couple` and
   `CoupleInvite` models; `CouplePolicy` + `UserPolicy`; factories and seeder.
   The one-couple invariant is a unique index on a virtual generated column,
