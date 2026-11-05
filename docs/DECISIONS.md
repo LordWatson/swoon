@@ -26,20 +26,43 @@ is worse than none, because it is trusted.
 
 ---
 
-## ADR-013 — Agent Skills plugin is not installed
-**Date:** 2026-11-05 · **Status:** open — needs founder decision
+## ADR-013 — Agent Skills installed as a plugin, not vendored into the repo
+**Date:** 2026-11-05 · **Status:** accepted (resolved same day)
 
-**Context.** The brief asks that Ponytail and Agent Skills both be active. Only
-`ponytail@ponytail` (v5.3.3) is installed. The `addy-agent-skills` marketplace
-is registered in `~/.claude/settings.json` but no plugin from it is enabled.
+**Context.** The brief asks that Ponytail and Agent Skills both be active. At the
+start of the session only `ponytail@ponytail` (v5.3.3) was installed; the
+`addy-agent-skills` marketplace was registered in `~/.claude/settings.json` but
+no plugin from it was enabled. Two routes existed: install the plugin properly,
+or vendor the skills into project-level `.claude/skills/` with
+`npx skills add addyosmani/agent-skills --agent claude-code`.
 
-**Decision.** Reported rather than worked around, per the brief. Not installed —
-the fallback (`npx skills add <repo> --agent claude-code` into project-level
-`.claude/skills/`) needs explicit approval first.
+**Decision.** Installed the **plugin** at user scope:
 
-**Consequence.** The spec → plan → build → test → review lifecycle in the
-session protocol is a convention to follow by hand until the plugin is enabled.
-Nothing is blocked.
+```
+claude plugin install agent-skills@addy-agent-skills
+```
+
+`agent-skills@addy-agent-skills` **v0.6.15** — 25 skills, 9 slash commands and 4
+subagents covering spec → plan → build → verify → review → ship, which is
+exactly the lifecycle the session protocol names.
+
+The vendoring fallback was **not** used. Copying 25 skills into
+`.claude/skills/` would freeze them at today's version, add ~25 directories of
+third-party content to our diffs and reviews, and leave us hand-merging upstream
+changes. A plugin updates in place.
+
+**Consequence.** The plugin is at **user scope**, so it is not automatically
+present for anyone else who clones this repository. Two follow-ups:
+
+1. A teammate runs the same `claude plugin install` command — documented in
+   `docs/DEV_TOOLING.md` § 8.
+2. Better: declare the marketplace in the project's `.claude/settings.json`
+   under `extraKnownMarketplaces`, which is what that key is for. Not done yet —
+   writing that file was blocked during this session (see the note in
+   `docs/SESSION_LOG.md`).
+
+Skills load at session start, so they became available from the **next** session,
+not the one that installed them.
 
 ---
 

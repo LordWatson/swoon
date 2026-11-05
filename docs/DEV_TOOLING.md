@@ -197,19 +197,47 @@ graphify claude install       # once, in the repo root
 
 | Plugin | Status |
 |---|---|
-| **Ponytail** | ✅ active (`ponytail@ponytail` v5.3.3) — minimalism: reuse before writing, prefer framework features, no speculative abstractions |
-| **Agent Skills** | ❌ **not installed** |
+| **Ponytail** | ✅ active — `ponytail@ponytail` v5.3.3. Minimalism: reuse before writing, prefer framework features, no speculative abstractions. |
+| **Agent Skills** | ✅ active — `agent-skills@addy-agent-skills` v0.6.15. 25 skills, 9 slash commands, 4 subagents covering spec → plan → build → verify → review → ship. |
 
-The `addy-agent-skills` marketplace is registered in `~/.claude/settings.json`
-but no plugin from it is enabled. Per the brief this was reported rather than
-worked around (ADR-013). The fallback, if wanted:
+Both are installed at **user scope**, so they are not automatic on a fresh
+clone. A new teammate runs:
 
 ```powershell
-npx skills add <repo> --agent claude-code   # installs into .claude/skills/
+claude plugin install agent-skills@addy-agent-skills
+claude plugin install ponytail@ponytail
 ```
 
-Until it is installed, the spec → plan → build → test → review lifecycle in the
-session protocol is a convention to follow by hand. Nothing is blocked.
+> **Better, not yet done:** declare `addy-agent-skills` in the project's
+> `.claude/settings.json` under `extraKnownMarketplaces`, which is exactly what
+> that key is for — teammates then get the source without adding it by hand.
+> See ADR-013.
+
+Skills load at session start, so a freshly installed plugin appears in the
+**next** session.
+
+### The Agent Skills worth knowing
+
+Relevant to the session protocol's spec → plan → build → test → review step:
+
+| Skill / command | Use |
+|---|---|
+| `spec-driven-development`, `/spec` | Turn a PLAN.md task into a precise spec before coding |
+| `planning-and-task-breakdown`, `/planning` | Split an L task (PLAN.md forbids starting one unsplit) |
+| `test-driven-development`, `/test` | The default for this project — build with tests |
+| `code-review-and-quality`, `/review` | Pre-commit review pass |
+| `security-and-hardening` | Phase 10's OWASP API Top 10 review |
+| `api-and-interface-design` | Designing each module's endpoint table |
+| `documentation-and-adrs` | Keeping `module.md` and `DECISIONS.md` honest |
+| `shipping-and-launch`, `/ship` | Phase 10 launch readiness |
+| `observability-and-instrumentation` | Sentry and the analytics events in P10.T06 |
+| `code-simplification`, `/code-simplify` | Pairs with Ponytail |
+
+Subagents: `code-reviewer`, `security-auditor`, `test-engineer`,
+`web-performance-auditor`.
+
+Use them where they help — they do not override anything in `CLAUDE.md`, and
+Ponytail's minimalism still wins on any conflict.
 
 ---
 

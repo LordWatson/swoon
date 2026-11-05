@@ -65,9 +65,13 @@ documented step-down (ADR-006); tests on SQLite by default with a MySQL 8 CI job
    the JSON needs creating by hand (content given in the session summary).
 2. **`DB_PASSWORD`** — MySQL root on this machine has a password, so migrations
    have not been run. This is **P0.T10**, the next task.
-3. **Agent Skills plugin is not installed** (ADR-013). Only `ponytail@ponytail`
-   is active. Reported rather than worked around, per the brief; the
-   `npx skills add` fallback needs approval.
+3. ~~Agent Skills plugin is not installed.~~ **Resolved later the same session**
+   on the founder's go-ahead: installed
+   `agent-skills@addy-agent-skills` v0.6.15 as a **plugin** at user scope
+   (`claude plugin install`), not vendored into `.claude/skills/` — see ADR-013
+   for why. Both requested plugins are now active. Still worth doing: declare
+   the marketplace in the project's `.claude/settings.json` under
+   `extraKnownMarketplaces` so teammates get it on clone.
 4. **Keys by hand:** `ANTHROPIC_API_KEY`, `RESEND_API_KEY` (+ domain
    verification), RevenueCat, Stripe, S3, Apple/Google sign-in.
 5. **Herd desktop was not running**, so `herd link` / `herd share` were not
