@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Modules\Accounts\Http\Controllers\AuthController;
+use App\Modules\Accounts\Http\Controllers\InviteController;
 use App\Modules\Accounts\Http\Controllers\MeController;
 use App\Modules\Accounts\Http\Controllers\SocialAuthController;
 use Illuminate\Support\Facades\Route;
@@ -29,7 +30,17 @@ Route::middleware('throttle:auth')->group(function (): void {
     Route::post('auth/google', [SocialAuthController::class, 'google'])->name('auth.google');
 });
 
+// Unauthenticated on purpose: the link lands here before sign-up, and it
+// returns a first name and nothing else (InvitePreviewResource).
+Route::get('invites/{code}', [InviteController::class, 'show'])
+    ->middleware('throttle:invite-preview')
+    ->name('invites.show');
+
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('me', [MeController::class, 'show'])->name('me.show');
+
+    Route::post('invites', [InviteController::class, 'store'])->name('invites.store');
+    Route::post('invites/{code}/accept', [InviteController::class, 'accept'])->name('invites.accept');
+    Route::delete('invites/{invite}', [InviteController::class, 'destroy'])->name('invites.destroy');
 });

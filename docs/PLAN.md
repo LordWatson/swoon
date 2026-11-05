@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T04** — partner invite and accept.
+**Current focus:** **P1.T05** — deep links and universal links.
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 3 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 4 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -538,7 +538,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T04 — Partner invite and accept · **M**
+### `[x]` P1.T04 — Partner invite and accept · **M**
 
 **Steps**
 1. `CreateInvite` Action: 8-char code, **ambiguous characters excluded** (no 0/O, 1/I/l — partners read these aloud), 14-day expiry, one active outbound invite per user.
@@ -559,6 +559,24 @@ the gate to everything else: no couple, no product.
 **Docs to update** `Accounts/module.md`, `docs/MODULES.md`.
 
 **Size** M.
+
+> **Done 2026-11-05.** A couple can now be created end to end. The guard
+> against two simultaneous accepts is the conditional UPDATE that claims the
+> code, not the checks above it — those all pass for both callers. Creating an
+> invite **revokes** any earlier open one, because the one-open-invite index
+> counts an expired-but-open invite and a user whose code ran out would
+> otherwise be stuck.
+>
+> Three bugs the tests caught, two of them mine from earlier tasks:
+> `SwoonMailable` lost its constructor in the audit fixes, so `InviteMail`
+> calling `parent::__construct()` was fatal; `CoupleInviteFactory::accepted()`
+> called `getKey()` on a Factory; and **module Artisan commands were never
+> registered** — Laravel discovers `app/Console/Commands` only, so
+> `invites:remind` would have failed as a `CommandNotFoundException` from the
+> scheduler rather than at boot. That is now wired in `ModuleServiceProvider`
+> for every module, alongside the factory and policy wiring from P1.T01.
+>
+> 29 tests. 100 in the suite, green on SQLite and MySQL 8.
 
 ---
 

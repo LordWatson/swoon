@@ -28,6 +28,7 @@ final class ModuleServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->resolveModuleFactories();
+        $this->registerModuleCommands();
 
         // With a warm route cache the routes are already loaded, so reading and
         // re-registering every module's routes.php would be pure waste on each
@@ -42,6 +43,39 @@ final class ModuleServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group($routeFile);
         }
+    }
+
+    /**
+     * Register every module's Artisan commands.
+     *
+     * Laravel auto-discovers `app/Console/Commands` only, so a command living
+     * in `app/Modules/<Module>/Console` is invisible without this — and the
+     * failure is a `CommandNotFoundException` from the scheduler at 3am rather
+     * than anything at boot.
+     *
+     * Console-only: globbing the module tree on every HTTP request would be
+     * pure waste.
+     */
+    private function registerModuleCommands(): void
+    {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
+        $commands = [];
+
+        foreach (glob(app_path('Modules/*/Console/*.php')) ?: [] as $file) {
+            $module = basename(dirname($file, 2));
+            $class = sprintf('App\Modules\%s\Console\%s', $module, basename($file, '.php'));
+
+            if (class_exists($class)) {
+                $commands[] = $class;
+            }
+        }
+
+        sort($commands);
+
+        $this->commands($commands);
     }
 
     /**

@@ -83,6 +83,15 @@ class AppServiceProvider extends ServiceProvider
      */
     private function registerRateLimiters(): void
     {
+        // The invite preview is unauthenticated and takes a short code, so it
+        // is the one endpoint someone could grind to find a live invite. 31^8
+        // is a large space, but a limit makes bulk guessing pointless rather
+        // than merely slow.
+        RateLimiter::for(
+            'invite-preview',
+            fn (Request $request): Limit => Limit::perMinute(20)->by('ip:'.$request->ip()),
+        );
+
         RateLimiter::for('auth', function (Request $request): array {
             $email = Str::lower(trim((string) $request->input('email')));
 

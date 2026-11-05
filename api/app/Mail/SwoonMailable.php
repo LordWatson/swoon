@@ -20,6 +20,8 @@ use Illuminate\Queue\SerializesModels;
  *
  * What is left is the shell every email shares: queueable, and safe to pass a
  * model to. Shared headers, tags or a footer belong here when they arrive.
+ *
+ * It has **no constructor**: a subclass must not call `parent::__construct()`.
  */
 abstract class SwoonMailable extends Mailable
 {

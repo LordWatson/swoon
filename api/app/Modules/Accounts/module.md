@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P1.T03: email, Apple and Google sign-in are all live. Six endpoints of sixteen.
+**Last updated:** 2026-11-05 - P1.T04: a couple can now be created end to end. Nine endpoints of sixteen.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -140,6 +140,33 @@ The provider's token is proof of identity for one request and is then thrown
 away. What the app gets back is a Sanctum token of ours, exactly as from an
 email sign-in.
 
+### The invite flow (P1.T04)
+
+**The concurrency guard is a conditional UPDATE, not the checks above it.** Two
+people accepting the same code at the same moment would both pass a
+read-then-write; `update(... where accepted_at is null)` can succeed only once,
+and the loser is told the code has been used. The one-couple invariant in the
+database is the backstop underneath that.
+
+**Creating an invite revokes any earlier open one** rather than returning it.
+The "one open invite" index counts an expired-but-open invite, so without the
+revoke a user whose code ran out would be stuck with no way to get another.
+
+**The preview endpoint is unauthenticated and returns a first name and nothing
+else.** The code travels through messaging apps, so whatever it returns is
+effectively public to whoever holds the link: no surname, no email, no avatar,
+no user id, no couple. That is why `InvitePreviewResource` is a separate class
+rather than a flag on `InviteResource`. It is rate-limited per IP so the short
+code cannot be ground through in bulk, and a malformed code 404s exactly like a
+non-existent one.
+
+**Refusals, each with a plain message:** your own invite, already coupled,
+expired, used, revoked, and *the inviter has since linked with somebody else*
+— the last being the case a careless implementation creates a second couple for.
+
+The reminder is one email, three days in, and `reminded_at` is nullable and set
+once, which is what makes "a single reminder" true rather than a promise.
+
 ### Rate limiting
 
 Two limits on the auth routes, and the second one's key is the point:
@@ -235,6 +262,10 @@ Run: `composer test -- --filter=Accounts`
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
 - 2026-11-05 - P0.T10: `users` profile columns added to the base migration,
   `HasApiTokens` on `User`, first test file. Schema verified on MySQL 8.0.46.
+- 2026-11-05 - P1.T04: invite, preview, accept, revoke. `CreateInvite`,
+  `AcceptInvite`, `RevokeInvite`, `CoupleLinked`, `InviteMail`,
+  `SendInviteEmail`, `invites:remind`. 29 tests including two simultaneous
+  accepts of one code.
 - 2026-11-05 - P1.T03: Sign in with Apple and Google. `OidcTokenVerifier`,
   `SocialIdentityProvider`, `FindOrCreateSocialUser`. 19 tests against a
   throwaway keypair and a stubbed JWKS, forgeries included; nothing touches the

@@ -42,9 +42,11 @@ class CoupleInviteFactory extends Factory
 
     public function accepted(?User $by = null): static
     {
-        return $this->state([
+        return $this->state(fn (): array => [
             'accepted_at' => now(),
-            'accepted_by_user_id' => ($by ?? User::factory())->getKey(),
+            // Resolved lazily, and created only if the caller did not say who:
+            // a Factory is not a model and has no key of its own.
+            'accepted_by_user_id' => ($by ?? User::factory()->create())->getKey(),
         ]);
     }
 
