@@ -16,10 +16,20 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            // Nullable because Sign in with Apple may return a private-relay
+            // address, or none at all. Still unique: two accounts must never
+            // share an address.
+            $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            // Nullable for social-only accounts, which have no password to set.
+            $table->string('password')->nullable();
             $table->rememberToken();
+
+            // Social identities. Keyed on the provider's subject id, never on
+            // email: an Apple user can change their relay address, and an
+            // email match is not proof of being the same person (P1.T03).
+            $table->string('apple_sub')->nullable()->unique();
+            $table->string('google_sub')->nullable()->unique();
 
             // Profile fields every later phase assumes. Kept on `users` rather
             // than a profile table: one row per person, always loaded with them.
@@ -36,6 +46,9 @@ return new class extends Migration
             $table->date('date_of_birth')->nullable();
 
             $table->timestamps();
+            // Deletion is immediate from the user's perspective and the cascade
+            // finishes on the queue, so the row is tombstoned first (P1.T09).
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table): void {

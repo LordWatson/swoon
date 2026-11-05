@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Modules\Accounts\Policies\UserPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -38,5 +41,15 @@ class AppServiceProvider extends ServiceProvider
             'app.name' => config('swoon.name'),
             'mail.from.name' => config('swoon.name'),
         ]);
+
+        // Laravel discovers a policy by swapping \Models\ for \Policies\ in
+        // the model's namespace, which finds every module policy on its own —
+        // App\Modules\Accounts\Models\Couple resolves to that module's
+        // CouplePolicy without help. `User` is the exception: it lives in
+        // app/Models because the framework's auth scaffolding puts it there,
+        // while the Accounts module owns it, so the convention looks in
+        // App\Policies and finds nothing. One explicit line beats moving the
+        // model or inventing a second guesser.
+        Gate::policy(User::class, UserPolicy::class);
     }
 }

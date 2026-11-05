@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - `users` table live on MySQL 8 with its profile columns and Sanctum tokens (P0.T10). No endpoints yet.
+**Last updated:** 2026-11-05 - P1.T01: schema, models, policies, factories and the database-enforced one-couple invariant. No endpoints yet.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -23,7 +23,28 @@ Owns who a person is and who they are coupled with. Handles sign-up and sign-in 
 ## Data model
 **users** - id, name, email (unique, nullable for Apple private relay), password (nullable for social-only), apple_sub, google_sub, avatar_path, colour (`rose`|`lavender`|`apricot`|`sage`), timezone, locale, date_of_birth (nullable, for birthday milestones), dietary_needs (json, feeds the planner), accessibility_needs (json), deleted_at.
 
-> **Built so far (P0.T10).** `users` has `name`, `email` (unique, not yet
+> **Built so far (P1.T01).** The schema and the invariant are in. `users`
+> gained `apple_sub`, `google_sub` and `deleted_at`, and `email` and `password`
+> are now nullable — Apple may return a private-relay address or none, and a
+> social-only account has no password. `couples`, `couple_user` and
+> `couple_invites` exist, with `Couple` and `CoupleInvite` models,
+> `CouplePolicy` and `UserPolicy`, factories (`Couple::factory()->linked()`,
+> `->of($a, $b)`, `->unlinked()`) and a seeder that produces a linked couple
+> plus a solo user.
+>
+> **The one-couple invariant is enforced by the database.** MySQL has no
+> partial unique index, and `unique(user_id, left_at)` would not work because a
+> UNIQUE index treats NULLs as distinct — two live memberships for one user
+> would pass. Instead `couple_user.active_user_id` is a **virtual** generated
+> column holding `user_id` while the membership is live and NULL once it ends,
+> with a unique index on it. Three details matter: the expression is `CASE`
+> rather than MySQL's `IF()` so SQLite accepts it too; the column is VIRTUAL,
+> because MySQL refuses `ON DELETE CASCADE` on a base column of a *stored*
+> generated column; and it is declared in `CREATE TABLE`, because SQLite cannot
+> add a generated column by `ALTER TABLE`. `couple_invites.open_inviter_id`
+> uses the same trick for "one open invite per user" (rule 6).
+>
+> **Previously (P0.T10).** `users` has `name`, `email` (unique, not yet
 > nullable), `password`, `email_verified_at`, `remember_token`, `timezone`
 > (default `Europe/London`), `locale` (default `en-GB`), `colour` (nullable
 > until onboarding picks one - partners must differ, rule 12), `avatar_path`,
@@ -32,9 +53,7 @@ Owns who a person is and who they are coupled with. Handles sign-up and sign-in 
 > store. Cast types are declared as `@property` on the model because Larastan
 > cannot read them off the schema.
 >
-> **Still to come in P1.T01:** `apple_sub`, `google_sub`, `deleted_at`, a
-> nullable `email` and `password` for social-only accounts, and the `couples`,
-> `couple_user` and `couple_invites` tables with the one-active-couple index.
+> Nothing in that list is outstanding any more.
 
 **couples** - id, ulid (public id), linked_at, lock_in_mode (`both_heart`|`either_locks`, couple setting), anniversary_on (nullable), first_date_on (nullable), unlinked_at.
 
@@ -116,6 +135,12 @@ Still to write: registration, each social path, the full invite/accept happy pat
 
 **Authorisation test per endpoint** - a second couple must receive 404/403 on every route here (Phase 10 makes this a standing requirement).
 
+Built in P1.T01: `tests/Feature/Accounts/CoupleTest.php` (the invariant,
+including two concurrent accepts and a third-member attempt) and
+`PolicyTest.php` (either partner equal, stranger refused, other couple refused,
+and **ex-partner refused after unlink** - the case a "was ever a member" check
+gets wrong).
+
 Run: `composer test -- --filter=Accounts`
 
 ## Known gaps / TODO
@@ -128,3 +153,7 @@ Run: `composer test -- --filter=Accounts`
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
 - 2026-11-05 - P0.T10: `users` profile columns added to the base migration,
   `HasApiTokens` on `User`, first test file. Schema verified on MySQL 8.0.46.
+- 2026-11-05 - P1.T01: `couples`, `couple_user`, `couple_invites`; `Couple` and
+  `CoupleInvite` models; `CouplePolicy` + `UserPolicy`; factories and seeder.
+  The one-couple invariant is a unique index on a virtual generated column,
+  proven by a test that inserts straight into the table. 22 tests.

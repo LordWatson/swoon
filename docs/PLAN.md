@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T01** — users, couples and the one-couple invariant. Phase 0 is done; this is the first task of Phase 1, and the gate to every feature.
+**Current focus:** **P1.T02** — email registration, login and logout.
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 0 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 1 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -408,7 +408,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T01 — Users, couples and the one-couple invariant · **M**
+### `[x]` P1.T01 — Users, couples and the one-couple invariant · **M**
 
 **Steps**
 1. Migrations: extend `users`; create `couples`, `couple_user`, `couple_invites`.
@@ -427,6 +427,24 @@ the gate to everything else: no couple, no product.
 **Docs to update** `api/app/Modules/Accounts/module.md` (data model, rules), `docs/MODULES.md`, `docs/SESSION_LOG.md`.
 
 **Size** M.
+
+> **Done 2026-11-05.** The invariant is a unique index on a **virtual**
+> generated column, `couple_user.active_user_id`, holding `user_id` while the
+> membership is live and NULL once it ends. Three things had to be right:
+> `CASE` rather than MySQL's `IF()` so SQLite accepts it; VIRTUAL rather than
+> STORED, because MySQL refuses `ON DELETE CASCADE` on a base column of a
+> stored generated column and the migration dies with error 1215; and declared
+> inside `CREATE TABLE`, because SQLite cannot add one by `ALTER TABLE`. The
+> same trick gives "one open invite per user". Proven by a test that inserts
+> straight into the table, bypassing the application entirely.
+>
+> As in P0.T10, the `users` changes went into the base migration rather than a
+> second one — nothing is deployed, and a clean schema beats an immediate
+> ALTER. Two things needed a line of wiring that will serve every later module:
+> `Factory::guessFactoryNamesUsing` in `ModuleServiceProvider`, because Laravel
+> looks for a module model's factory in `Database\Factories\Modules\…`; and
+> an explicit `Gate::policy` for `User`, whose policy convention points at
+> `App\Policies` while Accounts owns it. 22 tests, green on SQLite and MySQL 8.
 
 ---
 

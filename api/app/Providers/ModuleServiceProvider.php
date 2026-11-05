@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,6 +27,8 @@ final class ModuleServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->resolveModuleFactories();
+
         // With a warm route cache the routes are already loaded, so reading and
         // re-registering every module's routes.php would be pure waste on each
         // request — and would make `route:cache` pointless for the app's own
@@ -39,6 +42,24 @@ final class ModuleServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group($routeFile);
         }
+    }
+
+    /**
+     * Teach Eloquent where a module model's factory lives.
+     *
+     * Laravel guesses `Database\Factories\Modules\Accounts\Models\CoupleFactory`
+     * for `App\Modules\Accounts\Models\Couple`, which is a directory nobody
+     * wants. Factories stay in one flat `database/factories`, matched on the
+     * class basename — the same answer Laravel already gives for `App\Models`.
+     *
+     * The trade: two modules cannot have same-named models. They could not
+     * anyway, since their factories would collide in that one directory.
+     */
+    private function resolveModuleFactories(): void
+    {
+        Factory::guessFactoryNamesUsing(
+            static fn (string $model): string => 'Database\\Factories\\'.class_basename($model).'Factory'
+        );
     }
 
     /**
