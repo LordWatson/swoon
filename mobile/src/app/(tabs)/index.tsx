@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { fetchHealth, type HealthResponse } from '../api/client';
+import { fetchHealth, type HealthResponse } from '../../api/client';
 import {
   AITag,
   AvatarPair,
@@ -13,9 +13,9 @@ import {
   Hero,
   ProgressBar,
   Stat,
-} from '../components';
-import { API_BASE_URL, APP_NAME } from '../config/app';
-import { moduleSignatures, useTheme } from '../theme';
+} from '../../components';
+import { API_BASE_URL, APP_NAME } from '../../config/app';
+import { moduleSignatures, useTheme } from '../../theme';
 
 /**
  * Placeholder Home screen for Phase 0.

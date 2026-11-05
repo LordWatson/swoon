@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T07** — the tab shell and quick-add sheet. The backend of Phase 1 is complete; T05–T07 are the three mobile tasks left.
+**Current focus:** **P1.T06** — the onboarding flow. Then P1.T05 (deep links) closes Phase 1.
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 7 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 8 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -621,7 +621,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T07 — Tab shell and quick-add sheet · **M**
+### `[x]` P1.T07 — Tab shell and quick-add sheet · **M**
 
 **Steps**
 1. Expo Router tabs: Home · Dates · Moments · Planner · Us.
@@ -639,6 +639,27 @@ the gate to everything else: no couple, no product.
 **Docs to update** `mobile/src/features/accounts/module.md`, `docs/UX_RULES.md` (rule 14 reference).
 
 **Size** M.
+
+> **Done 2026-11-05.** Taken before T05 and T06, because both navigate into
+> this and building them first would have meant guessing at it.
+>
+> The three navigation states are a **pure function**, `authStateFor()`, so the
+> rule is testable without driving a navigator — and "a solo user never sees
+> the couple tabs" is worth protecting as a rule rather than as a rendering
+> accident. There is a fourth state, `loading`, purely so the app does not
+> flash Welcome at someone who *is* signed in on every launch; and a token the
+> API **refused** counts as unauthenticated, because a token can be revoked
+> from another device.
+>
+> The "+" floats above the tab bar rather than being a sixth tab: it is an
+> action, not a place, and a tab that does not navigate confuses
+> screen-reader users most of all. The sheet's four options are a `const` array
+> with a test on its length.
+>
+> Two dependencies avoided and one added: `expo-secure-store` was already
+> mandated by CLAUDE.md, so it went in; `expo-localization` did not, because
+> `Intl.DateTimeFormat().resolvedOptions().timeZone` is the same answer from
+> the platform. 12 tests, 110 mobile tests total.
 
 ---
 

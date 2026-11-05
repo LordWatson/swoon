@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞 - mobile
 
 **Status:** planned
-**Last updated:** 2026-11-05 - P1.T02: the auth API is live and its shapes are recorded here. Still no mobile code.
+**Last updated:** 2026-11-05 - P1.T07: the shell is live. Three navigation states, five tabs, the quick-add sheet, and real sign-up / sign-in / invite screens.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > **Canonical doc:** [`api/app/Modules/Accounts/module.md`](../../../../api/app/Modules/Accounts/module.md)
@@ -41,6 +41,54 @@ app must not try to explain *why* it failed beyond what the server says, since
 the whole point is that the server does not know either, as far as the caller
 is concerned.
 
+## The shell (P1.T07)
+
+**Three navigation states, one pure function.** `authStateFor()` in
+`navigation.ts` is the only thing that decides, and it is a pure function so
+the rule can be tested without driving a navigator:
+
+| State | Route | When |
+|---|---|---|
+| `loading` | — | the token is still being read from secure storage |
+| `unauthenticated` | `/welcome` | no token, **or** a token the API refused |
+| `solo` | `/invite` | signed in, `couple === null` |
+| `coupled` | `/(tabs)/index` | signed in and linked |
+
+`loading` exists so the app does not flash Welcome at someone who *is* signed
+in, on every single launch. "A token the API refused" matters too: a token can
+be revoked from another device, and the app must not sit on a dead one for ever.
+
+**A solo user never sees the couple tabs.** That is a privacy rule as much as a
+routing one — every tab is about two people, half would have nothing to render,
+and some would imply a partner who does not exist. The decision comes from the
+server's `couple: null`, never from anything the app infers.
+
+**Five tabs and a centre "+". No hamburger, ever** (UX rule 14). The "+" floats
+above the tab bar rather than being a sixth tab, because it is an action, not a
+place — and a tab that does not navigate confuses screen-reader users most of
+all. It carries a real `accessibilityLabel`.
+
+The quick-add sheet has **exactly four** options, as a `const` array with a
+test asserting its length: four is the number a person can read without
+deciding, and a fifth is a product decision rather than a convenience.
+
+Tabs that have their shell but not their feature render a `Hero` and a real
+`EmptyState` (`PlaceholderScreen`), because a tab rendering nothing looks
+broken rather than early.
+
+## Where the token lives
+
+`expo-secure-store`, never AsyncStorage: the token is the whole account, and
+AsyncStorage is plain text any backup or file-level compromise reads. The API
+client knows nothing about storage — it is handed a reader at startup
+(`setTokenReader`), which is why `src/api/client.ts` stays dependency-free and
+trivially testable.
+
+The device timezone comes from `Intl.DateTimeFormat().resolvedOptions()`, not
+`expo-localization`: a package for one line the platform already answers. If
+it is unavailable the field is omitted and the server default stands, which is
+why the API treats `timezone` as optional.
+
 ## Local state
 Server state goes through TanStack Query, keyed per module. Zustand is used only
 where genuinely client-only state must outlive a screen (for example, an
@@ -64,4 +112,8 @@ applies, and any reveal/privacy gate as seen from the client.
 - Not implemented yet. See the canonical doc's gaps list.
 
 ## Changelog
+- 2026-11-05 - P1.T07: shell. `navigation.ts` (the three states as a pure
+  function), `AuthGate`, `useAuth` hooks, `token.ts` on expo-secure-store,
+  typed `api.ts`, Welcome / Sign up / Sign in / Invite screens, five tabs with
+  `PlaceholderScreen`, `QuickAddSheet`. 12 tests.
 - 2026-11-05 - Created during project setup.
