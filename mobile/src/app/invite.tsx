@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { ScrollView, Share, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ApiError } from '../api/client';
 import { AvatarPair, Button, Card, Hero } from '../components';
-import { useCreateInvite, useMe, useSignOut } from '../features/accounts/useAuth';
+import { useCreateInvite, useMe, useRemindInvite, useSignOut } from '../features/accounts/useAuth';
 import { useTheme } from '../theme';
 
 /**
@@ -19,6 +20,7 @@ export default function InviteScreen() {
   const insets = useSafeAreaInsets();
   const me = useMe();
   const createInvite = useCreateInvite();
+  const remind = useRemindInvite();
   const signOut = useSignOut();
   const [shared, setShared] = useState(false);
 
@@ -115,9 +117,57 @@ export default function InviteScreen() {
                 lineHeight: caption.lineHeight,
                 fontFamily: caption.family,
               }}
+              testID="waiting-note"
             >
               We will let you know the moment they join 👀
             </Text>
+
+            {/*
+              The nudge. Its cooldown is the SERVER'S — a client-side timer is
+              advisory, and the point of a cooldown is that it cannot become
+              pestering (UX rule 4). So the button is always offered and the
+              server's refusal is what the person reads.
+            */}
+            {invite.email === null ? null : (
+              <>
+                <Button
+                  label="Nudge them"
+                  variant="ghost"
+                  emoji="👋"
+                  loading={remind.isPending}
+                  onPress={() => remind.mutate(invite.code)}
+                  testID="nudge-partner"
+                />
+                {remind.error instanceof ApiError ? (
+                  <Text
+                    style={{
+                      color: colours.inkMuted,
+                      fontSize: caption.size,
+                      lineHeight: caption.lineHeight,
+                      fontFamily: caption.family,
+                      textAlign: 'center',
+                    }}
+                    testID="nudge-message"
+                  >
+                    {remind.error.errors?.code?.[0] ?? remind.error.message}
+                  </Text>
+                ) : null}
+                {remind.isSuccess ? (
+                  <Text
+                    style={{
+                      color: colours.successText,
+                      fontSize: caption.size,
+                      lineHeight: caption.lineHeight,
+                      fontFamily: caption.family,
+                      textAlign: 'center',
+                    }}
+                    testID="nudge-message"
+                  >
+                    Nudged 👀
+                  </Text>
+                ) : null}
+              </>
+            )}
           </View>
         </Card>
       )}

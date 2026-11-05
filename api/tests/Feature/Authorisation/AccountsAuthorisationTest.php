@@ -58,6 +58,7 @@ function accountsCases(): array
         // ── Token required, acts only on the caller ─────────────────────────
         'auth.logout' => ['kind' => 'auth', 'method' => 'post', 'uri' => fn () => '/api/auth/logout'],
         'me.show' => ['kind' => 'auth', 'method' => 'get', 'uri' => fn () => '/api/me'],
+        'me.update' => ['kind' => 'auth', 'method' => 'patch', 'uri' => fn () => '/api/me'],
         'me.export' => ['kind' => 'auth', 'method' => 'post', 'uri' => fn () => '/api/me/export'],
         'me.destroy' => ['kind' => 'auth', 'method' => 'delete', 'uri' => fn () => '/api/me'],
         'invites.store' => ['kind' => 'auth', 'method' => 'post', 'uri' => fn () => '/api/invites'],
@@ -68,6 +69,13 @@ function accountsCases(): array
         ],
 
         // ── Token required AND somebody else's thing must be refused ────────
+        'invites.remind' => [
+            'kind' => 'owned',
+            'method' => 'post',
+            'uri' => fn (TwoCouples $w) => '/api/invites/'.$w->invite->code.'/remind',
+            // 404: nudging somebody else's invite must not confirm it exists.
+            'status' => 404,
+        ],
         'invites.destroy' => [
             'kind' => 'owned',
             'method' => 'delete',

@@ -1,7 +1,7 @@
 # Build plan — Swoon 💞
 
 **Last updated:** 2026-11-05
-**Current focus:** **P1.T06** — the onboarding flow. Then P1.T05 (deep links) closes Phase 1.
+**Current focus:** **P1.T05** — deep links and universal links. The last task in Phase 1.
 
 ---
 
@@ -64,7 +64,7 @@ here or linked from here.
 | Phase | Goal | Tasks | Status |
 |---|---|---|---|
 | **0** | [Foundations](#phase-0--foundations) | 12 | **12 / 12 done** ✅ |
-| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 8 / 10 |
+| **1** | [Accounts & Couples](#phase-1--accounts--couples) | 10 | 9 / 10 |
 | **2** | [AI platform](#phase-2--ai-platform) | 9 | 0 / 9 |
 | **3** | [AI Date Planner](#phase-3--ai-date-planner) | 9 | 0 / 9 |
 | **4** | [Moments & On This Day](#phase-4--moments--on-this-day) | 9 | 0 / 9 |
@@ -600,7 +600,7 @@ the gate to everything else: no couple, no product.
 
 ---
 
-### `[ ]` P1.T06 — Onboarding flow · **M**
+### `[x]` P1.T06 — Onboarding flow · **M**
 
 **Steps**
 1. Screens: Welcome → Sign up/in → Name → Timezone (detected, confirmable) → Dietary/accessibility needs → Invite partner.
@@ -618,6 +618,28 @@ the gate to everything else: no couple, no product.
 **Docs to update** `mobile/src/features/accounts/module.md`.
 
 **Size** M.
+
+> **Done 2026-11-05.** Needed two API endpoints that did not exist yet —
+> `PATCH /api/me` and `POST /api/invites/{code}/remind` — and the
+> authorisation sweep from T10 **refused to pass until both had a recorded
+> decision**, which is exactly what it was built for.
+>
+> The step model is pure functions, so "one question per screen", "back never
+> loses an answer" and "every non-essential question has a way to say nothing"
+> are asserted as properties rather than as rendering.
+>
+> The draft lives in `expo-secure-store` on purpose, not for convenience: it
+> holds dietary and accessibility needs, which can reveal religion or
+> disability, and plain-text storage for a half-finished flow would be worse
+> than memory. Each answer is also PATCHed as it is given, so giving up halfway
+> keeps what was reached.
+>
+> The nudge's cooldown is **server-side**. A client-side timer is advisory, and
+> the whole point of a cooldown is that it cannot become pestering — so the
+> button is always offered and the server's refusal is what the person reads.
+> It shares `reminded_at` with the scheduled reminder, so one suppresses the
+> other rather than both arriving. 22 tests (12 API, 10 mobile).
+
 
 ---
 

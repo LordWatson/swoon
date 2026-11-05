@@ -41,9 +41,11 @@ Route::get('invites/{code}', [InviteController::class, 'show'])
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('me', [MeController::class, 'show'])->name('me.show');
+    Route::patch('me', [MeController::class, 'update'])->name('me.update');
 
     Route::post('invites', [InviteController::class, 'store'])->name('invites.store');
     Route::post('invites/{code}/accept', [InviteController::class, 'accept'])->name('invites.accept');
+    Route::post('invites/{code}/remind', [InviteController::class, 'remind'])->name('invites.remind');
     Route::delete('invites/{invite}', [InviteController::class, 'destroy'])->name('invites.destroy');
 
     Route::get('couple', [CoupleController::class, 'show'])->name('couple.show');

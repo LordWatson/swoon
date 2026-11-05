@@ -117,6 +117,19 @@ export function useCreateInvite() {
   return useMutation({ mutationFn: api.createInvite });
 }
 
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: api.updateProfile,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ME_KEY }),
+  });
+}
+
+export function useRemindInvite() {
+  return useMutation({ mutationFn: api.remindInvite });
+}
+
 export function useUnlink() {
   const queryClient = useQueryClient();
 

@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞 - mobile
 
 **Status:** planned
-**Last updated:** 2026-11-05 - P1.T07: the shell is live. Three navigation states, five tabs, the quick-add sheet, and real sign-up / sign-in / invite screens.
+**Last updated:** 2026-11-05 - P1.T06: onboarding and the waiting screen. Only deep links (P1.T05) left in Phase 1.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > **Canonical doc:** [`api/app/Modules/Accounts/module.md`](../../../../api/app/Modules/Accounts/module.md)
@@ -76,6 +76,78 @@ Tabs that have their shell but not their feature render a `Hero` and a real
 `EmptyState` (`PlaceholderScreen`), because a tab rendering nothing looks
 broken rather than early.
 
+## Onboarding (P1.T06)
+
+Four questions, **one per screen** (UX rule 3): confirm your name, confirm your
+timezone, then dietary needs and accessibility needs as chips. The step list in
+`onboarding.ts` *is* the order — nothing else derives it — and the rules are
+pure functions so they can be asserted without driving a navigator.
+
+**Each answer is PATCHed as it is given**, so a person who gives up halfway
+keeps what they got through. That is also what makes "back never loses an
+answer" true on the server and not just in the client.
+
+**The draft lives in `expo-secure-store`, deliberately.** It holds dietary and
+accessibility needs, which can reveal religion or disability — leaving that in
+plain-text storage while the flow is half-finished would be worse than leaving
+it in memory. The draft exists only so re-opening a backgrounded app does not
+blank the screen you were on.
+
+Both optional questions offer **"No preference"**, and an empty list is stored
+as a real answer rather than left unset — otherwise the app asks again next
+launch.
+
+The timezone is detected rather than asked, then confirmed: everything the app
+schedules is rendered in the user's own time, and getting it right silently is
+a better first impression than a question.
+
+## Waiting for a partner
+
+Once a code exists, the invite screen becomes the waiting screen: both avatars
+with the partner's dimmed (`AvatarPair showPending`), and a **nudge**.
+
+The nudge's cooldown is the **server's** (`POST /api/invites/{code}/remind`,
+24 h from `config('swoon.nudges.cooldown_hours')`). A client-side timer is
+advisory, and the entire point of a cooldown is that it cannot become
+pestering — so the button is always offered and the server's refusal is what
+the person reads. It shares `reminded_at` with the scheduled three-day
+reminder, so a manual nudge suppresses the automatic one rather than both
+arriving.
+
+## Onboarding (P1.T06)
+
+Four questions, **one per screen** (UX rule 3): confirm your name, confirm your
+timezone, then dietary needs and accessibility needs as chips. The step list in
+`onboarding.ts` *is* the order, and the rules are pure functions so they can be
+asserted without driving a navigator.
+
+**Each answer is PATCHed as it is given**, so a person who gives up halfway
+keeps what they got through. That is what makes "back never loses an answer"
+true on the server as well as in the client.
+
+**The draft lives in `expo-secure-store`, deliberately.** It holds dietary and
+accessibility needs, which can reveal religion or disability - leaving that in
+plain-text storage while the flow is half-finished would be worse than leaving
+it in memory. The draft exists only so re-opening a backgrounded app does not
+blank the screen you were on.
+
+Both optional questions offer **"No preference"**, and an empty list is stored
+as a real answer rather than left unset - otherwise the app asks again next
+launch.
+
+## Waiting for a partner
+
+Once a code exists the invite screen becomes the waiting screen: both avatars
+with the partner's dimmed (`AvatarPair showPending`), and a **nudge**.
+
+The nudge's cooldown is the **server's** (`POST /api/invites/{code}/remind`,
+24 h from `config('swoon.nudges.cooldown_hours')`). A client-side timer is
+advisory, and the entire point of a cooldown is that it cannot become
+pestering - so the button is always offered and the server's refusal is what
+the person reads. It shares `reminded_at` with the scheduled three-day
+reminder, so a manual nudge suppresses the automatic one rather than both
+arriving.
+
 ## Where the token lives
 
 `expo-secure-store`, never AsyncStorage: the token is the whole account, and
@@ -112,6 +184,13 @@ applies, and any reveal/privacy gate as seen from the client.
 - Not implemented yet. See the canonical doc's gaps list.
 
 ## Changelog
+- 2026-11-05 - P1.T06: onboarding (`onboarding.ts`, `useOnboardingDraft`,
+  `onboarding.tsx`), the waiting screen and the server-side nudge. Needed two
+  API endpoints that did not exist yet. 10 tests.
+- 2026-11-05 - P1.T06: onboarding (`onboarding.ts`, `useOnboardingDraft`,
+  `onboarding.tsx`), the waiting screen and the server-side nudge. Needed two
+  API endpoints that did not exist yet: `PATCH /api/me` and
+  `POST /api/invites/{code}/remind`. 10 tests.
 - 2026-11-05 - P1.T07: shell. `navigation.ts` (the three states as a pure
   function), `AuthGate`, `useAuth` hooks, `token.ts` on expo-secure-store,
   typed `api.ts`, Welcome / Sign up / Sign in / Invite screens, five tabs with

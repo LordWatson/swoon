@@ -1,7 +1,7 @@
 # Accounts & Couple Linking 💞
 
 **Status:** in progress
-**Last updated:** 2026-11-05 - P1.T09: both exits work. Fifteen endpoints of sixteen; only PATCH /api/me is left.
+**Last updated:** 2026-11-05 - P1.T06: all sixteen endpoints in the table are live.
 **Owner phase:** Phase 1 (see docs/PLAN.md)
 
 > This is the **canonical** doc for this module and covers the full stack.
@@ -269,6 +269,40 @@ person holding it is the right person, and these links travel by email. The
 filename is a ULID rather than the user id, and the path is checked for
 traversal even though it is signed.
 
+### The nudge (P1.T06)
+
+`POST /api/invites/{code}/remind` re-sends the invite email. **The cooldown is
+server-side** — 24 h from `config('swoon.nudges.cooldown_hours')` — because a
+client-side timer is advisory and the point of a cooldown is that it cannot
+become pestering (UX rule 4). It shares `reminded_at` with the scheduled
+three-day reminder on purpose: a manual nudge and an automatic one are the same
+email out of the same budget, so one suppresses the other rather than both
+landing.
+
+`PATCH /api/me` takes profile basics only. Email, password and the social
+subject ids are **absent by construction** — an email change needs
+re-verification and a password change needs the old one, so both are their own
+flow, and the social ids must never be client-settable. Every field is
+`sometimes`, because onboarding sends one answer per screen and a partial
+update must not wipe what came before.
+
+### The nudge and the profile update (P1.T06)
+
+`POST /api/invites/{code}/remind` re-sends the invite email. **The cooldown is
+server-side** - 24 h from `config('swoon.nudges.cooldown_hours')` - because a
+client-side timer is advisory and the point of a cooldown is that it cannot
+become pestering (UX rule 4). It shares `reminded_at` with the scheduled
+three-day reminder on purpose: a manual nudge and an automatic one are the same
+email out of the same budget, so one suppresses the other rather than both
+landing.
+
+`PATCH /api/me` takes profile basics only. Email, password and the social
+subject ids are **absent by construction** - an email change needs
+re-verification and a password change needs the old one, so both are their own
+flow, and the social ids must never be client-settable. Every field is
+`sometimes`, because onboarding sends one answer per screen and a partial
+update must not wipe what came before.
+
 ### Rate limiting
 
 Two limits on the auth routes, and the second one's key is the point:
@@ -374,6 +408,12 @@ Run: `composer test -- --filter=Accounts`
 - 2026-11-05 - Module documented and scaffolded (folders + routes.php). No code yet.
 - 2026-11-05 - P0.T10: `users` profile columns added to the base migration,
   `HasApiTokens` on `User`, first test file. Schema verified on MySQL 8.0.46.
+- 2026-11-05 - P1.T06 (API half): `PATCH /api/me` and
+  `POST /api/invites/{code}/remind`, both added to the authorisation sweep -
+  which refused to pass until they were. 12 tests. All sixteen endpoints live.
+- 2026-11-05 - P1.T06 (API half): `PATCH /api/me` and
+  `POST /api/invites/{code}/remind`, both added to the authorisation sweep -
+  which refused to pass until they had a recorded decision. 12 tests.
 - 2026-11-05 - P1.T10: the authorisation sweep, driven off the route table so
   an undecided endpoint fails the suite. `TwoCouples` fixture for later phases.
   12 tests.

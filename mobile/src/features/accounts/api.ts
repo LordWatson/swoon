@@ -103,6 +103,26 @@ export function acceptInvite(code: string): Promise<CoupleSummary> {
   });
 }
 
+export type ProfileUpdate = Partial<{
+  name: string;
+  timezone: string;
+  colour: string | null;
+  date_of_birth: string | null;
+  dietary_needs: string[];
+  accessibility_needs: string[];
+}>;
+
+export function updateProfile(body: ProfileUpdate): Promise<Me['user']> {
+  return apiRequest<Me['user']>('/api/me', { method: 'PATCH', body });
+}
+
+/** Nudge a partner who has not joined. The cooldown is the server's. */
+export function remindInvite(code: string): Promise<{ message: string }> {
+  return apiRequest<{ message: string }>(`/api/invites/${encodeURIComponent(code)}/remind`, {
+    method: 'POST',
+  });
+}
+
 export function unlink(): Promise<void> {
   return apiRequest<void>('/api/couple', { method: 'DELETE' });
 }
